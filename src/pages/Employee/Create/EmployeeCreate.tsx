@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router-dom";
+
+import { Link } from "react-router-dom";
 import { FormProvider } from "react-hook-form";
 import { useEmployeeCreateForm } from "./useEmployeeCreateForm";
 import Layout from "../../../component/layouts/layout";
@@ -6,10 +7,13 @@ import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 import Alert from "../../../component/forms/Alert";
 import InputFile from "../../../component/forms/InputFile";
 import InputText from "../../../component/forms/InputText";
+import { jwtDecode } from "jwt-decode";
 
 const EmployeeCreate = () => {
-  const { companyId } = useParams<{ companyId: string }>();
 
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
+  const companyId = decodedToken?.user?.companyId;
   const {
     onSubmit,
     loading,

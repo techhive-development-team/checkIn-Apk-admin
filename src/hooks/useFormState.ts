@@ -22,18 +22,20 @@ export const useFormState = <T = any>(): FormState<T> => {
 
     try {
       const response = await asyncFn();
-
+      
       if ((response as any)?.statusCode === 200) {
         setSuccess(true);
-        setMessage("Operation successful");
+        setMessage((response as any)?.message || "Operation successful");
       } else if ((response as any)?.statusCode === 401) {
         setSuccess(false);
-        setMessage("Please Log In Again");
+        setMessage((response as any)?.message || "Please Log In Again");
+      } else if ((response as any)?.statusCode === 409) {
+        setSuccess(false);
+        setMessage((response as any)?.message || "Conflict Error");
       } else if ((response as any)?.statusCode === 400) {
         setSuccess(false);
         const data = (response as any)?.data;
         if (Array.isArray(data)) {
-          setShow(true);
           setMessage(data.map((err: any) => err.message));
         } else {
           setMessage(data || "Invalid data");
@@ -42,12 +44,28 @@ export const useFormState = <T = any>(): FormState<T> => {
         setSuccess(false);
         setMessage("Something went wrong");
       }
-
       return response;
     } catch (error: any) {
       setSuccess(false);
       console.error(error);
-      setMessage(error?.response?.data || "Something went wrong");
+      
+      const errorResponse = error?.response?.data || error?.response || error;
+      
+      if (errorResponse?.statusCode === 401) {
+        setMessage(errorResponse?.message || "Please Log In Again");
+      } else if (errorResponse?.statusCode === 409) {
+        setMessage(errorResponse?.message || "Conflict Error");
+      } else if (errorResponse?.statusCode === 400) {
+        const data = errorResponse?.data;
+        if (Array.isArray(data)) {
+          setMessage(data.map((err: any) => err.message));
+        } else {
+          setMessage(errorResponse?.message || data || "Invalid data");
+        }
+      } else {
+        setMessage(errorResponse?.message || "Something went wrong");
+      }
+      
       throw error;
     } finally {
       setShow(true);
