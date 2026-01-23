@@ -27,7 +27,6 @@ export const useEmployeeCreateForm = (companyId: string) => {
   const onSubmit = async (data: Form) => {
     let profilePicBase64: string | undefined;
 
-    // 🔑 Base64 conversion happens HERE (not in UI)
     if (data.profilePic instanceof File) {
       const reader = new FileReader();
       reader.readAsDataURL(data.profilePic);
@@ -41,9 +40,9 @@ export const useEmployeeCreateForm = (companyId: string) => {
     }
 
     const payload = {
-      ...data,
-      profilePic: profilePicBase64,
-    };
+    ...data,
+    profilePic: profilePicBase64, 
+  };
 
     await handleSubmit(() =>
       employeeRepository.createEmployee(companyId, payload)

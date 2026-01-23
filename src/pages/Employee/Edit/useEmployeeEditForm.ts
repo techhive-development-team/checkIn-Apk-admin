@@ -1,0 +1,113 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useForm, type UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { employeeRepository } from "../../../repositories/employeeRepository";
+import { useGetEmployeeById } from "../../../hooks/useGetEmployee";
+import { useFormState } from "../../../hooks/useFormState";
+import {
+  EmployeeUpdateSchema,
+  type EmployeeUpdateForm,
+} from "../EmployeeValidationSchema";
+import { jwtDecode } from "jwt-decode";
+
+export const useEmployeeEditForm = () => {
+  const { id } = useParams<{ id: string }>();
+  
+  const token = localStorage.getItem("token");
+  const companyId = token
+    ? (jwtDecode<{ user: { companyId: string } }>(token).user.companyId)
+    : "";
+    
+  const { data: employeeData } = useGetEmployeeById(companyId?? "", id ?? "");
+
+  const methods: UseFormReturn<EmployeeUpdateForm> =
+    useForm<EmployeeUpdateForm>({
+      resolver: zodResolver(EmployeeUpdateSchema),
+      defaultValues: {
+        firstName: "",
+        lastName: "",
+        email: "",
+        profilePic: "",
+        position: "",
+        phone: "",
+        address: "",
+        status: "active",
+      },
+    });
+
+  const { reset, setValue } = methods;
+  const [profilePreview, setProfilePreview] = useState<string | undefined>();
+
+  // Reset form when employeeData is loaded
+  useEffect(() => {
+    if (employeeData) {
+      reset({
+        firstName: employeeData.firstName || "",
+        lastName: employeeData.lastName || "",
+        email: employeeData.email || "",
+        profilePic: employeeData.profilePic || undefined,
+        position: employeeData.position || "",
+        phone: employeeData.phone || "",
+        address: employeeData.address || "",
+        status: employeeData.status || "active",
+      });
+
+      if (employeeData.profilePic) {
+        setProfilePreview(employeeData.profilePic);
+      }
+    }
+  }, [employeeData, reset]);
+
+  const handleProfilePicChange = (file?: File) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => setProfilePreview(reader.result as string);
+
+      setValue("profilePic", file, { shouldValidate: true });
+    }
+  };
+
+  const { loading, success, message, show, handleSubmit } =
+    useFormState<EmployeeUpdateForm>();
+
+  const onSubmit = async (data: EmployeeUpdateForm) => {
+    let profilePicBase64 = data.profilePic;
+
+    if (data.profilePic instanceof File) {
+      profilePicBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(data.profilePic as File);
+        reader.onloadend = () => resolve(reader.result as string);
+      });
+    }
+
+    const payload = {
+      ...data,
+      profilePic: profilePicBase64,
+    };
+
+    if (!employeeData?.companyId) return;
+
+    await handleSubmit(() =>
+      employeeRepository.updateEmployee(
+        employeeData.companyId,
+        id || "",
+        payload
+      )
+    );
+  };
+
+  return {
+    ...methods,
+    onSubmit,
+    loading,
+    success,
+    message,
+    show,
+    profilePreview,
+    handleProfilePicChange, // pass this to your InputFile component
+  };
+};

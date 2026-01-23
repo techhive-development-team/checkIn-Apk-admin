@@ -63,7 +63,9 @@ export const EmployeeCreateSchema = z.object({
     .optional(),
 });
 
-export const EmployeeUpdateSchema = EmployeeCreateSchema.partial();
+export const EmployeeUpdateSchema = EmployeeCreateSchema.extend({
+  status: z.string().optional(),
+});
 
 export type EmployeeCreateForm = z.infer<typeof EmployeeCreateSchema>;
 export type EmployeeUpdateForm = z.infer<typeof EmployeeUpdateSchema>;

@@ -9,6 +9,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logoutModalRef.current?.close();
+    localStorage.removeItem("token");
+    window.location.href = "/login";
   };
 
   return (

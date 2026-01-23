@@ -1,60 +1,62 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useGetCompany } from "../../hooks/useGetCompany";
-import { companyRepository } from "../../repositories/companyRepository";
+import { useGetAttendance } from "../../hooks/useGetAttendance";
+import { attendanceRepository } from "../../repositories/attendanceRepository";
 
 const PAGE_SIZE = 10;
 
-export type Company = {
-  companyId: string;
-  name: string;
-  email: string;
-  logo?: string;
-  companyType?: string;
-  address?: string;
-  phone?: string;
-  // totalEmployee?: string;
+export type Attendance = {
+  attendanceId: string;
+  employeeName: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  checkInLocation?: string;
+  checkOutLocation?: string;
   status: string;
-  subScribeStatus: string;
   createdAt: string;
 };
 
-const CompanyTable: React.FC = () => {
+const AttendanceTable: React.FC = () => {
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
 
   const {
-    data: companies,
+    data: attendances,
     total,
     mutate,
-  } = useGetCompany({
+  } = useGetAttendance({
     limit: PAGE_SIZE,
     offset,
   });
 
   const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
 
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [selectedAttendance, setSelectedAttendance] =
+    useState<Attendance | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const handleDelete = (company: Company) => {
-    setSelectedCompany(company);
+  const handleDelete = (attendance: Attendance) => {
+    setSelectedAttendance(attendance);
     setDeleteError(null);
-    (document.getElementById("delete_modal") as HTMLDialogElement).showModal();
+    (
+      document.getElementById("delete_modal") as HTMLDialogElement
+    ).showModal();
   };
 
   const closeModal = () => {
-    setSelectedCompany(null);
+    setSelectedAttendance(null);
     setDeleteError(null);
-    (document.getElementById("delete_modal") as HTMLDialogElement).close();
+    (
+      document.getElementById("delete_modal") as HTMLDialogElement
+    ).close();
   };
 
   const confirmDelete = async () => {
-    if (!selectedCompany) return;
+    if (!selectedAttendance) return;
 
     try {
-      const response = await companyRepository.deleteCompany(
-        selectedCompany.companyId
+      const response = await attendanceRepository.deleteAttendance(
+        selectedAttendance.attendanceId
       );
 
       if (response?.statusCode === 200) {
@@ -79,13 +81,9 @@ const CompanyTable: React.FC = () => {
           <thead>
             <tr>
               <th>No</th>
-              <th>Logo</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Type</th>
-              <th>Phone</th>
-              {/* <th>Total Employee</th> */}
-              <th>Subscription</th>
+              <th>Employee</th>
+              <th>Check In</th>
+              <th>Check Out</th>
               <th>Status</th>
               <th>Created At</th>
               <th>Action</th>
@@ -93,69 +91,53 @@ const CompanyTable: React.FC = () => {
           </thead>
 
           <tbody>
-            {companies && companies.length > 0 ? (
-              companies.map((company: Company, index: number) => (
-                <tr key={company.companyId}>
+            {attendances && attendances.length > 0 ? (
+              attendances.map((attendance: Attendance, index: number) => (
+                <tr key={attendance.attendanceId}>
                   <td>{offset + index + 1}</td>
 
+                  <td>{attendance.employeeName}</td>
+
                   <td>
-                    {company.logo ? (
-                      <img
-                        src={company.logo}
-                        alt={company.name}
-                        className="w-12 h-12 object-cover rounded-md border"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs">
-                        N/A
-                      </div>
-                    )}
+                    {attendance.checkInTime
+                      ? new Date(attendance.checkInTime).toLocaleString()
+                      : "-"}
                   </td>
 
-                  <td>{company.name}</td>
-                  <td>{company.email}</td>
-                  <td>{company.companyType || "-"}</td>
-                  <td>{company.phone || "-"}</td>
-                  {/* <td>{company.totalEmployee || "-"}</td> */}
+                  <td>
+                    {attendance.checkOutTime
+                      ? new Date(attendance.checkOutTime).toLocaleString()
+                      : "-"}
+                  </td>
 
                   <td>
                     <span
                       className={`badge ${
-                        company.subScribeStatus === "Active"
+                        attendance.status === "present"
                           ? "badge-success"
+                          : attendance.status === "absent"
+                          ? "badge-error"
                           : "badge-warning"
                       }`}
                     >
-                      {company.subScribeStatus}
+                      {attendance.status}
                     </span>
                   </td>
 
                   <td>
-                    <span
-                      className={`badge ${
-                        company.status === "active"
-                          ? "badge-primary"
-                          : "badge-error"
-                      }`}
-                    >
-                      {company.status}
-                    </span>
-                  </td>
-
-                  <td>
-                    {new Date(company.createdAt).toLocaleString()}
+                    {new Date(attendance.createdAt).toLocaleString()}
                   </td>
 
                   <td className="flex gap-2">
                     <Link
-                      to={`/company/${company.companyId}/edit`}
+                      to={`/attendance/${attendance.attendanceId}/edit`}
                       className="btn btn-sm"
                     >
                       Edit
                     </Link>
 
                     <button
-                      onClick={() => handleDelete(company)}
+                      onClick={() => handleDelete(attendance)}
                       className="btn btn-sm btn-error"
                     >
                       Delete
@@ -165,8 +147,8 @@ const CompanyTable: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={11} className="text-center py-4">
-                  No companies found
+                <td colSpan={7} className="text-center py-4">
+                  No attendance records found
                 </td>
               </tr>
             )}
@@ -196,11 +178,7 @@ const CompanyTable: React.FC = () => {
           <h3 className="font-bold text-lg">Confirm Delete</h3>
 
           <p className="py-4">
-            Are you sure you want to delete{" "}
-            <span className="font-semibold">
-              {selectedCompany?.name}
-            </span>
-            ?
+            Are you sure you want to delete this attendance record?
           </p>
 
           {deleteError && (
@@ -234,4 +212,4 @@ const CompanyTable: React.FC = () => {
   );
 };
 
-export default CompanyTable;
+export default AttendanceTable;

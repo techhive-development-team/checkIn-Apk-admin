@@ -1,8 +1,27 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { sidebarRoutes } from "./sidebarRoutes.tsx";
+import { type SidebarRoute, sidebarRoutes, userSidebarRoutes } from "./sidebarRoutes.tsx";
+import { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const Sidebar = () => {
   const location = useLocation();
+
+  const [sideBar, setSideBar] = useState<SidebarRoute[]>([]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if(!token) return;
+
+    const decodedToken = jwtDecode<{ user: {role: string}}> (token);
+    const role = decodedToken?.user?.role;
+
+    if (role === "ADMIN"){
+      setSideBar(sidebarRoutes);
+    } else if( role === "CLIENT") {
+      setSideBar(userSidebarRoutes);
+    } else {
+      setSideBar([]);
+    }
+  }, [location.pathname]);
 
   const closeDrawer = () => {
     const drawer = document.getElementById("my-drawer") as HTMLInputElement;
@@ -24,7 +43,7 @@ const Sidebar = () => {
 
       <nav className="py-4">
         <ul className="menu px-3 space-y-1">
-          {sidebarRoutes.map((route, index) => {
+          {sideBar.map((route, index) => {
             const isActive = isRouteActive(route.path);
 
             return (

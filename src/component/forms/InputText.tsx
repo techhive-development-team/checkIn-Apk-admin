@@ -34,7 +34,7 @@ const InputText = ({
           className="accent-sky-500"
           disabled={readonly}
         />
-        <span className="text-sm font-medium">
+        <span className="text-sm font-medium text-gray-700">
           {label}
           {required && "*"}
         </span>
@@ -45,7 +45,7 @@ const InputText = ({
 
   return (
     <div className="mb-4 w-full">
-      <label className="block text-sm font-semibold mb-1">
+      <label className="block text-sm font-semibold mb-1 text-gray-700">
         {label} {required && <span className="text-red-400">*</span>}
       </label>
       <input
@@ -56,8 +56,9 @@ const InputText = ({
         disabled={readonly}
         min={type === "date" ? min : undefined}
         className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400
+          bg-transparent text-gray-400 placeholder-gray-400
           ${error ? "border-red-500" : "border-gray-300"}
-          ${readonly ? "cursor-not-allowed bg-gray-50" : ""}`}
+          ${readonly ? "cursor-not-allowed" : ""}`}
       />
       {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>

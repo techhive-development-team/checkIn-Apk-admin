@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
 import { employeeRepository } from "../../repositories/employeeRepository";
+import { jwtDecode } from "jwt-decode";
 
 const PAGE_SIZE = 10;
 
@@ -19,7 +20,9 @@ export type Employee = {
 };
 
 const EmployeeTable: React.FC = () => {
-  const { companyId } = useParams<{ companyId: string }>();
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
+  const companyId = decodedToken?.user?.companyId;
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
@@ -28,7 +31,8 @@ const EmployeeTable: React.FC = () => {
     data: employees,
     total,
     mutate,
-  } = useGetEmployee(companyId!, {
+  } = useGetEmployee({
+    companyId,
     limit: PAGE_SIZE,
     offset,
   });
@@ -105,7 +109,7 @@ const EmployeeTable: React.FC = () => {
                       <img
                         src={employee.profilePic}
                         alt={`${employee.firstName} ${employee.lastName}`}
-                        className="w-12 h-12 object-cover rounded-full border"
+                        className="w-12 h-12 object-cover rounded-md border"
                       />
                     ) : (
                       <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xs">
@@ -140,7 +144,7 @@ const EmployeeTable: React.FC = () => {
 
                   <td className="flex gap-2">
                     <Link
-                      to={`/companies/${companyId}/employees/${employee.employeeId}/edit`}
+                      to={`/employee/${employee.employeeId}/edit`}
                       className="btn btn-sm"
                     >
                       Edit
