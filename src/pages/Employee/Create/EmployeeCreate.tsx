@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { FormProvider } from "react-hook-form";
 import { useEmployeeCreateForm } from "./useEmployeeCreateForm";
@@ -21,7 +20,7 @@ const EmployeeCreate = () => {
     message,
     show,
     ...methods
-  } = useEmployeeCreateForm(companyId!);
+  } = useEmployeeCreateForm(companyId);
 
   return (
     <Layout>
@@ -31,7 +30,7 @@ const EmployeeCreate = () => {
             <Breadcrumb
               items={[
                 { label: "Home", path: "/" },
-                { label: "Employees", path: `/companies/${companyId}/employees` },
+                { label: "Employees", path: `/company/employees` },
                 { label: "Add Employee" },
               ]}
             />
@@ -45,26 +44,21 @@ const EmployeeCreate = () => {
               >
                 {show && <Alert success={success} message={message} />}
 
-                {/* Profile Picture */}
                 <InputFile
                   label="Profile Picture"
                   name="profilePic"
                 />
 
-                {/* Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputText label="First Name" name="firstName" required />
                   <InputText label="Last Name" name="lastName" required />
                 </div>
 
-                {/* Position */}
                 <InputText label="Position" name="position" />
 
-                {/* Contact */}
                 <InputText label="Email" name="email" type="email" required />
                 <InputText label="Phone" name="phone" />
 
-                {/* Address */}
                 <InputText label="Address" name="address" />
 
                 <div className="pt-4 card-actions flex justify-between">
@@ -76,7 +70,7 @@ const EmployeeCreate = () => {
                   </Link>
 
                   <button className="btn btn-primary" disabled={loading}>
-                    {loading ? "Creating..." : "Create Employee"}
+                    {loading ? "loading..." : "Create Employee"}
                   </button>
                 </div>
               </form>

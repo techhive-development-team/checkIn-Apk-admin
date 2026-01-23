@@ -11,6 +11,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   type = "button",
   className = "",
+  children,
   ...props
 }) => {
   return (
@@ -22,7 +23,7 @@ const Button: React.FC<ButtonProps> = ({
         ${className}`}
       {...props}
     >
-      {loading ? "Please wait..." : label}
+      {loading ? "Please wait..." : children || label}
     </button>
   );
 };

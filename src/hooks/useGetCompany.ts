@@ -28,7 +28,7 @@ export const useGetCompanyById = (id: string) => {
   );
 
   return {
-    data: data?.data,
+    data,
     error,
     isLoading,
     mutate,

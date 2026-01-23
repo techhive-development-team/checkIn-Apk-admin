@@ -14,7 +14,7 @@ export const useCompanyCreateForm = () => {
       companyType: "",
       address: "",
       phone: "",
-      totalEmployee: ""
+      // totalEmployee: ""
     },
   });
 

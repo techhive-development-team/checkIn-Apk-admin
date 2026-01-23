@@ -14,11 +14,17 @@ const Dashboard = lazy(() => import("../pages/Dashboard"));
 
 const CompanyPage = lazy(() => import("../pages/Company/Company.tsx"));
 const CompanyCreate = lazy(() => import("../pages/Company/Create/CompanyCreate.tsx"));
+const CompanyEdit = lazy(() => import("../pages/Company/Edit/CompanyEdit.tsx"))
 
 const EmployeePage = lazy(() => import("../pages/Employee/Employee.tsx"));
 const EmployeeCreate = lazy(() => import("../pages/Employee/Create/EmployeeCreate.tsx"));
+const EmployeeUpdate = lazy(() => import("../pages/Employee/Edit/EmployeeEdit.tsx"));
+
+const AttendancePage = lazy(() => import("../pages/Attendance/Attendance.tsx"));
+const AttendanceEdit = lazy(() => import("../pages/Attendance/Edit/AttendanceEdit.tsx"));
 
 const Login = lazy(() => import("../pages/Login/Login.tsx"));
+const Signup = lazy(() => import("../pages/Signup/Signup.tsx"))
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 const ProtectedRoute: React.FC = () => {
@@ -57,11 +63,17 @@ const routes: AppRoute[] = [
 
     { path: "/company", element: CompanyPage, index: true, protected: false },
     { path: "/company/create", element: CompanyCreate, index: true, protected: false },
+    { path: "/company/:id/edit", element: CompanyEdit, index: true, protected: false },
 
     { path: "/employee", element: EmployeePage, index: true, protected: false },
     { path: "/employee/create", element: EmployeeCreate, index: true, protected: false },
+    { path: "/employee/:id/edit", element: EmployeeUpdate, index: true, protected: false },
+
+    { path: "/attendance", element: AttendancePage, index:true, protected: false},
+    { path: "/attendance/:id/edit", element: AttendanceEdit, index:true, protected: false},
 
     { path: "/login", element: Login },
+    {path: "/signup", element: Signup},
     { path: "*", element: NotFound },
 ];
 

@@ -31,7 +31,7 @@ const InputFile = ({ label, name, required, defaultImage }: Props) => {
         return (
           <div className="form-control w-full mb-4 flex flex-col">
             <label className="label">
-              <span className="label-text font-semibold">
+              <span className="text-sm text-gray-700 font-semibold">
                 {label}
                 {required && !defaultImage && (
                   <span className="text-red-400 ml-1">*</span>
