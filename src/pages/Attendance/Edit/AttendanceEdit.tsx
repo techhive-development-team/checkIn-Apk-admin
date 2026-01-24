@@ -16,6 +16,8 @@ const AttendanceEdit = () => {
     success,
     message,
     show,
+    checkInPreview,
+    checkOutPreview,
     ...methods
   } = useAttendanceEditForm();
 
@@ -45,7 +47,6 @@ const AttendanceEdit = () => {
                   <Alert success={success} message={message} />
                 )}
 
-                {/* Check-in Section */}
                 <InputText
                   label="Check In Location"
                   name="checkInLocation"
@@ -54,9 +55,9 @@ const AttendanceEdit = () => {
                 <InputFile
                   label="Check In Photo"
                   name="checkInPhoto"
+                  defaultImage={checkInPreview}
                 />
 
-                {/* Check-out Section */}
                 <InputText
                   label="Check Out Location"
                   name="checkOutLocation"
@@ -65,9 +66,9 @@ const AttendanceEdit = () => {
                 <InputFile
                   label="Check Out Photo"
                   name="checkOutPhoto"
+                  defaultImage={checkOutPreview}
                 />
 
-                {/* Status */}
                 <RadioInput
                   label="Status"
                   name="status"

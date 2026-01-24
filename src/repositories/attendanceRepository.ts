@@ -51,7 +51,7 @@ const updateAttendance = async (id: string, data: any) => {
     const response = await client.exec(
         `${API_URLS.ATTENDANCE}/${id}`,
         {
-            method: "patch",
+            method: "PATCH",
             body: JSON.stringify(data)
         }
     );

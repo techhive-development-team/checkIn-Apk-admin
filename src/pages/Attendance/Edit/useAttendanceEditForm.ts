@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,10 +9,10 @@ import {
   AttendanceUpdateSchema,
   type AttendanceUpdateForm,
 } from "../AttendanceValidationSchema";
+import { baseUrl } from "../../../enum/urls";
 
 export const useAttendanceEditForm = () => {
   const { id } = useParams<{ id: string }>();
-
   const { data: attendanceData } = useGetAttendanceById(id ?? "");
 
   const methods: UseFormReturn<AttendanceUpdateForm> =
@@ -29,22 +29,44 @@ export const useAttendanceEditForm = () => {
 
   const { reset, setValue } = methods;
 
-  useEffect(() => {
-    if (attendanceData?.data) {
-      const data = attendanceData.data;
+  const [checkInPreview, setCheckInPreview] = useState<string | undefined>(
+    undefined,
+  );
+  const [checkOutPreview, setCheckOutPreview] = useState<string | undefined>(
+    undefined,
+  );
 
+  useEffect(() => {
+    if (attendanceData) {
       reset({
-        checkInLocation: data.checkInLocation || "",
-        checkInPhoto: data.checkInPhoto || undefined,
-        checkOutLocation: data.checkOutLocation || "",
-        checkOutPhoto: data.checkOutPhoto || undefined,
-        status: data.status || "present",
+        checkInLocation: attendanceData.checkInLocation || "",
+        checkInPhoto: undefined,
+        checkOutLocation: attendanceData.checkOutLocation || "",
+        checkOutPhoto: undefined,
+        status: attendanceData.status || "present",
       });
+
+      if (attendanceData.checkInPhoto) {
+        const imageUrl = `${baseUrl.replace(/\/$/, "")}/${attendanceData.checkInPhoto.replace(/^\//, "")}`;
+        setCheckInPreview(imageUrl);
+      }
+
+      if (attendanceData.checkOutPhoto) {
+        const imageUrl = `${baseUrl.replace(/\/$/, "")}/${attendanceData.checkOutPhoto.replace(/^\//, "")}`;
+        setCheckOutPreview(imageUrl);
+      }
     }
   }, [attendanceData, reset]);
 
   const { loading, success, message, show, handleSubmit } =
     useFormState<AttendanceUpdateForm>();
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => resolve(reader.result as string);
+    });
 
   const onSubmit = async (data: AttendanceUpdateForm) => {
     let checkInPhotoBase64 = data.checkInPhoto;
@@ -65,19 +87,25 @@ export const useAttendanceEditForm = () => {
     };
 
     await handleSubmit(() =>
-      attendanceRepository.updateAttendance(id || "", payload)
+      attendanceRepository.updateAttendance(id || "", payload),
     );
   };
 
   const handleCheckInPhotoChange = (file?: File) => {
     if (file) {
       setValue("checkInPhoto", file, { shouldValidate: true });
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => setCheckInPreview(reader.result as string);
     }
   };
 
   const handleCheckOutPhotoChange = (file?: File) => {
     if (file) {
       setValue("checkOutPhoto", file, { shouldValidate: true });
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => setCheckOutPreview(reader.result as string);
     }
   };
 
@@ -88,14 +116,9 @@ export const useAttendanceEditForm = () => {
     success,
     message,
     show,
+    checkInPreview,
+    checkOutPreview,
     handleCheckInPhotoChange,
     handleCheckOutPhotoChange,
   };
 };
-
-const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = () => resolve(reader.result as string);
-  });
