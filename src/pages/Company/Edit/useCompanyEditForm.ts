@@ -10,6 +10,7 @@ import {
   type CompanyCreateForm,
   type CompanyUpdateForm,
 } from "../CompanyValidationSchema";
+import { baseUrl } from "../../../enum/urls";
 
 export const useCompanyEditForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,7 +48,10 @@ export const useCompanyEditForm = () => {
         status: data.status || "active",
       });
 
-      if (data.logo) setLogoPreview(data.logo);
+      if (data.logo) {
+        const imageUrl = `${baseUrl.replace(/\/$/, "")}/${data.logo.replace(/^\//, "")}`;
+        setLogoPreview(imageUrl);
+      }
     }
   }, [companyData, reset]);
 
@@ -67,7 +71,9 @@ export const useCompanyEditForm = () => {
 
     const payload = { ...data, logo: logoBase64 };
 
-    await handleSubmit(() => companyRepository.updateCompany(id || "", payload));
+    await handleSubmit(() =>
+      companyRepository.updateCompany(id || "", payload),
+    );
   };
 
   const handleLogoChange = (file?: File) => {

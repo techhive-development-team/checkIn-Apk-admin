@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
 import { employeeRepository } from "../../repositories/employeeRepository";
 import { jwtDecode } from "jwt-decode";
+import { baseUrl } from "../../enum/urls";
 
 const PAGE_SIZE = 10;
 
@@ -107,7 +108,7 @@ const EmployeeTable: React.FC = () => {
                   <td>
                     {employee.profilePic ? (
                       <img
-                        src={employee.profilePic}
+                        src={`${baseUrl.replace(/\/$/, "")}${employee.profilePic}`}
                         alt={`${employee.firstName} ${employee.lastName}`}
                         className="w-12 h-12 object-cover rounded-md border"
                       />
@@ -170,7 +171,6 @@ const EmployeeTable: React.FC = () => {
         </table>
       </div>
 
-      {/* Pagination */}
       <div className="join flex justify-end my-4">
         {[...Array(totalPages)].map((_, idx) => {
           const pageNumber = idx + 1;
@@ -187,8 +187,7 @@ const EmployeeTable: React.FC = () => {
           );
         })}
       </div>
-
-      {/* Delete Modal */}
+      
       <dialog id="delete_modal" className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg">Confirm Delete</h3>

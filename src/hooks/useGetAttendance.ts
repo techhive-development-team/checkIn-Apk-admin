@@ -13,7 +13,7 @@ export const useGetAttendance = (params?: {limit?: number; offset?: number }) =>
     );
 
     return {
-    data: data?.data,
+    data: data,
     error,
     isLoading,
     mutate,

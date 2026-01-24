@@ -30,7 +30,7 @@ const updateEmployee = async (companyId: string, employeeId: string, data: any) 
   const response = await client.exec(
     `${API_URLS.EMPLOYEE}/${companyId}/${employeeId}`,
     {
-      method: "patch",
+      method: "PATCH",
       body: JSON.stringify(data),
     }
   );

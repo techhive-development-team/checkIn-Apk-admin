@@ -11,16 +11,17 @@ import {
   type EmployeeUpdateForm,
 } from "../EmployeeValidationSchema";
 import { jwtDecode } from "jwt-decode";
+import { baseUrl } from "../../../enum/urls";
 
 export const useEmployeeEditForm = () => {
   const { id } = useParams<{ id: string }>();
-  
+
   const token = localStorage.getItem("token");
   const companyId = token
-    ? (jwtDecode<{ user: { companyId: string } }>(token).user.companyId)
+    ? jwtDecode<{ user: { companyId: string } }>(token).user.companyId
     : "";
-    
-  const { data: employeeData } = useGetEmployeeById(companyId?? "", id ?? "");
+
+  const { data: employeeData } = useGetEmployeeById(companyId ?? "", id ?? "");
 
   const methods: UseFormReturn<EmployeeUpdateForm> =
     useForm<EmployeeUpdateForm>({
@@ -40,7 +41,6 @@ export const useEmployeeEditForm = () => {
   const { reset, setValue } = methods;
   const [profilePreview, setProfilePreview] = useState<string | undefined>();
 
-  // Reset form when employeeData is loaded
   useEffect(() => {
     if (employeeData) {
       reset({
@@ -55,7 +55,8 @@ export const useEmployeeEditForm = () => {
       });
 
       if (employeeData.profilePic) {
-        setProfilePreview(employeeData.profilePic);
+        const imageUrl = `${baseUrl.replace(/\/$/, "")}/${employeeData.profilePic.replace(/^\//, "")}`;
+        setProfilePreview(imageUrl);
       }
     }
   }, [employeeData, reset]);
@@ -95,8 +96,8 @@ export const useEmployeeEditForm = () => {
       employeeRepository.updateEmployee(
         employeeData.companyId,
         id || "",
-        payload
-      )
+        payload,
+      ),
     );
   };
 
@@ -108,6 +109,6 @@ export const useEmployeeEditForm = () => {
     message,
     show,
     profilePreview,
-    handleProfilePicChange, // pass this to your InputFile component
+    handleProfilePicChange,
   };
 };
