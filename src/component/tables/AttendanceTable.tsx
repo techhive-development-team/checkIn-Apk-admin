@@ -6,8 +6,12 @@ import { attendanceRepository } from "../../repositories/attendanceRepository";
 const PAGE_SIZE = 10;
 
 export type Attendance = {
-  attendanceId: string;
-  employeeName: string;
+  id: string;
+  employeeId: string;
+  employee?: {
+    firstName: string;
+    lastName: string;
+  };
   checkInTime?: string;
   checkOutTime?: string;
   checkInLocation?: string;
@@ -38,17 +42,13 @@ const AttendanceTable: React.FC = () => {
   const handleDelete = (attendance: Attendance) => {
     setSelectedAttendance(attendance);
     setDeleteError(null);
-    (
-      document.getElementById("delete_modal") as HTMLDialogElement
-    ).showModal();
+    (document.getElementById("delete_modal") as HTMLDialogElement).showModal();
   };
 
   const closeModal = () => {
     setSelectedAttendance(null);
     setDeleteError(null);
-    (
-      document.getElementById("delete_modal") as HTMLDialogElement
-    ).close();
+    (document.getElementById("delete_modal") as HTMLDialogElement).close();
   };
 
   const confirmDelete = async () => {
@@ -56,7 +56,7 @@ const AttendanceTable: React.FC = () => {
 
     try {
       const response = await attendanceRepository.deleteAttendance(
-        selectedAttendance.attendanceId
+        selectedAttendance.id,
       );
 
       if (response?.statusCode === 200) {
@@ -93,10 +93,15 @@ const AttendanceTable: React.FC = () => {
           <tbody>
             {attendances && attendances.length > 0 ? (
               attendances.map((attendance: Attendance, index: number) => (
-                <tr key={attendance.attendanceId}>
+                <tr key={attendance.id}>
                   <td>{offset + index + 1}</td>
 
-                  <td>{attendance.employeeName}</td>
+                  {/* Employee Name */}
+                  <td>
+                    {attendance.employee
+                      ? `${attendance.employee.firstName} ${attendance.employee.lastName}`
+                      : "-"}
+                  </td>
 
                   <td>
                     {attendance.checkInTime
@@ -115,8 +120,6 @@ const AttendanceTable: React.FC = () => {
                       className={`badge ${
                         attendance.status === "present"
                           ? "badge-success"
-                          : attendance.status === "absent"
-                          ? "badge-error"
                           : "badge-warning"
                       }`}
                     >
@@ -124,13 +127,11 @@ const AttendanceTable: React.FC = () => {
                     </span>
                   </td>
 
-                  <td>
-                    {new Date(attendance.createdAt).toLocaleString()}
-                  </td>
+                  <td>{new Date(attendance.createdAt).toLocaleString()}</td>
 
                   <td className="flex gap-2">
                     <Link
-                      to={`/attendance/${attendance.attendanceId}/edit`}
+                      to={`/attendance/${attendance.id}/edit`}
                       className="btn btn-sm"
                     >
                       Edit
@@ -189,11 +190,7 @@ const AttendanceTable: React.FC = () => {
 
           <div className="modal-action">
             <form method="dialog" className="flex gap-2">
-              <button
-                type="button"
-                onClick={closeModal}
-                className="btn"
-              >
+              <button type="button" onClick={closeModal} className="btn">
                 Cancel
               </button>
 

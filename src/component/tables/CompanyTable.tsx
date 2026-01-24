@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetCompany } from "../../hooks/useGetCompany";
 import { companyRepository } from "../../repositories/companyRepository";
+import { baseUrl } from "../../enum/urls";
 
 const PAGE_SIZE = 10;
 
@@ -54,7 +55,7 @@ const CompanyTable: React.FC = () => {
 
     try {
       const response = await companyRepository.deleteCompany(
-        selectedCompany.companyId
+        selectedCompany.companyId,
       );
 
       if (response?.statusCode === 200) {
@@ -70,6 +71,10 @@ const CompanyTable: React.FC = () => {
         setDeleteError("Cannot delete: something went wrong.");
       }
     }
+  };
+  const getLogoUrl = (logo?: string) => {
+    if (!logo) return undefined;
+    return `${baseUrl.replace(/\/$/, "")}/${logo.replace(/^\//, "")}`;
   };
 
   return (
@@ -101,7 +106,7 @@ const CompanyTable: React.FC = () => {
                   <td>
                     {company.logo ? (
                       <img
-                        src={company.logo}
+                        src={getLogoUrl(company.logo)}
                         alt={company.name}
                         className="w-12 h-12 object-cover rounded-md border"
                       />
@@ -142,9 +147,7 @@ const CompanyTable: React.FC = () => {
                     </span>
                   </td>
 
-                  <td>
-                    {new Date(company.createdAt).toLocaleString()}
-                  </td>
+                  <td>{new Date(company.createdAt).toLocaleString()}</td>
 
                   <td className="flex gap-2">
                     <Link
@@ -197,10 +200,7 @@ const CompanyTable: React.FC = () => {
 
           <p className="py-4">
             Are you sure you want to delete{" "}
-            <span className="font-semibold">
-              {selectedCompany?.name}
-            </span>
-            ?
+            <span className="font-semibold">{selectedCompany?.name}</span>?
           </p>
 
           {deleteError && (
@@ -211,11 +211,7 @@ const CompanyTable: React.FC = () => {
 
           <div className="modal-action">
             <form method="dialog" className="flex gap-2">
-              <button
-                type="button"
-                onClick={closeModal}
-                className="btn"
-              >
+              <button type="button" onClick={closeModal} className="btn">
                 Cancel
               </button>
 

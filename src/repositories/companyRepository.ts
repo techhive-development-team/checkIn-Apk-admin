@@ -41,7 +41,7 @@ const updateCompany = async (id: string, data: any) => {
   const response = await client.exec(
     `${API_URLS.COMPANY}/${id}`,
     {
-      method: "patch",
+      method: "PATCH",
       body: JSON.stringify(data),
     }
   );
