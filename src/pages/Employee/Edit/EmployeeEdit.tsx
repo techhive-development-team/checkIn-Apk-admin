@@ -6,6 +6,7 @@ import InputFile from "../../../component/forms/InputFile";
 import { useEmployeeEditForm } from "./useEmployeeEditForm";
 import RadioInput from "../../../component/forms/RadioInput";
 import { Link } from "react-router-dom";
+import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 
 const EmployeeEdit = () => {
   const {
@@ -22,6 +23,13 @@ const EmployeeEdit = () => {
     <Layout>
       <div className="card max-w-3xl bg-base-100 border">
         <div className="card-body">
+          <Breadcrumb
+            items={[
+              { label: "Home", path: "/" },
+              { label: "Employee", path: `/employee` },
+              { label: "Edit Employee" },
+            ]}
+          />
           <h2 className="text-2xl font-bold mb-4">Edit Employee</h2>
 
           <FormProvider {...methods}>

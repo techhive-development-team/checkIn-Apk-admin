@@ -1,25 +1,16 @@
 import InputText from "../../component/forms/InputText";
 import Button from "../../component/forms/Button";
 import harry from "../../assets/harry.jpg";
-import { useNavigate } from "react-router-dom";
 import useLoginForm from "./useLoginForm";
 import { FormProvider } from "react-hook-form";
 import Alert from "../../component/forms/Alert";
-import { useEffect } from "react";
 import { API_URLS, baseUrl } from "../../enum/urls";
 import logo from "../../assets/logo.png";
 import Footer from "../../component/layouts/common/Footer";
 
 const Login = () => {
-  const navigate = useNavigate();
   const { onSubmit, loading, success, message, show, ...methods } =
     useLoginForm();
-
-  useEffect(() => {
-    if (success) {
-      navigate("/", { replace: true });
-    }
-  }, [success, navigate]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">

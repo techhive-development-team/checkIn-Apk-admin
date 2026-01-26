@@ -1,11 +1,19 @@
 import { useState } from "react";
 
+export interface BaseResponse<T = any> {
+  statusCode: number;
+  success: boolean;
+  message?: string;
+  data?: T;
+  meta?: any;
+}
+
 type FormState<T> = {
   loading: boolean;
   success: boolean;
   message: string | string[];
   show: boolean;
-  handleSubmit: (asyncFn: () => Promise<T>) => Promise<T>;
+  handleSubmit: (asyncFn: () => Promise<BaseResponse<T>>) => Promise<BaseResponse<T>>;
 };
 
 export const useFormState = <T = any>(): FormState<T> => {
@@ -14,7 +22,7 @@ export const useFormState = <T = any>(): FormState<T> => {
   const [show, setShow] = useState(false);
   const [message, setMessage] = useState<string | string[]>("");
 
-  const handleSubmit = async (asyncFn: () => Promise<T>) => {
+  const handleSubmit = async (asyncFn: () => Promise<BaseResponse<T>>) => {
     setLoading(true);
     setShow(false);
     setMessage("");
@@ -22,50 +30,47 @@ export const useFormState = <T = any>(): FormState<T> => {
 
     try {
       const response = await asyncFn();
-      
-      if ((response as any)?.statusCode === 200) {
-        setSuccess(true);
-        setMessage((response as any)?.message || "Operation successful");
-      } else if ((response as any)?.statusCode === 401) {
-        setSuccess(false);
-        setMessage((response as any)?.message || "Please Log In Again");
-      } else if ((response as any)?.statusCode === 409) {
-        setSuccess(false);
-        setMessage((response as any)?.message || "Conflict Error");
-      } else if ((response as any)?.statusCode === 400) {
-        setSuccess(false);
-        const data = (response as any)?.data;
-        if (Array.isArray(data)) {
-          setMessage(data.map((err: any) => err.message));
-        } else {
-          setMessage(data || "Invalid data");
-        }
-      } else {
-        setSuccess(false);
-        setMessage("Something went wrong");
+
+      switch (response.statusCode) {
+        case 200:
+        case 201:
+          setSuccess(true);
+          setMessage(response.message || "Operation successful");
+          break;
+
+        case 400:
+          setSuccess(false);
+          if (Array.isArray(response.data)) {
+            setMessage(response.data.map((err: any) => err.message));
+          } else {
+            setMessage(response.message || "Invalid data");
+          }
+          break;
+
+        case 401:
+          setSuccess(false);
+          setMessage(response.message || "Unauthorized access");
+          break;
+
+        case 404:
+          setSuccess(false);
+          setMessage(response.message || "Resource not found");
+          break;
+
+        case 409:
+          setSuccess(false);
+          setMessage(response.message || "Conflict occurred");
+          break;
+
+        default:
+          setSuccess(false);
+          setMessage(response.message || "Something went wrong");
       }
+
       return response;
     } catch (error: any) {
       setSuccess(false);
-      console.error(error);
-      
-      const errorResponse = error?.response?.data || error?.response || error;
-      
-      if (errorResponse?.statusCode === 401) {
-        setMessage(errorResponse?.message || "Please Log In Again");
-      } else if (errorResponse?.statusCode === 409) {
-        setMessage(errorResponse?.message || "Conflict Error");
-      } else if (errorResponse?.statusCode === 400) {
-        const data = errorResponse?.data;
-        if (Array.isArray(data)) {
-          setMessage(data.map((err: any) => err.message));
-        } else {
-          setMessage(errorResponse?.message || data || "Invalid data");
-        }
-      } else {
-        setMessage(errorResponse?.message || "Something went wrong");
-      }
-      
+      setMessage(error?.response?.data?.message || error?.message || "Something went wrong");
       throw error;
     } finally {
       setShow(true);

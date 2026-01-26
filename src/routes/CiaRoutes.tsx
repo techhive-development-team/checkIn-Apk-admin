@@ -59,22 +59,22 @@ interface AppRoute {
 }
 
 const routes: AppRoute[] = [
-    { path: "/", element: Dashboard, index: true, protected: false },
+  { path: "/", element: Dashboard, index: true, protected: true },
 
-    { path: "/company", element: CompanyPage, index: true, protected: false },
-    { path: "/company/create", element: CompanyCreate, index: true, protected: false },
-    { path: "/company/:id/edit", element: CompanyEdit, index: true, protected: false },
+  { path: "/company", element: CompanyPage, index: true, protected: true },
+  { path: "/company/create", element: CompanyCreate, index: true, protected: true },
+  { path: "/company/:id/edit", element: CompanyEdit, index: true, protected: true },
 
-    { path: "/employee", element: EmployeePage, index: true, protected: false },
-    { path: "/employee/create", element: EmployeeCreate, index: true, protected: false },
-    { path: "/employee/:id/edit", element: EmployeeUpdate, index: true, protected: false },
+  { path: "/employee", element: EmployeePage, index: true, protected: true },
+  { path: "/employee/create", element: EmployeeCreate, index: true, protected: true },
+  { path: "/employee/:id/edit", element: EmployeeUpdate, index: true, protected: true },
 
-    { path: "/attendance", element: AttendancePage, index:true, protected: false},
-    { path: "/attendance/:id/edit", element: AttendanceEdit, index:true, protected: false},
+  { path: "/attendance", element: AttendancePage, index: true, protected: true },
+  { path: "/attendance/:id/edit", element: AttendanceEdit, index: true, protected: true },
 
-    { path: "/login", element: Login },
-    {path: "/signup", element: Signup},
-    { path: "*", element: NotFound },
+  { path: "/login", element: Login },
+  { path: "/signup", element: Signup },
+  { path: "*", element: NotFound },
 ];
 
 const generateRoutes = (routes: AppRoute[]) =>
@@ -97,7 +97,7 @@ const generateRoutes = (routes: AppRoute[]) =>
     )
   );
 
-  const CiaRoutes: React.FC = () => {
+const CiaRoutes: React.FC = () => {
   const router = createBrowserRouter(
     createRoutesFromElements(<>{generateRoutes(routes)}</>)
   );

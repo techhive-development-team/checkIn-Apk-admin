@@ -13,11 +13,11 @@ export const useGetCompany = (params?: { limit?: number; offset?: number }) => {
   );
 
   return {
-    data: data?.data,
+    data: data?.data?.data,
     error,
     isLoading,
     mutate,
-    total: data?.meta?.total,
+    total: data?.data?.meta?.total,
   };
 };
 

@@ -24,58 +24,56 @@ const EmployeeCreate = () => {
 
   return (
     <Layout>
-      <div className="flex justify-start">
-        <div className="card card-bordered w-full max-w-3xl bg-base-100">
-          <div className="card-body">
-            <Breadcrumb
-              items={[
-                { label: "Home", path: "/" },
-                { label: "Employees", path: `/company/employees` },
-                { label: "Add Employee" },
-              ]}
-            />
+      <div className="card card-bordered w-full max-w-3xl bg-base-100">
+        <div className="card-body">
+          <Breadcrumb
+            items={[
+              { label: "Home", path: "/" },
+              { label: "Employee", path: `/employee` },
+              { label: "Add Employee" },
+            ]}
+          />
 
-            <h3 className="text-2xl font-bold my-4">Create Employee</h3>
+          <h3 className="text-2xl font-bold my-4">Create Employee</h3>
 
-            <FormProvider {...methods}>
-              <form
-                className="space-y-4"
-                onSubmit={methods.handleSubmit(onSubmit)}
-              >
-                {show && <Alert success={success} message={message} />}
+          <FormProvider {...methods}>
+            <form
+              className="space-y-4"
+              onSubmit={methods.handleSubmit(onSubmit)}
+            >
+              {show && <Alert success={success} message={message} />}
 
-                <InputFile
-                  label="Profile Picture"
-                  name="profilePic"
-                />
+              <InputFile
+                label="Profile Picture"
+                name="profilePic"
+              />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputText label="First Name" name="firstName" required />
-                  <InputText label="Last Name" name="lastName" required />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputText label="First Name" name="firstName" required />
+                <InputText label="Last Name" name="lastName" required />
+              </div>
 
-                <InputText label="Position" name="position" />
+              <InputText label="Position" name="position" />
 
-                <InputText label="Email" name="email" type="email" required />
-                <InputText label="Phone" name="phone" />
+              <InputText label="Email" name="email" type="email" required />
+              <InputText label="Phone" name="phone" />
 
-                <InputText label="Address" name="address" />
+              <InputText label="Address" name="address" />
 
-                <div className="pt-4 card-actions flex justify-between">
-                  <Link
-                    to={`/employee`}
-                    className="btn btn-soft"
-                  >
-                    Back to Employees
-                  </Link>
+              <div className="pt-4 card-actions flex justify-between">
+                <Link
+                  to={`/employee`}
+                  className="btn btn-soft"
+                >
+                  Back to Employees
+                </Link>
 
-                  <button className="btn btn-primary" disabled={loading}>
-                    {loading ? "loading..." : "Create Employee"}
-                  </button>
-                </div>
-              </form>
-            </FormProvider>
-          </div>
+                <button className="btn btn-primary" disabled={loading}>
+                  {loading ? "loading..." : "Create Employee"}
+                </button>
+              </div>
+            </form>
+          </FormProvider>
         </div>
       </div>
     </Layout>

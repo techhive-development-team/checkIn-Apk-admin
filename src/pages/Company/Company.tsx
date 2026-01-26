@@ -31,7 +31,7 @@ const Company = () => {
             </Link>
           </div>
 
-          <CompanyTable/>
+          <CompanyTable />
         </div>
       </div>
     </Layout>

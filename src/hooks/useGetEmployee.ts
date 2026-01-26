@@ -47,11 +47,11 @@ export const useGetEmployee = (params?: { companyId?: string; limit?: number; of
   );
 
   return {
-    data: data?.data,
+    data: data?.data?.data,
     error,
     isLoading,
     mutate,
-    total: data?.meta?.total,
+    total: data?.data?.meta?.total,
   };
 };
 
