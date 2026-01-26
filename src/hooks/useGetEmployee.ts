@@ -62,7 +62,7 @@ export const useGetEmployeeById = (companyId: string, id: string) => {
   );
 
   return {
-    data,
+    data : data?.data,
     error,
     isLoading,
     mutate,
