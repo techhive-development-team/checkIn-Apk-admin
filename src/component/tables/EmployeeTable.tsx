@@ -129,11 +129,10 @@ const EmployeeTable: React.FC = () => {
 
                   <td>
                     <span
-                      className={`badge ${
-                        employee.status === "active"
+                      className={`badge ${employee.status === "active"
                           ? "badge-success"
                           : "badge-error"
-                      }`}
+                        }`}
                     >
                       {employee.status}
                     </span>
@@ -187,7 +186,7 @@ const EmployeeTable: React.FC = () => {
           );
         })}
       </div>
-      
+
       <dialog id="delete_modal" className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg">Confirm Delete</h3>

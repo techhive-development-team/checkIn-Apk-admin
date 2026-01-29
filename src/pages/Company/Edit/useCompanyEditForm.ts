@@ -34,22 +34,21 @@ export const useCompanyEditForm = () => {
   const [logoPreview, setLogoPreview] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (companyData?.data) {
-      const data = companyData.data;
+    if (companyData) {
 
       reset({
-        name: data.name || "",
-        email: data.email || "",
-        logo: data.logo || undefined,
-        companyType: data.companyType || "",
-        address: data.address || "",
-        phone: data.phone || "",
-        subScribeStatus: data.subScribeStatus || "Inactive",
-        status: data.status || "active",
+        name: companyData.name || "",
+        email: companyData.email || "",
+        logo: companyData.logo || undefined,
+        companyType: companyData.companyType || "",
+        address: companyData.address || "",
+        phone: companyData.phone || "",
+        subScribeStatus: companyData.subScribeStatus || "Inactive",
+        status: companyData.status || "active",
       });
 
-      if (data.logo) {
-        const imageUrl = `${baseUrl.replace(/\/$/, "")}/${data.logo.replace(/^\//, "")}`;
+      if (companyData.logo) {
+        const imageUrl = `${baseUrl.replace(/\/$/, "")}/${companyData.logo.replace(/^\//, "")}`;
         setLogoPreview(imageUrl);
       }
     }
