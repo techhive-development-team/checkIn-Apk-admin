@@ -3,7 +3,8 @@ export const API_URLS = {
     EMPLOYEE: "/employee",
     AUTH: "/auth",
     GOOGLE: "/google",
-    ATTENDANCE: "/attendance"
+    ATTENDANCE: "/attendance",
+    USER: "/user",
 }
 
 export const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
