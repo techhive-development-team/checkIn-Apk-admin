@@ -20,3 +20,17 @@ export const useGetUser = (params?: { limit?: number; offset?: number }) => {
     total: data?.data?.meta?.total,
   };
 };
+
+export const useGetUserById = (id: string) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    id ? `${API_URLS.USER}/${id}` : null,
+    () => userRepository.getUserById(id)
+  );
+
+  return {
+    data: data?.data,
+    error,
+    isLoading,
+    mutate,
+  };
+}

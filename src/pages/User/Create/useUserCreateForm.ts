@@ -5,50 +5,50 @@ import { useFormState } from "../../../hooks/useFormState"
 import { userRepository } from "../../../repositories/userRepository"
 
 export const useUserCreateForm = () => {
-    const methods: UseFormReturn<UserCreateForm> = useForm<UserCreateForm>({
-        resolver: zodResolver(UserCreateSchema),
-        defaultValues: {
-            name: "",
-            email: "",
-            logo: ""
-        }
-    })
+  const methods: UseFormReturn<UserCreateForm> = useForm<UserCreateForm>({
+    resolver: zodResolver(UserCreateSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      logo: ""
+    }
+  })
 
-    const { loading, success, message, show, handleSubmit } =
-        useFormState<UserCreateForm>();
+  const { loading, success, message, show, handleSubmit } =
+    useFormState<UserCreateForm>();
 
-    const onSubmit = async (data: UserCreateForm) => {
-        let logo: string | undefined;
+  const onSubmit = async (data: UserCreateForm) => {
+    let logo: string | undefined;
 
-        if (data.logo instanceof File) {
-            const reader = new FileReader();
-            reader.readAsDataURL(data.logo);
+    if (data.logo instanceof File) {
+      const reader = new FileReader();
+      reader.readAsDataURL(data.logo);
 
-            await new Promise<void>((resolve) => {
-                reader.onloadend = () => {
-                    logo = reader.result as string;
-                    resolve();
-                };
-            });
-        }
-
-        const payload = {
-            ...data,
-            logo: logo,
-            role: 'admin'
+      await new Promise<void>((resolve) => {
+        reader.onloadend = () => {
+          logo = reader.result as string;
+          resolve();
         };
+      });
+    }
 
-        await handleSubmit(() =>
-            userRepository.createUser(payload)
-        );
+    const payload = {
+      ...data,
+      logo: logo,
+      role: 'admin'
     };
 
-    return {
-        ...methods,
-        onSubmit,
-        loading,
-        success,
-        message,
-        show,
-    };
+    await handleSubmit(() =>
+      userRepository.createUser(payload)
+    );
+  };
+
+  return {
+    ...methods,
+    onSubmit,
+    loading,
+    success,
+    message,
+    show,
+  };
 }

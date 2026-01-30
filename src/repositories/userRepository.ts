@@ -35,4 +35,27 @@ const deleteUser = async (id: string) => {
   return response;
 };
 
-export const userRepository = { getAll, createUser, deleteUser }
+const getUserById = async (id: string) => {
+  const response = await client.exec(
+    `${API_URLS.USER}/${id}`,
+    {
+      method: "get",
+    }
+  );
+
+  return response;
+};
+
+const updateUser = async (id: string, data: any) => {
+  const response = await client.exec(
+    `${API_URLS.USER}/${id}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }
+  );
+
+  return response;
+};
+
+export const userRepository = { getAll, createUser, deleteUser, getUserById, updateUser }
