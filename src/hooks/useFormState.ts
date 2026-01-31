@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export interface BaseResponse<T = any> {
   statusCode: number;
@@ -17,6 +18,7 @@ type FormState<T> = {
 };
 
 export const useFormState = <T = any>(): FormState<T> => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [show, setShow] = useState(false);
@@ -50,11 +52,13 @@ export const useFormState = <T = any>(): FormState<T> => {
         case 401:
           setSuccess(false);
           setMessage(response.message || "Unauthorized access");
+          navigate('/401')
           break;
 
         case 404:
           setSuccess(false);
           setMessage(response.message || "Resource not found");
+          navigate('*')
           break;
 
         case 409:

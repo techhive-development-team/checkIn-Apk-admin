@@ -4,7 +4,7 @@ export const API_URLS = {
     AUTH: "/auth",
     GOOGLE: "/google",
     ATTENDANCE: "/attendance",
-    USER: "/user",
+    USER: "/user"
 }
 
 export const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;

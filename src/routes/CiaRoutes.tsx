@@ -27,9 +27,15 @@ const EmployeeUpdate = lazy(() => import("../pages/Employee/Edit/EmployeeEdit.ts
 const AttendancePage = lazy(() => import("../pages/Attendance/Attendance.tsx"));
 const AttendanceEdit = lazy(() => import("../pages/Attendance/Edit/AttendanceEdit.tsx"));
 
+const ProfilePage = lazy(() => import("../pages/Profile/ProfilePage.tsx"));
+const ProfileUpdate = lazy(() => import("../pages/Profile/Edit/ProfileEdit.tsx"));
+const ResetPassword = lazy(() => import("../pages/Profile/PasswordReset/ResetPassword.tsx"))
+
 const Login = lazy(() => import("../pages/Login/Login.tsx"));
 const Signup = lazy(() => import("../pages/Signup/Signup.tsx"))
+const AccessDenied = lazy(() => import("../pages/AccessDenied.tsx"))
 const NotFound = lazy(() => import("../pages/NotFound"));
+const Unauthorized = lazy(() => import("../pages/Unauthorized.tsx"))
 
 const ProtectedRoute: React.FC = () => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
@@ -80,9 +86,16 @@ const routes: AppRoute[] = [
   { path: "/attendance", element: AttendancePage, protected: true },
   { path: "/attendance/:id/edit", element: AttendanceEdit, protected: true },
 
+  { path: "/profile", element: ProfilePage, protected: true },
+  { path: "/profile/edit", element: ProfileUpdate, protected: true },
+    { path: "/resetPassword", element: ResetPassword },
+
+
   { path: "/login", element: Login },
   { path: "/signup", element: Signup },
-  { path: "*", element: NotFound },
+  { path: "/401", element: AccessDenied },
+  { path: "/403", element: Unauthorized},
+  { path: "*", element: NotFound }, //404
 ];
 
 const generateRoutes = (routes: AppRoute[]) =>

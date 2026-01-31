@@ -48,6 +48,15 @@ const CompanyEdit = () => {
                 />
 
                 <RadioInput
+                  label="Subscription"
+                  name="subScribeStatus"
+                  options={[
+                    { label: "Active", value: "Active" },
+                    { label: "Inactive", value: "Inactive" },
+                  ]}
+                />
+
+                <RadioInput
                   label="Status"
                   name="status"
                   options={[

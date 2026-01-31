@@ -1,6 +1,6 @@
 import { Search, ArrowLeft, Home } from 'lucide-react';
 
-const NotFound = () => {
+const Unauthorized = () => {
   const handleGoBack = () => {
     window.history.back();
   };
@@ -17,11 +17,10 @@ const NotFound = () => {
           <Search size={32} className="text-gray-400" />
         </div>
 
-        <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">404</h1>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Page Not Found</h2>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">403</h1>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Unauthorized</h2>
         <p className="text-gray-500 mb-8 leading-relaxed">
-          The page you're looking for doesn't exist or has been moved.
-          Let's get you back on track.
+          You are not authorized for this section.
         </p>
 
         <div className="flex flex-col gap-3">
@@ -46,4 +45,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default Unauthorized;
