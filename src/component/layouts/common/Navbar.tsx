@@ -1,17 +1,36 @@
 import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import profile from "../../../assets/profile.jpg";
+import { jwtDecode } from "jwt-decode";
+import { baseUrl } from "../../../enum/urls";
+import { useGetUserById } from "../../../hooks/useGetUser";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const logoutModalRef = useRef<HTMLDialogElement>(null);
 
-  const openLogoutModal = () => {
-    logoutModalRef.current?.showModal();
-  };
-
+  const openLogoutModal = () => logoutModalRef.current?.showModal();
   const handleLogout = () => {
     logoutModalRef.current?.close();
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
+
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const decodedToken = jwtDecode<{
+    user: { userId: string };
+  }>(token);
+
+  const userId = decodedToken.user.userId;
+
+  const { data: user } = useGetUserById(userId);
+
+  const displayName = user?.name || "User";
+  const displayImage = user?.logo
+    ? `${baseUrl.replace(/\/$/, "")}${user.logo}`
+    : profile;
 
   return (
     <>
@@ -19,7 +38,6 @@ const Navbar = () => {
         <label
           htmlFor="my-drawer"
           className="btn btn-square btn-ghost lg:hidden hover:bg-base-200"
-          aria-label="Toggle menu"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -38,39 +56,47 @@ const Navbar = () => {
         </label>
 
         <div className="flex-1 hidden md:block">
-          <h1 className="text-2xl font-semibold text-base-content">
-            CheckIn+
-          </h1>
+          <h1 className="text-2xl font-semibold text-base-content">CheckIn+</h1>
         </div>
-
         <div className="flex-1 md:hidden">
           <h1 className="text-base font-semibold text-base-content truncate">
             CheckIn+
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={openLogoutModal}
-            className="btn btn-ghost btn-sm text-error hover:bg-error hover:text-error-content transition-colors"
-            aria-label="Logout"
+        <div className="dropdown dropdown-end">
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-ghost flex items-center gap-3 px-3"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            <span className="font-semibold text-lg text-base-content">
+              {displayName}
+            </span>
+            <div className="w-10 h-10 overflow-hidden border border-base-300 rounded-md">
+              <img
+                src={displayImage}
+                alt="Profile"
+                className="w-full h-full object-cover"
               />
-            </svg>
-            <span className="hidden sm:inline">Logout</span>
-          </button>
+            </div>
+          </div>
+
+          <ul className="menu menu-lg dropdown-content bg-base-100 rounded-box z-10 mt-3 w-56 p-2 shadow">
+            <li>
+              <button
+                className="justify-between w-full text-left"
+                onClick={() => navigate("/profile")}
+              >
+                Profile
+              </button>
+            </li>
+            <li>
+              <button onClick={openLogoutModal} className="text-error">
+                Logout
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -80,17 +106,20 @@ const Navbar = () => {
           <p className="text-base-content/70">
             Are you sure you want to logout?
           </p>
-          <div className="modal-action">
-            <form method="dialog" className="flex gap-3">
-              <button className="btn btn-ghost">Cancel</button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="btn btn-error"
-              >
-                Yes, Logout
-              </button>
-            </form>
+          <div className="modal-action flex gap-3">
+            <button
+              className="btn btn-ghost"
+              onClick={() => logoutModalRef.current?.close()}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="btn btn-error"
+            >
+              Yes, Logout
+            </button>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">
