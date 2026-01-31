@@ -2,16 +2,35 @@ import useSWR from "swr";
 import { API_URLS } from "../enum/urls";
 import { userRepository } from "../repositories/userRepository";
 
-export const useGetUserById = (userId?: string) => {
+export const useGetUser = (params?: { limit?: number; offset?: number }) => {
+  const key = params
+    ? [`${API_URLS.USER}`, params]
+    : null;
+
   const { data, error, isLoading, mutate } = useSWR(
-    userId ? [`${API_URLS.USER}/${userId}`] : null, 
-    () => userRepository.getUserById(userId!)
+    key,
+    () => userRepository.getAll(params)
   );
 
-  return { 
+  return {
+    data: data?.data?.data,
+    error,
+    isLoading,
+    mutate,
+    total: data?.data?.meta?.total,
+  };
+};
+
+export const useGetUserById = (id: string) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    id ? `${API_URLS.USER}/${id}` : null,
+    () => userRepository.getUserById(id)
+  );
+
+  return {
     data: data?.data,
     error,
-    isLoading, 
-    mutate
-  }; 
-};
+    isLoading,
+    mutate,
+  };
+}

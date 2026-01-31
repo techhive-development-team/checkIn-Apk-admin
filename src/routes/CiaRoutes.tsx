@@ -12,6 +12,10 @@ import Loading from "../component/layouts/common/Loading.tsx";
 
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 
+const UserPage = lazy(() => import("../pages/User/User.tsx"));
+const UserCreatePage = lazy(() => import("../pages/User/Create/UserCreate.tsx"))
+const UserEditPage = lazy(() => import("../pages/User/Edit/UserEdit.tsx"))
+
 const CompanyPage = lazy(() => import("../pages/Company/Company.tsx"));
 const CompanyCreate = lazy(() => import("../pages/Company/Create/CompanyCreate.tsx"));
 const CompanyEdit = lazy(() => import("../pages/Company/Edit/CompanyEdit.tsx"))
@@ -67,16 +71,20 @@ interface AppRoute {
 const routes: AppRoute[] = [
   { path: "/", element: Dashboard, index: true, protected: true },
 
-  { path: "/company", element: CompanyPage, index: true, protected: false },
-  { path: "/company/create", element: CompanyCreate, index: true, protected: false },
-  { path: "/company/:id/edit", element: CompanyEdit, index: true, protected: false },
+  { path: "/user", element: UserPage, protected: true },
+  { path: "/user/create", element: UserCreatePage, protected: true },
+  { path: "/user/:id/edit", element: UserEditPage, protected: true },
 
-  { path: "/employee", element: EmployeePage, index: true, protected: true },
-  { path: "/employee/create", element: EmployeeCreate, index: true, protected: true },
-  { path: "/employee/:id/edit", element: EmployeeUpdate, index: true, protected: true },
+  { path: "/company", element: CompanyPage, protected: true },
+  { path: "/company/create", element: CompanyCreate, protected: true },
+  { path: "/company/:id/edit", element: CompanyEdit, protected: true },
 
-  { path: "/attendance", element: AttendancePage, index: true, protected: true },
-  { path: "/attendance/:id/edit", element: AttendanceEdit, index: true, protected: true },
+  { path: "/employee", element: EmployeePage, protected: true },
+  { path: "/employee/create", element: EmployeeCreate, protected: true },
+  { path: "/employee/:id/edit", element: EmployeeUpdate, protected: true },
+
+  { path: "/attendance", element: AttendancePage, protected: true },
+  { path: "/attendance/:id/edit", element: AttendanceEdit, protected: true },
 
   { path: "/profile", element: ProfilePage, protected: true },
   { path: "/profile/edit", element: ProfileUpdate, protected: true },
