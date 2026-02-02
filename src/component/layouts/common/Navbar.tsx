@@ -70,9 +70,6 @@ const Navbar = () => {
             role="button"
             className="btn btn-ghost flex items-center gap-3 px-3"
           >
-            <span className="font-semibold text-lg text-base-content">
-              {displayName}
-            </span>
             <div className="w-10 h-10 overflow-hidden border border-base-300 rounded-md">
               <img
                 src={displayImage}
@@ -80,6 +77,9 @@ const Navbar = () => {
                 className="w-full h-full object-cover"
               />
             </div>
+            <span className="text-base-content/80">
+              {displayName}
+            </span>
           </div>
 
           <ul className="menu menu-lg dropdown-content bg-base-100 rounded-box z-10 mt-3 w-56 p-2 shadow">

@@ -5,6 +5,7 @@ import { useFormState } from '../../hooks/useFormState'
 import { authRepository } from '../../repositories/authRepository'
 import { jwtDecode } from 'jwt-decode'
 import type { JwtPayload } from '../../utils/commonUtil'
+import { useEffect } from 'react'
 
 const useLoginForm = () => {
     const methods = useForm<LoginFormData>({
@@ -15,7 +16,7 @@ const useLoginForm = () => {
         },
     })
 
-    const { loading, success, message, show, handleSubmit } =
+    const { loading, success, message, show, setMessage, setShow, setSuccess, handleSubmit } =
         useFormState()
 
     const onSubmit = async (data: LoginFormData) => {
@@ -32,6 +33,20 @@ const useLoginForm = () => {
             return jwtPayload;
         }
     }
+
+    useEffect(() => {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorMessage = urlParams.get("error");
+            if (errorMessage) {
+                setMessage(errorMessage);
+                setSuccess(false);
+                setShow(true);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    })
 
     return {
         ...methods,

@@ -33,6 +33,7 @@ const ResetPassword = lazy(() => import("../pages/Profile/PasswordReset/ResetPas
 
 const Login = lazy(() => import("../pages/Login/Login.tsx"));
 const Signup = lazy(() => import("../pages/Signup/Signup.tsx"))
+const Google = lazy(()=>import("../pages/Google.tsx"))
 const AccessDenied = lazy(() => import("../pages/AccessDenied.tsx"))
 const NotFound = lazy(() => import("../pages/NotFound"));
 const Unauthorized = lazy(() => import("../pages/Unauthorized.tsx"))
@@ -93,6 +94,7 @@ const routes: AppRoute[] = [
 
   { path: "/login", element: Login },
   { path: "/signup", element: Signup },
+  { path: "/google", element: Google },
   { path: "/401", element: AccessDenied },
   { path: "/403", element: Unauthorized},
   { path: "*", element: NotFound }, //404

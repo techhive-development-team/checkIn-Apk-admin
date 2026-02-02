@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 
 export interface BaseResponse<T = any> {
@@ -12,6 +12,9 @@ export interface BaseResponse<T = any> {
 type FormState<T> = {
   loading: boolean;
   success: boolean;
+  setSuccess: Dispatch<SetStateAction<boolean>>;
+  setMessage: Dispatch<SetStateAction<string | string[]>>;
+  setShow: Dispatch<SetStateAction<boolean>>;
   message: string | string[];
   show: boolean;
   handleSubmit: (asyncFn: () => Promise<BaseResponse<T>>) => Promise<BaseResponse<T>>;
@@ -82,5 +85,5 @@ export const useFormState = <T = any>(): FormState<T> => {
     }
   };
 
-  return { loading, success, message, show, handleSubmit };
+  return { loading, success, message, show, setSuccess, setMessage, setShow, handleSubmit };
 };

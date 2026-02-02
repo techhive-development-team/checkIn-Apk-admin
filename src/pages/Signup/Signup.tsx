@@ -52,7 +52,7 @@ const Signup = () => {
                   <Button
                     type="submit"
                     label={loading ? "Creating..." : "Sign Up"}
-                    className="mt-2 w-full"
+                    className="mt-2 w-full cursor-pointer"
                   />
 
                   <div className="flex items-center my-4">
@@ -64,7 +64,7 @@ const Signup = () => {
                   <Button
                   type="button"
                   label="Login with Google"
-                  className="flex items-center justify-center gap-2 border border-gray-300 bg-gray-100! text-black! hover:bg-gray-300! w-full"
+                  className="cursor-pointer flex items-center justify-center gap-2 border border-gray-300 bg-gray-100! text-black! hover:bg-gray-300! w-full"
                   onClick={() => {
                     window.location.href = `${baseUrl}${API_URLS.AUTH}${API_URLS.GOOGLE}`;
                   }}
