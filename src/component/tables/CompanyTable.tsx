@@ -77,6 +77,18 @@ const CompanyTable: React.FC = () => {
     return `${baseUrl.replace(/\/$/, "")}/${logo.replace(/^\//, "")}`;
   };
 
+  const handleResetPassword = async (companyId: string) => {
+    try {
+      await companyRepository.resetPassword(companyId);
+      alert(
+        "Password reset successfully. Check your email for the new password.",
+      );
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to reset password");
+    }
+  };
+
   return (
     <div>
       <div className="overflow-x-auto">
@@ -162,6 +174,12 @@ const CompanyTable: React.FC = () => {
                       className="btn btn-sm btn-error"
                     >
                       Delete
+                    </button>
+                    <button
+                      onClick={() => handleResetPassword(company.companyId)}
+                      className="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white"
+                    >
+                      Reset Password
                     </button>
                   </td>
                 </tr>

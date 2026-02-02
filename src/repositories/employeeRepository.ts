@@ -45,10 +45,21 @@ const deleteEmployee = async (companyId: string, employeeId: string) => {
   return response;
 };
 
+const resetPassword = async (companyId: string, employeeId: string) => {
+  const response = await client.exec(
+    `${API_URLS.EMPLOYEE}/${companyId}/${employeeId}/password-reset`,
+    {
+      method: "PATCH"
+    }
+  )
+  return response;
+}
+
 export const employeeRepository = {
   getAll,
   createEmployee,
   getEmployeeById,
   updateEmployee,
   deleteEmployee,
+  resetPassword,
 };
