@@ -60,10 +60,19 @@ const deleteCompany = async (id: string) => {
   return response;
 };
 
+const resetPassword = async (id: string) => {
+  const response = await client.exec(
+    `${API_URLS.COMPANY}/${id}/password-reset`,
+    { method: "PATCH"}
+  )
+  return response;
+}
+
 export const companyRepository = {
   getAll,
   createCompany,
   getCompanyById,
   updateCompany,
   deleteCompany,
+  resetPassword,
 };

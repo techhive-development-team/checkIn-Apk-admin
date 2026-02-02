@@ -41,7 +41,7 @@ const EmployeeTable: React.FC = () => {
   const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
-    null
+    null,
   );
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -63,7 +63,7 @@ const EmployeeTable: React.FC = () => {
     try {
       const response = await employeeRepository.deleteEmployee(
         companyId,
-        selectedEmployee.employeeId
+        selectedEmployee.employeeId,
       );
 
       if (response?.statusCode === 200) {
@@ -80,6 +80,19 @@ const EmployeeTable: React.FC = () => {
       }
     }
   };
+
+  const handleResetPassword = async (employeeId: string) => {
+  if (!companyId) return;
+
+  try {
+    await employeeRepository.resetPassword(companyId, employeeId);
+    alert('Password reset successfully. Check your email for the new password.');
+  } catch (err: any) {
+    console.error(err);
+    alert('Failed to reset password');
+  }
+};
+
 
   return (
     <div>
@@ -129,18 +142,17 @@ const EmployeeTable: React.FC = () => {
 
                   <td>
                     <span
-                      className={`badge ${employee.status === "active"
+                      className={`badge ${
+                        employee.status === "active"
                           ? "badge-success"
                           : "badge-error"
-                        }`}
+                      }`}
                     >
                       {employee.status}
                     </span>
                   </td>
 
-                  <td>
-                    {new Date(employee.createdAt).toLocaleString()}
-                  </td>
+                  <td>{new Date(employee.createdAt).toLocaleString()}</td>
 
                   <td className="flex gap-2">
                     <Link
@@ -155,6 +167,13 @@ const EmployeeTable: React.FC = () => {
                       className="btn btn-sm btn-error"
                     >
                       Delete
+                    </button>
+
+                    <button
+                      onClick={() => handleResetPassword(employee.employeeId)}
+                      className="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white"
+                    >
+                      Reset Password
                     </button>
                   </td>
                 </tr>
@@ -194,8 +213,7 @@ const EmployeeTable: React.FC = () => {
           <p className="py-4">
             Are you sure you want to delete{" "}
             <span className="font-semibold">
-              {selectedEmployee?.firstName}{" "}
-              {selectedEmployee?.lastName}
+              {selectedEmployee?.firstName} {selectedEmployee?.lastName}
             </span>
             ?
           </p>
@@ -208,11 +226,7 @@ const EmployeeTable: React.FC = () => {
 
           <div className="modal-action">
             <form method="dialog" className="flex gap-2">
-              <button
-                type="button"
-                onClick={closeModal}
-                className="btn"
-              >
+              <button type="button" onClick={closeModal} className="btn">
                 Cancel
               </button>
 
@@ -227,6 +241,23 @@ const EmployeeTable: React.FC = () => {
           </div>
         </div>
       </dialog>
+      {/* Password Reset Modal */}
+<dialog id="password_reset_modal" className="modal">
+  <div className="modal-box">
+    <h3 className="font-bold text-lg" id="modal_title">Message</h3>
+    <p className="py-4" id="modal_message">This is a message</p>
+    <div className="modal-action">
+      <button
+        type="button"
+        className="btn"
+        onClick={() => (document.getElementById("password_reset_modal") as HTMLDialogElement).close()}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</dialog>
+
     </div>
   );
 };
