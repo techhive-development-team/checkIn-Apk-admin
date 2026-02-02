@@ -1,4 +1,4 @@
-import { Search, ArrowLeft, Home } from 'lucide-react';
+import { Search, ArrowLeft, Home } from "lucide-react";
 
 const NotFound = () => {
   const handleGoBack = () => {
@@ -10,36 +10,42 @@ const NotFound = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 font-sans antialiased">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center transition-all">
-        
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-full mb-6">
-          <Search size={32} className="text-gray-400" />
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">
+      <div className="card w-full max-w-md bg-base-100 shadow-xl text-center">
+        <div className="card-body">
 
-        <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">404</h1>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Page Not Found</h2>
-        <p className="text-gray-500 mb-8 leading-relaxed">
-          The page you're looking for doesn't exist or has been moved.
-          Let's get you back on track.
-        </p>
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center">
+              <Search size={32} className="opacity-50" />
+            </div>
+          </div>
 
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={handleGoHome}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-all active:scale-[0.98] shadow-sm"
-          >
-            <Home size={18} />
-            Back to Home
-          </button>
-          
-          <button
-            onClick={handleGoBack}
-            className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-all active:scale-[0.98]"
-          >
-            <ArrowLeft size={18} />
-            Go Back
-          </button>
+          <h1 className="text-5xl font-bold">404</h1>
+          <h2 className="text-xl font-semibold mt-2">Page Not Found</h2>
+
+          <p className="text-base-content/70 mt-3">
+            The page you're looking for doesn't exist or has been moved.
+            Let's get you back on track.
+          </p>
+
+          <div className="card-actions flex flex-col gap-3 mt-6">
+            <button
+              onClick={handleGoHome}
+              className="btn btn-primary w-full gap-2"
+            >
+              <Home size={18} />
+              Back to Home
+            </button>
+
+            <button
+              onClick={handleGoBack}
+              className="btn btn-outline w-full gap-2"
+            >
+              <ArrowLeft size={18} />
+              Go Back
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

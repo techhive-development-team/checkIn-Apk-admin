@@ -13,11 +13,11 @@ export const useGetAttendance = (params?: {limit?: number; offset?: number }) =>
     );
 
     return {
-    data: data,
+    data: data?.data?.data,
     error,
     isLoading,
     mutate,
-    total: data?.meta?.total,
+    total: data?.data?.meta?.total,
   };
 }
 
@@ -28,7 +28,7 @@ export const useGetAttendanceById = (id: string) => {
     ); 
     
     return {
-    data,
+    data: data?.data,
     error,
     isLoading,
     mutate,

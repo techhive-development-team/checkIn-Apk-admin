@@ -114,8 +114,6 @@ const Login = () => {
           <img src={harry} alt="harry" className="h-full w-full object-cover" />
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
