@@ -38,7 +38,7 @@ export const useEmployeeEditForm = () => {
       },
     });
 
-  const { reset, setValue } = methods;
+  const { reset } = methods;
   const [profilePreview, setProfilePreview] = useState<string | undefined>();
 
   useEffect(() => {
@@ -61,34 +61,21 @@ export const useEmployeeEditForm = () => {
     }
   }, [employeeData, reset]);
 
-  const handleProfilePicChange = (file?: File) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => setProfilePreview(reader.result as string);
-
-      setValue("profilePic", file, { shouldValidate: true });
-    }
-  };
-
   const { loading, success, message, show, handleSubmit } =
     useFormState<EmployeeUpdateForm>();
 
   const onSubmit = async (data: EmployeeUpdateForm) => {
-    let profilePicBase64 = data.profilePic;
+    const payload: any = { ...data };
 
-    if (data.profilePic instanceof File) {
-      profilePicBase64 = await new Promise<string>((resolve) => {
+    if (!(data.profilePic instanceof File)) {
+      delete payload.profilePic;
+    } else {
+      payload.profilePic = await new Promise<string>((resolve) => {
         const reader = new FileReader();
-        reader.readAsDataURL(data.profilePic as File);
+        reader.readAsDataURL(data.profilePic);
         reader.onloadend = () => resolve(reader.result as string);
       });
     }
-
-    const payload = {
-      ...data,
-      profilePic: profilePicBase64,
-    };
 
     if (!employeeData?.companyId) return;
 
@@ -109,6 +96,5 @@ export const useEmployeeEditForm = () => {
     message,
     show,
     profilePreview,
-    handleProfilePicChange,
   };
 };

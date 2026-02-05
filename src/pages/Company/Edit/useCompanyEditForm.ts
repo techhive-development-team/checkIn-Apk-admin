@@ -30,7 +30,7 @@ export const useCompanyEditForm = () => {
     },
   });
 
-  const { reset, setValue } = methods;
+  const { reset } = methods;
   const [logoPreview, setLogoPreview] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -57,31 +57,22 @@ export const useCompanyEditForm = () => {
   const { loading, success, message, show, handleSubmit } =
     useFormState<CompanyCreateForm>();
 
-  const onSubmit = async (data: CompanyCreateForm) => {
-    let logoBase64 = data.logo;
+  const onSubmit = async (data: CompanyUpdateForm) => {
+    const payload: any = { ...data };
 
-    if (data.logo instanceof File) {
-      logoBase64 = await new Promise<string>((resolve) => {
+    if (!(data.logo instanceof File)) {
+      delete payload.logo;
+    } else {
+      payload.logo = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(data.logo);
         reader.onloadend = () => resolve(reader.result as string);
       });
     }
 
-    const payload = { ...data, logo: logoBase64 };
-
     await handleSubmit(() =>
       companyRepository.updateCompany(id || "", payload),
     );
-  };
-
-  const handleLogoChange = (file?: File) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => setLogoPreview(reader.result as string);
-      setValue("logo", file, { shouldValidate: true });
-    }
   };
 
   return {
@@ -92,6 +83,5 @@ export const useCompanyEditForm = () => {
     message,
     show,
     logoPreview,
-    handleLogoChange,
   };
 };

@@ -85,13 +85,32 @@ const EmployeeTable: React.FC = () => {
   if (!companyId) return;
 
   try {
-    await employeeRepository.resetPassword(companyId, employeeId);
-    alert('Password reset successfully. Check your email for the new password.');
+    const response = await employeeRepository.resetPassword(companyId, employeeId);
+
+    const modal = document.getElementById("password_reset_modal") as HTMLDialogElement;
+    const title = document.getElementById("modal_title") as HTMLHeadingElement;
+    const message = document.getElementById("modal_message") as HTMLParagraphElement;
+
+    if (response?.success) {
+      title.textContent = "✅ Success";
+      message.textContent = response.message || "Password reset successfully";
+    } else {
+      title.textContent = "⚠️ Failed";
+      message.textContent = response?.message || "Something went wrong";
+    }
+
+    modal.showModal();
   } catch (err: any) {
-    console.error(err);
-    alert('Failed to reset password');
+    const modal = document.getElementById("password_reset_modal") as HTMLDialogElement;
+    const title = document.getElementById("modal_title") as HTMLHeadingElement;
+    const message = document.getElementById("modal_message") as HTMLParagraphElement;
+
+    title.textContent = "⚠️ Failed";
+    message.textContent = err?.message || "Something went wrong";
+    modal.showModal();
   }
 };
+
 
 
   return (

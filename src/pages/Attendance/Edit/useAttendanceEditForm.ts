@@ -27,7 +27,7 @@ export const useAttendanceEditForm = () => {
       },
     });
 
-  const { reset, setValue } = methods;
+  const { reset } = methods;
 
   const [checkInPreview, setCheckInPreview] = useState<string | undefined>(
     undefined,
@@ -91,24 +91,6 @@ export const useAttendanceEditForm = () => {
     );
   };
 
-  const handleCheckInPhotoChange = (file?: File) => {
-    if (file) {
-      setValue("checkInPhoto", file, { shouldValidate: true });
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => setCheckInPreview(reader.result as string);
-    }
-  };
-
-  const handleCheckOutPhotoChange = (file?: File) => {
-    if (file) {
-      setValue("checkOutPhoto", file, { shouldValidate: true });
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => setCheckOutPreview(reader.result as string);
-    }
-  };
-
   return {
     ...methods,
     onSubmit,
@@ -118,7 +100,5 @@ export const useAttendanceEditForm = () => {
     show,
     checkInPreview,
     checkOutPreview,
-    handleCheckInPhotoChange,
-    handleCheckOutPhotoChange,
   };
 };

@@ -4,7 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { userRepository } from "../../../repositories/userRepository";
 import { baseUrl } from "../../../enum/urls";
 import { useFormState } from "../../../hooks/useFormState";
-import { AdminProfileSchema, type AdminProfileForm } from "../ProfileValidationSchema";
+import {
+  AdminProfileSchema,
+  type AdminProfileForm,
+} from "../ProfileValidationSchema";
 import { useGetUserById } from "../../../hooks/useGetUser";
 import { jwtDecode } from "jwt-decode";
 
@@ -12,7 +15,9 @@ export const useAdminProfileEditForm = () => {
   const token = localStorage.getItem("token");
   if (!token) return;
 
-  const decodedToken = jwtDecode<{ user: { userId: string; role: string } }>(token);
+  const decodedToken = jwtDecode<{ user: { userId: string; role: string } }>(
+    token,
+  );
   const userId = decodedToken.user.userId;
 
   const { data: userData } = useGetUserById(userId);
@@ -26,9 +31,11 @@ export const useAdminProfileEditForm = () => {
     },
   });
 
-  const { reset, setValue } = methods;
+  const { reset } = methods;
   const [logoPreview, setLogoPreview] = useState<string | undefined>(
-    userData?.logo ? `${baseUrl.replace(/\/$/, "")}/${userData.logo.replace(/^\//, "")}` : undefined
+    userData?.logo
+      ? `${baseUrl.replace(/\/$/, "")}/${userData.logo.replace(/^\//, "")}`
+      : undefined,
   );
 
   useEffect(() => {
@@ -46,33 +53,25 @@ export const useAdminProfileEditForm = () => {
     }
   }, [userData, reset]);
 
-  const { loading, success, message, show, handleSubmit } = useFormState<AdminProfileForm>();
+  const { loading, success, message, show, handleSubmit } =
+    useFormState<AdminProfileForm>();
 
   const onSubmit = async (data: AdminProfileForm) => {
-    let logoBase64: string | File | undefined = data.logo;
+    const payload: any = { ...data };
 
-    if (data.logo instanceof File) {
-      logoBase64 = await new Promise<string>((resolve) => {
+    if (!(data.logo instanceof File)) {
+      delete payload.logo;
+    } else {
+      payload.logo = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(data.logo);
         reader.onloadend = () => resolve(reader.result as string);
       });
     }
 
-    const payload = { ...data, logo: logoBase64 };
-
     if (!userId) return;
 
     await handleSubmit(() => userRepository.updateUser(userId, payload));
-  };
-
-  const handleLogoChange = (file?: File) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => setLogoPreview(reader.result as string);
-      setValue("logo", file, { shouldValidate: true });
-    }
   };
 
   return {
@@ -83,6 +82,5 @@ export const useAdminProfileEditForm = () => {
     message,
     show,
     logoPreview,
-    handleLogoChange,
   };
 };
