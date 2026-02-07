@@ -82,36 +82,49 @@ const EmployeeTable: React.FC = () => {
   };
 
   const handleResetPassword = async (employeeId: string) => {
-  if (!companyId) return;
+    if (!companyId) return;
 
-  try {
-    const response = await employeeRepository.resetPassword(companyId, employeeId);
+    try {
+      const response = await employeeRepository.resetPassword(
+        companyId,
+        employeeId,
+      );
 
-    const modal = document.getElementById("password_reset_modal") as HTMLDialogElement;
-    const title = document.getElementById("modal_title") as HTMLHeadingElement;
-    const message = document.getElementById("modal_message") as HTMLParagraphElement;
+      const modal = document.getElementById(
+        "password_reset_modal",
+      ) as HTMLDialogElement;
+      const title = document.getElementById(
+        "modal_title",
+      ) as HTMLHeadingElement;
+      const message = document.getElementById(
+        "modal_message",
+      ) as HTMLParagraphElement;
 
-    if (response?.success) {
-      title.textContent = "✅ Success";
-      message.textContent = response.message || "Password reset successfully";
-    } else {
+      if (response?.success) {
+        title.textContent = "✅ Success";
+        message.textContent = response.message || "Password reset successfully";
+      } else {
+        title.textContent = "⚠️ Failed";
+        message.textContent = response?.message || "Something went wrong";
+      }
+
+      modal.showModal();
+    } catch (err: any) {
+      const modal = document.getElementById(
+        "password_reset_modal",
+      ) as HTMLDialogElement;
+      const title = document.getElementById(
+        "modal_title",
+      ) as HTMLHeadingElement;
+      const message = document.getElementById(
+        "modal_message",
+      ) as HTMLParagraphElement;
+
       title.textContent = "⚠️ Failed";
-      message.textContent = response?.message || "Something went wrong";
+      message.textContent = err?.message || "Something went wrong";
+      modal.showModal();
     }
-
-    modal.showModal();
-  } catch (err: any) {
-    const modal = document.getElementById("password_reset_modal") as HTMLDialogElement;
-    const title = document.getElementById("modal_title") as HTMLHeadingElement;
-    const message = document.getElementById("modal_message") as HTMLParagraphElement;
-
-    title.textContent = "⚠️ Failed";
-    message.textContent = err?.message || "Something went wrong";
-    modal.showModal();
-  }
-};
-
-
+  };
 
   return (
     <div>
@@ -260,23 +273,32 @@ const EmployeeTable: React.FC = () => {
           </div>
         </div>
       </dialog>
-      {/* Password Reset Modal */}
-<dialog id="password_reset_modal" className="modal">
-  <div className="modal-box">
-    <h3 className="font-bold text-lg" id="modal_title">Message</h3>
-    <p className="py-4" id="modal_message">This is a message</p>
-    <div className="modal-action">
-      <button
-        type="button"
-        className="btn"
-        onClick={() => (document.getElementById("password_reset_modal") as HTMLDialogElement).close()}
-      >
-        Close
-      </button>
-    </div>
-  </div>
-</dialog>
-
+      
+      <dialog id="password_reset_modal" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg" id="modal_title">
+            Message
+          </h3>
+          <p className="py-4" id="modal_message">
+            This is a message
+          </p>
+          <div className="modal-action">
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                (
+                  document.getElementById(
+                    "password_reset_modal",
+                  ) as HTMLDialogElement
+                ).close()
+              }
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </dialog>
     </div>
   );
 };

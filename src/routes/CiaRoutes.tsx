@@ -13,30 +13,46 @@ import Loading from "../component/layouts/common/Loading.tsx";
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 
 const UserPage = lazy(() => import("../pages/User/User.tsx"));
-const UserCreatePage = lazy(() => import("../pages/User/Create/UserCreate.tsx"))
-const UserEditPage = lazy(() => import("../pages/User/Edit/UserEdit.tsx"))
+const UserCreatePage = lazy(
+  () => import("../pages/User/Create/UserCreate.tsx"),
+);
+const UserEditPage = lazy(() => import("../pages/User/Edit/UserEdit.tsx"));
 
 const CompanyPage = lazy(() => import("../pages/Company/Company.tsx"));
-const CompanyCreate = lazy(() => import("../pages/Company/Create/CompanyCreate.tsx"));
-const CompanyEdit = lazy(() => import("../pages/Company/Edit/CompanyEdit.tsx"))
+const CompanyCreate = lazy(
+  () => import("../pages/Company/Create/CompanyCreate.tsx"),
+);
+const CompanyEdit = lazy(() => import("../pages/Company/Edit/CompanyEdit.tsx"));
 
 const EmployeePage = lazy(() => import("../pages/Employee/Employee.tsx"));
-const EmployeeCreate = lazy(() => import("../pages/Employee/Create/EmployeeCreate.tsx"));
-const EmployeeUpdate = lazy(() => import("../pages/Employee/Edit/EmployeeEdit.tsx"));
+const EmployeeCreate = lazy(
+  () => import("../pages/Employee/Create/EmployeeCreate.tsx"),
+);
+const EmployeeUpdate = lazy(
+  () => import("../pages/Employee/Edit/EmployeeEdit.tsx"),
+);
 
 const AttendancePage = lazy(() => import("../pages/Attendance/Attendance.tsx"));
-const AttendanceEdit = lazy(() => import("../pages/Attendance/Edit/AttendanceEdit.tsx"));
+const AttendanceEdit = lazy(
+  () => import("../pages/Attendance/Edit/AttendanceEdit.tsx"),
+);
 
 const ProfilePage = lazy(() => import("../pages/Profile/ProfilePage.tsx"));
-const ProfileUpdate = lazy(() => import("../pages/Profile/Edit/ProfileEdit.tsx"));
-const ResetPassword = lazy(() => import("../pages/Profile/PasswordReset/ResetPassword.tsx"))
+const ProfileUpdate = lazy(
+  () => import("../pages/Profile/Edit/ProfileEdit.tsx"),
+);
+const ResetPassword = lazy(
+  () => import("../pages/Profile/PasswordReset/ResetPassword.tsx"),
+);
 
 const Login = lazy(() => import("../pages/Login/Login.tsx"));
-const Signup = lazy(() => import("../pages/Signup/Signup.tsx"))
-const Google = lazy(()=>import("../pages/Google.tsx"))
-const AccessDenied = lazy(() => import("../pages/AccessDenied.tsx"))
+const Signup = lazy(() => import("../pages/Signup/Signup.tsx"));
+const ForgotPwd = lazy(() => import("../pages/ForgetPwd/ForgotPassword.tsx"));
+const PasswordReset = lazy(() => import("../pages/ForgetPwd/resetPwd/PasswordReset.tsx")) //forgetpwd
+const Google = lazy(() => import("../pages/Google.tsx"));
+const AccessDenied = lazy(() => import("../pages/AccessDenied.tsx"));
 const NotFound = lazy(() => import("../pages/NotFound"));
-const Unauthorized = lazy(() => import("../pages/Unauthorized.tsx"))
+const Unauthorized = lazy(() => import("../pages/Unauthorized.tsx"));
 
 const ProtectedRoute: React.FC = () => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
@@ -89,14 +105,15 @@ const routes: AppRoute[] = [
 
   { path: "/profile", element: ProfilePage, protected: true },
   { path: "/profile/edit", element: ProfileUpdate, protected: true },
-    { path: "/resetPassword", element: ResetPassword },
-
+  { path: "/resetPassword", element: ResetPassword },
+  { path: "/forgotPwd", element: ForgotPwd },
+  { path: "/reset-password", element: PasswordReset},
 
   { path: "/login", element: Login },
   { path: "/signup", element: Signup },
   { path: "/google", element: Google },
   { path: "/401", element: AccessDenied },
-  { path: "/403", element: Unauthorized},
+  { path: "/403", element: Unauthorized },
   { path: "*", element: NotFound }, //404
 ];
 
@@ -117,12 +134,12 @@ const generateRoutes = (routes: AppRoute[]) =>
         path={route.path}
         element={<route.element />}
       />
-    )
+    ),
   );
 
 const CiaRoutes: React.FC = () => {
   const router = createBrowserRouter(
-    createRoutesFromElements(<>{generateRoutes(routes)}</>)
+    createRoutesFromElements(<>{generateRoutes(routes)}</>),
   );
 
   return (
@@ -132,4 +149,4 @@ const CiaRoutes: React.FC = () => {
   );
 };
 
-export default CiaRoutes
+export default CiaRoutes;

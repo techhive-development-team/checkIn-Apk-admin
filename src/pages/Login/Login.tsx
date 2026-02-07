@@ -7,6 +7,7 @@ import Alert from "../../component/forms/Alert";
 import { API_URLS, baseUrl } from "../../enum/urls";
 import logo from "../../assets/logo.png";
 import Footer from "../../component/layouts/common/Footer";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const { onSubmit, loading, success, message, show, ...methods } =
@@ -48,16 +49,19 @@ const Login = () => {
                     placeholder="Enter your password"
                   />
                   <div className="flex justify-end text-sm">
-                    <a href="#" className="text-sky-500 hover:underline">
+                    <Link
+                      to="/forgotPwd"
+                      className="text-sky-500 hover:underline"
+                    >
                       Forgot Password?
-                    </a>
+                    </Link>
                   </div>
                   <Button
                     type="submit"
                     label={loading ? "Logging in..." : "Log In"}
-                    className="mt-2 w-full cursor-pointer"
+                    className="mt-2 mb-2 w-full cursor-pointer"
                   />
-                  <div className="flex items-center my-4">
+                  <div className="flex items-center my-4 mb-6">
                     <hr className="grow border-gray-300" />
                     <span className="mx-2 text-gray-400">OR</span>
                     <hr className="grow border-gray-300" />
@@ -114,6 +118,7 @@ const Login = () => {
           <img src={harry} alt="harry" className="h-full w-full object-cover" />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
