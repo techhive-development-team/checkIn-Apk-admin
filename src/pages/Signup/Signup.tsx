@@ -16,15 +16,16 @@ const Signup = () => {
     useSignupForm();
 
   if (success) {
-    navigate("/", { replace: true });
+    const msg = Array.isArray(message) ? message.join(", ") : message;
+    navigate(`/login?message=${encodeURIComponent(msg)}`);
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex flex-col md:flex-row">
-        <div className="w-full md:w-3/5 flex flex-col justify-center bg-white min-h-screen px-4">
+      <div className="flex flex-col md:flex-row grow">
+        <div className="w-full md:w-3/5 flex flex-col justify-center bg-white px-4">
           <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
-            <div className="flex justify-center mb-6 pt-8 sm:pt-12">
+            <div className="flex justify-center mb-4 pt-8 sm:pt-8">
               <div className="ring-blue-400 ring-offset-base-100 w-20 h-20 sm:w-24 sm:h-24 rounded-xl ring-2 ring-offset-2 bg-white flex items-center justify-center shadow-md overflow-hidden">
                 <img
                   src={logo}
@@ -39,9 +40,16 @@ const Signup = () => {
             </h2>
 
             <FormProvider {...methods}>
-              <form onSubmit={onSubmit}>
+              <form onSubmit={methods.handleSubmit(onSubmit)}>
                 <div className="space-y-7">
-                  {show && <Alert success={success} message={message} />}
+                  {show && (
+                    <Alert
+                      success={success}
+                      message={
+                        Array.isArray(message) ? message.join(", ") : message
+                      }
+                    />
+                  )}
                   <InputText label="Company Name" name="name" required />
                   <InputText label="Email" name="email" type="email" required />
                   <InputFile label="Logo" name="logo" />
@@ -52,10 +60,10 @@ const Signup = () => {
                   <Button
                     type="submit"
                     label={loading ? "Creating..." : "Sign Up"}
-                    className="mt-2 w-full cursor-pointer"
+                    className="mt-2 mb-2 w-full cursor-pointer"
                   />
 
-                  <div className="flex items-center my-4">
+                  <div className="flex items-center my-4 mb-5">
                     <hr className="grow border-gray-300" />
                     <span className="mx-2 text-gray-400">OR</span>
                     <hr className="grow border-gray-300" />
@@ -97,7 +105,7 @@ const Signup = () => {
               </form>
             </FormProvider>
 
-            <div className="text-center py-3 text-black mt-6 mb-8">
+            <div className="text-center py-3 text-black mt-5 mb-2">
               Already have an account?{" "}
               <a
                 href="/login"
@@ -110,10 +118,15 @@ const Signup = () => {
         </div>
 
         <div className="hidden md:block md:w-2/5">
-          <img src={harry} alt="signup" className="h-full w-full object-cover" />
+          <img
+            src={harry}
+            alt="signup"
+            className="h-full w-full object-cover"
+          />
         </div>
       </div>
 
+      <Footer />
     </div>
   );
 };

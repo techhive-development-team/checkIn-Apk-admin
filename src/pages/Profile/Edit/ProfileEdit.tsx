@@ -20,7 +20,7 @@ const ProfileEdit = () => {
     const formHook = useAdminProfileEditForm();
     if (!formHook) return null;
 
-    const { onSubmit, loading, success, message, show, logoPreview, handleLogoChange, ...methods } = formHook;
+    const { onSubmit, loading, success, message, show, logoPreview, ...methods } = formHook;
 
     return (
       <Layout>
@@ -65,7 +65,7 @@ const ProfileEdit = () => {
     const formHook = useClientProfileEditForm();
     if (!formHook) return null;
 
-    const { onSubmit, loading, success, message, show, logoPreview, handleLogoChange, ...methods } = formHook;
+    const { onSubmit, loading, success, message, show, logoPreview, ...methods } = formHook;
 
     return (
       <Layout>

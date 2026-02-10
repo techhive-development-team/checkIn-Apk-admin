@@ -47,12 +47,13 @@ const useSignupForm = () => {
         if (response.token) localStorage.setItem("token", response.token);
       }
       return response;
+
     });
   };
 
   return {
     ...methods,
-    onSubmit: methods.handleSubmit(onSubmit), 
+    onSubmit, 
     loading,
     success,
     message,
