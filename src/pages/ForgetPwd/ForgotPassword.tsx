@@ -40,11 +40,11 @@ const ForgotPassword = () => {
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold text-center mb-2 text-sky-500">
+            <h3 className="text-3xl font-bold text-center mb-2 text-sky-500">
               Forgot Password
-            </h1>
+            </h3>
             <p className="text-sm text-gray-400 mb-8 text-center">
-              Enter your email to receive a reset link
+              Please enter your email to receive a reset password notification email
             </p>
 
             <FormProvider {...methods}>
@@ -61,8 +61,8 @@ const ForgotPassword = () => {
 
                 <Button
                   type="submit"
-                  label="Receive Reset Link"
-                  className="mt-2 w-full rounded-xl! py-4"
+                  label="Send"
+                  className="mt-2 w-full rounded-xl py-4 cursor-pointer"
                 />
               </form>
             </FormProvider>

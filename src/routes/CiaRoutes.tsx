@@ -106,7 +106,7 @@ const routes: AppRoute[] = [
   { path: "/profile", element: ProfilePage, protected: true },
   { path: "/profile/edit", element: ProfileUpdate, protected: true },
   { path: "/resetPassword", element: ResetPassword },
-  { path: "/forgotPwd", element: ForgotPwd },
+  { path: "/forgot-password", element: ForgotPwd },
   { path: "/reset-password", element: PasswordReset},
 
   { path: "/login", element: Login },
