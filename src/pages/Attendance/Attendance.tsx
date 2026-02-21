@@ -8,8 +8,9 @@ import { jwtDecode } from "jwt-decode";
 
 const Attendance = () => {
   const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
+  const decodedToken = jwtDecode(token!) as { user: { companyId: string, role: string } };
   const companyId = decodedToken?.user?.companyId;
+  const role = decodedToken?.user?.role;
 
   const [showSearch, setShowSearch] = useState(true);
   const { data } = useGetEmployee({ companyId });
@@ -53,18 +54,20 @@ const Attendance = () => {
           </div>
           {showSearch && (
             <div className="mt-4 flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
-              <select
-                className="select select-bordered w-full rounded-lg"
-                value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-              >
-                <option value="">Select Employee</option>
-                {data?.map((type: { employeeId: string; firstName: string; lastName: string }) => (
-                  <option key={type.employeeId} value={type.employeeId}>
-                    {type.firstName} {" "} {type.lastName}
-                  </option>
-                ))}
-              </select>
+              {role !== "USER" && (
+                <select
+                  className="select select-bordered w-full rounded-lg"
+                  value={employeeId}
+                  onChange={(e) => setEmployeeId(e.target.value)}
+                >
+                  <option value="">Select Employee</option>
+                  {data?.map((emp: { employeeId: string; firstName: string; lastName: string }) => (
+                    <option key={emp.employeeId} value={emp.employeeId}>
+                      {emp.firstName} {emp.lastName}
+                    </option>
+                  ))}
+                </select>
+              )}
               <input
                 type="date"
                 placeholder="From Date"
