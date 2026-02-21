@@ -50,7 +50,7 @@ const Login = () => {
                   />
                   <div className="flex justify-end text-sm">
                     <Link
-                      to="/forgotPwd"
+                      to="/forgot-password"
                       className="text-sky-500 hover:underline"
                     >
                       Forgot Password?

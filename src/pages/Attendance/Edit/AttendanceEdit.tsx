@@ -5,7 +5,6 @@ import { FormProvider } from "react-hook-form";
 import Alert from "../../../component/forms/Alert";
 import InputText from "../../../component/forms/InputText";
 import InputFile from "../../../component/forms/InputFile";
-import RadioInput from "../../../component/forms/RadioInput";
 
 import { useAttendanceEditForm } from "./useAttendanceEditForm";
 
@@ -67,15 +66,6 @@ const AttendanceEdit = () => {
                   label="Check Out Photo"
                   name="checkOutPhoto"
                   defaultImage={checkOutPreview}
-                />
-
-                <RadioInput
-                  label="Status"
-                  name="status"
-                  options={[
-                    { label: "Present", value: "present" },
-                    { label: "Absent", value: "absent" },
-                  ]}
                 />
 
                 <div className="pt-4 card-actions flex justify-between">

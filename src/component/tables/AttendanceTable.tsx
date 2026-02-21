@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetAttendance } from "../../hooks/useGetAttendance";
 import { attendanceRepository } from "../../repositories/attendanceRepository";
+import { baseUrl } from "../../enum/urls";
 
 const PAGE_SIZE = 10;
 
@@ -11,16 +12,30 @@ export type Attendance = {
   employee?: {
     firstName: string;
     lastName: string;
+    profilePic: string;
+    company: {
+      name: string;
+    }
   };
   checkInTime?: string;
   checkOutTime?: string;
   checkInLocation?: string;
   checkOutLocation?: string;
-  status: string;
   createdAt: string;
 };
 
-const AttendanceTable: React.FC = () => {
+interface AttendanceTableProps {
+  fromDate?: string;
+  toDate?: string;
+  employeeId?: string;
+}
+
+const AttendanceTable: React.FC<AttendanceTableProps> = ({
+  fromDate = "",
+  toDate = "",
+  employeeId = "",
+}) => {
+
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -31,6 +46,9 @@ const AttendanceTable: React.FC = () => {
   } = useGetAttendance({
     limit: PAGE_SIZE,
     offset,
+    fromDate,
+    toDate,
+    employeeId
   });
 
   const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
@@ -92,12 +110,12 @@ const AttendanceTable: React.FC = () => {
           <thead>
             <tr>
               <th>No</th>
-              <th>Employee</th>
-              <th>Check In</th>
-              <th>Check Out</th>
-              <th>Total Hour</th>
-              <th>Status</th>
-              <th>Created At</th>
+              <th>Employee Photo</th>
+              <th>Employee Name</th>
+              <th>Company Name</th>
+              <th>Check In Time</th>
+              <th>Check Out Time</th>
+              <th>Total Hours</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -108,9 +126,25 @@ const AttendanceTable: React.FC = () => {
                 <tr key={attendance.id}>
                   <td>{offset + index + 1}</td>
                   <td>
+                    {attendance.employee?.profilePic ? (
+                      <img
+                        src={`${baseUrl.replace(/\/$/, "")}${attendance.employee?.profilePic}`}
+                        alt={`${attendance.employee.firstName} ${attendance.employee.lastName}`}
+                        className="w-12 h-12 object-cover rounded-md border"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-xs">
+                        N/A
+                      </div>
+                    )}
+                  </td>
+                  <td>
                     {attendance.employee
                       ? `${attendance.employee.firstName} ${attendance.employee.lastName}`
                       : "-"}
+                  </td>
+                  <td>
+                    {attendance.employee?.company.name}
                   </td>
                   <td>
                     {attendance.checkInTime
@@ -128,21 +162,7 @@ const AttendanceTable: React.FC = () => {
                       attendance.checkInTime,
                       attendance.checkOutTime,
                     )}
-                    </td>
-
-                  <td>
-                    <span
-                      className={`badge ${
-                        attendance.status === "present"
-                          ? "badge-success"
-                          : "badge-warning"
-                      }`}
-                    >
-                      {attendance.status}
-                    </span>
                   </td>
-
-                  <td>{new Date(attendance.createdAt).toLocaleString()}</td>
                   <td className="flex gap-2">
                     <Link
                       to={`/attendance/${attendance.id}/edit`}

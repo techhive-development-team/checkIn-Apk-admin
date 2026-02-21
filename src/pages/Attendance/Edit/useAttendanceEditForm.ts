@@ -23,7 +23,6 @@ export const useAttendanceEditForm = () => {
         checkInPhoto: undefined,
         checkOutLocation: "",
         checkOutPhoto: undefined,
-        status: "present",
       },
     });
 
@@ -42,8 +41,7 @@ export const useAttendanceEditForm = () => {
         checkInLocation: attendanceData.checkInLocation || "",
         checkInPhoto: undefined,
         checkOutLocation: attendanceData.checkOutLocation || "",
-        checkOutPhoto: undefined,
-        status: attendanceData.status || "present",
+        checkOutPhoto: undefined
       });
 
       if (attendanceData.checkInPhoto) {

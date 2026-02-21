@@ -32,7 +32,6 @@ const useLoginForm = () => {
     if (response?.data?.token) {
       localStorage.setItem("token", response.data.token);
       const jwtPayload = jwtDecode<JwtPayload>(response.data.token);
-      const user = jwtPayload.user;
       window.location.href = "/";
       return jwtPayload;
     }

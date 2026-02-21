@@ -2,15 +2,97 @@ import Layout from "../../component/layouts/layout";
 import Breadcrumb from "../../component/layouts/common/Breadcrumb";
 import { attendanceRepository } from "../../repositories/attendanceRepository";
 import AttendanceTable from "../../component/tables/AttendanceTable";
+import { useState } from "react";
+import { useGetEmployee } from "../../hooks/useGetEmployee";
+import { jwtDecode } from "jwt-decode";
 
 const Attendance = () => {
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
+  const companyId = decodedToken?.user?.companyId;
+
+  const [showSearch, setShowSearch] = useState(true);
+  const { data } = useGetEmployee({ companyId });
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
+
+  const [searchFromDate, setSearchFromDate] = useState("");
+  const [searchToDate, setSearchToDate] = useState("");
+  const [searchEmployeeId, setSearchEmployeeId] = useState("");
+
+  const handleSearch = () => {
+    setSearchEmployeeId(employeeId);
+    setSearchFromDate(fromDate);
+    setSearchToDate(toDate);
+  };
+
+  const handleReset = () => {
+    setFromDate("");
+    setToDate("");
+    setEmployeeId("");
+    setSearchEmployeeId("");
+    setSearchFromDate("");
+    setSearchToDate("");
+  };
   return (
     <Layout>
       <div className="card card-bordered w-full bg-base-100 mb-6">
         <div className="card-body">
-          <Breadcrumb
-            items={[{ label: "Home", path: "/" }, { label: "Attendance" }]}
-          />
+
+          <div className="flex items-center justify-between">
+            <Breadcrumb
+              items={[{ label: "Home", path: "/" }, { label: "Attendance" }]}
+            />
+            <button
+              className="btn btn-ghost btn-sm rounded-lg"
+              onClick={() => setShowSearch(!showSearch)}
+            >
+              {showSearch ? "Hide Search" : "Show Search"}
+            </button>
+          </div>
+          {showSearch && (
+            <div className="mt-4 flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
+              <select
+                className="select select-bordered w-full rounded-lg"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+              >
+                <option value="">Select Employee</option>
+                {data?.map((type: { employeeId: string; firstName: string; lastName: string }) => (
+                  <option key={type.employeeId} value={type.employeeId}>
+                    {type.firstName} {" "} {type.lastName}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="date"
+                placeholder="From Date"
+                className="input input-bordered w-full md:max-w-xs rounded-lg"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+              <input
+                type="date"
+                placeholder="To Date"
+                className="input input-bordered w-full md:max-w-xs rounded-lg"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+              <button
+                className="btn btn-primary w-full md:w-auto rounded-lg"
+                onClick={handleSearch}
+              >
+                Search
+              </button>
+              <button
+                className="btn btn-secondary w-full md:w-auto rounded-lg"
+                onClick={handleReset}
+              >
+                Reset
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -26,7 +108,11 @@ const Attendance = () => {
               Export File
             </button>
           </div>
-          <AttendanceTable/>
+          <AttendanceTable
+            fromDate={searchFromDate}
+            toDate={searchToDate}
+            employeeId={searchEmployeeId}
+          />
         </div>
       </div>
     </Layout>

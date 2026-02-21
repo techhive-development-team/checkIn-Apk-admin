@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import profile from "../../../assets/profile.jpg";
 import { jwtDecode } from "jwt-decode";
 import { baseUrl } from "../../../enum/urls";
-import { useGetUserById } from "../../../hooks/useGetUser";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -20,16 +19,12 @@ const Navbar = () => {
   if (!token) return;
 
   const decodedToken = jwtDecode<{
-    user: { userId: string };
+    user: { name: string, logo: string };
   }>(token);
 
-  const userId = decodedToken.user.userId;
-
-  const { data: user } = useGetUserById(userId);
-
-  const displayName = user?.name || "User";
-  const displayImage = user?.logo
-    ? `${baseUrl.replace(/\/$/, "")}${user.logo}`
+  const displayName = decodedToken.user.name || "User";
+  const displayImage = decodedToken?.user.logo
+    ? `${baseUrl.replace(/\/$/, "")}${decodedToken?.user.logo}`
     : profile;
 
   return (

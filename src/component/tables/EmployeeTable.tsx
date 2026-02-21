@@ -18,6 +18,9 @@ export type Employee = {
   address?: string;
   status: string;
   createdAt: string;
+  company: {
+    name: string
+  }
 };
 
 const EmployeeTable: React.FC = () => {
@@ -135,6 +138,7 @@ const EmployeeTable: React.FC = () => {
               <th>No</th>
               <th>Photo</th>
               <th>Name</th>
+              <th>Company Name</th>
               <th>Position</th>
               <th>Email</th>
               <th>Phone</th>
@@ -167,18 +171,17 @@ const EmployeeTable: React.FC = () => {
                   <td>
                     {employee.firstName} {employee.lastName}
                   </td>
-
+                  <td>{employee.company.name}</td>
                   <td>{employee.position || "-"}</td>
                   <td>{employee.email}</td>
                   <td>{employee.phone || "-"}</td>
 
                   <td>
                     <span
-                      className={`badge ${
-                        employee.status === "active"
-                          ? "badge-success"
-                          : "badge-error"
-                      }`}
+                      className={`badge ${employee.status === "active"
+                        ? "badge-success"
+                        : "badge-error"
+                        }`}
                     >
                       {employee.status}
                     </span>
@@ -273,7 +276,7 @@ const EmployeeTable: React.FC = () => {
           </div>
         </div>
       </dialog>
-      
+
       <dialog id="password_reset_modal" className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg" id="modal_title">
