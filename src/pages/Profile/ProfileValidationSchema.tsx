@@ -12,7 +12,7 @@ const checkFileType = () => ({
 });
 
 export const AdminProfileSchema = z.object({
-  name: z.string().min(2, "Name is required").optional(),
+  name: z.string().optional(),
   email: z.string().email("Valid email is required"),
   logo: z
     .any()
@@ -28,10 +28,10 @@ export const AdminProfileSchema = z.object({
 });
 
 export const ClientProfileSchema = AdminProfileSchema.extend({
-  companyType: z.string().min(2, "Company type is required"),
-  phone: z.string().min(6, "Phone number is required"),
-  address: z.string().min(1, "").optional(),
-  totalEmployees: z.string().regex(/^\d+$/, "Must be a number").optional(),
+  companyType: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  totalEmployees: z.string().optional(),
 });
 
 export type AdminProfileForm = z.infer<typeof AdminProfileSchema>;

@@ -74,6 +74,17 @@ const AttendanceTable: React.FC = () => {
     }
   };
 
+  const getTotalWorking = (checkIn?: string, checkOut?: string) => {
+    if (!checkIn || !checkOut) return "-";
+    const inTime = new Date(checkIn).getTime();
+    const outTime = new Date(checkOut).getTime();
+    const diffMs = outTime - inTime;
+    if (diffMs < 0) return "-";
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${diffHours}h ${diffMinutes}m`;
+  };
+
   return (
     <div>
       <div className="overflow-x-auto">
@@ -84,6 +95,7 @@ const AttendanceTable: React.FC = () => {
               <th>Employee</th>
               <th>Check In</th>
               <th>Check Out</th>
+              <th>Total Hour</th>
               <th>Status</th>
               <th>Created At</th>
               <th>Action</th>
@@ -95,25 +107,28 @@ const AttendanceTable: React.FC = () => {
               attendances.map((attendance: Attendance, index: number) => (
                 <tr key={attendance.id}>
                   <td>{offset + index + 1}</td>
-
-                  {/* Employee Name */}
                   <td>
                     {attendance.employee
                       ? `${attendance.employee.firstName} ${attendance.employee.lastName}`
                       : "-"}
                   </td>
-
                   <td>
                     {attendance.checkInTime
                       ? new Date(attendance.checkInTime).toLocaleString()
                       : "-"}
                   </td>
-
                   <td>
                     {attendance.checkOutTime
                       ? new Date(attendance.checkOutTime).toLocaleString()
                       : "-"}
                   </td>
+
+                  <td>
+                    {getTotalWorking(
+                      attendance.checkInTime,
+                      attendance.checkOutTime,
+                    )}
+                    </td>
 
                   <td>
                     <span
@@ -128,7 +143,6 @@ const AttendanceTable: React.FC = () => {
                   </td>
 
                   <td>{new Date(attendance.createdAt).toLocaleString()}</td>
-
                   <td className="flex gap-2">
                     <Link
                       to={`/attendance/${attendance.id}/edit`}

@@ -39,7 +39,7 @@ const ProfileEdit = () => {
               <FormProvider {...methods}>
                 <form className="space-y-4" onSubmit={methods.handleSubmit(onSubmit)}>
                   {show && <Alert success={success} message={message} />}
-                  <InputText label="Name" name="name" required />
+                  <InputText label="Name" name="name" />
                   <InputText label="Email" name="email" type="email" required />
                   <InputFile
                     label="Logo"

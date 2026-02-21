@@ -1,11 +1,10 @@
 import { FormProvider } from "react-hook-form";
 import InputText from "../../component/forms/InputText";
 import Button from "../../component/forms/Button";
-import harry from "../../assets/harry.jpg";
-import logo from "../../assets/logo.png";
-import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../component/layouts/common/Footer";
+import MeshBackground from "../../component/layouts/common/background";
 import { useForgotPasswordForm } from "./useForgetPasswordForm";
+import { useNavigate } from "react-router-dom";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -18,64 +17,63 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex flex-col md:flex-row grow">
-        <div className="hidden md:block md:w-2/5">
-          <img
-            src={harry}
-            alt="Forgot Password Illustration"
-            className="h-full w-full object-cover"
-          />
-        </div>
+    <div className="relative flex flex-col min-h-screen bg-slate-50 overflow-hidden">
+      <MeshBackground />
 
-        <div className="w-full md:w-3/5 flex flex-col justify-center px-4 py-12 min-h-[calc(100vh-64px)]">
-          <div className="w-full max-w-sm sm:max-w-md md:max-w-lg mx-auto">
-            <div className="flex justify-center mb-6">
-              <div className="ring-blue-400 ring-offset-base-100 w-20 h-20 sm:w-24 sm:h-24 rounded-xl ring-2 ring-offset-2 bg-white flex items-center justify-center shadow-md overflow-hidden">
-                <img
-                  src={logo}
-                  alt="Company Logo"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+      <div className="flex items-center justify-center grow relative z-10 px-4 py-10 sm:py-12 md:py-16">
+        <div
+          className="
+            w-full max-w-md sm:max-w-lg md:max-w-xl
+            bg-white/40 backdrop-blur-lg
+            border border-white/30
+            rounded-2xl sm:rounded-3xl
+            shadow-[0_20px_80px_rgba(15,23,42,0.08)]
+            px-5 sm:px-7 md:px-8
+            py-7 sm:py-9 md:py-10
+          "
+        >
+          <div className="flex justify-center mb-3 items-start">
+            <span className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-sky-600 text-center">
+              CheckIn+
+            </span>
+          </div>
 
-            <h1 className="text-3xl font-bold text-center mb-2 text-sky-500">
-              Forgot Password
-            </h1>
-            <p className="text-sm text-gray-400 mb-8 text-center">
-              Enter your email to receive a reset link
-            </p>
+          <p className="text-xl md:text-2xl font-bold text-center mb-2 text-sky-500">
+            Forgot Password
+          </p>
+          <p className="text-sm sm:text-base text-gray-500 mb-8 text-center">
+            Enter your email to receive a reset link
+          </p>
 
-            <FormProvider {...methods}>
-              <form
-                onSubmit={methods.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <InputText
-                  label="Email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                />
+          <FormProvider {...methods}>
+            <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-7">
+              {show && message && (
+                <div className={`p-3 rounded-md text-center ${success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                  {Array.isArray(message) ? message.join(", ") : message}
+                </div>
+              )}
 
-                <Button
-                  type="submit"
-                  label="Receive Reset Link"
-                  className="mt-2 w-full rounded-xl! py-4"
-                />
-              </form>
-            </FormProvider>
+              <InputText
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+              />
 
-            <div className="text-center py-3 text-black mt-6">
-              Remember your password?{" "}
-              <Link
-                to="/login"
-                className="text-sky-500 font-medium hover:underline"
-              >
-                Log In
-              </Link>
-            </div>
+              <Button
+                type="submit"
+                label={loading ? "Sending..." : "Send"}
+                className="mt-2 mb-2 w-full cursor-pointer"
+              />
+            </form>
+          </FormProvider>
+
+          <div className="text-center py-2 text-black mt-3">
+            Remember your password?{" "}
+            <a href="/login" className="text-sky-500 font-medium hover:underline">
+              Log In
+            </a>
           </div>
         </div>
       </div>
