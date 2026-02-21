@@ -114,7 +114,7 @@ const routes: AppRoute[] = [
   { path: "/reset-password", element: PasswordReset },
 
   { path: "/leave", element: LeaveList, protected: true },
-  { path: "/leave", element: LeaveCreate, protected: true },
+  { path: "/leave/create", element: LeaveCreate, protected: true },
   { path: "/leave/:id/edit", element: LeaveEdit, protected: true },
 
 
