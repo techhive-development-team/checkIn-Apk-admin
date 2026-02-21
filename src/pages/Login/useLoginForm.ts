@@ -33,48 +33,44 @@ const useLoginForm = () => {
       localStorage.setItem("token", response.data.token);
       const jwtPayload = jwtDecode<JwtPayload>(response.data.token);
       const user = jwtPayload.user;
-      if (user.role !== "ADMIN" && user.role !== "CLIENT") {
-        throw new Error("Only Admin and Client users can access this portal.");
-      } else {
-        window.location.href = "/";
-      }
+      window.location.href = "/";
       return jwtPayload;
     }
   };
 
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.search);
 
-  const message = params.get("message");
-  const error = params.get("error");
+    const message = params.get("message");
+    const error = params.get("error");
 
-  if (message) {
-    setMessage(message);
-    setSuccess(true);
-    setShow(true);
+    if (message) {
+      setMessage(message);
+      setSuccess(true);
+      setShow(true);
 
-    const timer = setTimeout(() => {
-      setShow(false);
-      setMessage("");
-    }, 5000);
+      const timer = setTimeout(() => {
+        setShow(false);
+        setMessage("");
+      }, 5000);
 
-    return () => clearTimeout(timer);
-  }
+      return () => clearTimeout(timer);
+    }
 
-  if (error) {
-    setMessage(error);
-    setSuccess(false);
-    setShow(true);
+    if (error) {
+      setMessage(error);
+      setSuccess(false);
+      setShow(true);
 
-    // auto-hide after 5 seconds
-    const timer = setTimeout(() => {
-      setShow(false);
-      setMessage("");
-    }, 5000);
+      // auto-hide after 5 seconds
+      const timer = setTimeout(() => {
+        setShow(false);
+        setMessage("");
+      }, 5000);
 
-    return () => clearTimeout(timer);
-  }
-}, []);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
 
   return {

@@ -54,6 +54,10 @@ const AccessDenied = lazy(() => import("../pages/AccessDenied.tsx"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const Unauthorized = lazy(() => import("../pages/Unauthorized.tsx"));
 
+const LeaveList = lazy(() => import("../pages/Leave/Leave.tsx"));
+const LeaveEdit = lazy(() => import("../pages/Leave/Edit/LeaveEdit.tsx"));
+const LeaveCreate = lazy(() => import("../pages/Leave/Create/LeaveCreate.tsx"));
+
 const ProtectedRoute: React.FC = () => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
 
@@ -107,14 +111,19 @@ const routes: AppRoute[] = [
   { path: "/profile/edit", element: ProfileUpdate, protected: true },
   { path: "/resetPassword", element: ResetPassword },
   { path: "/forgot-password", element: ForgotPwd },
-  { path: "/reset-password", element: PasswordReset},
+  { path: "/reset-password", element: PasswordReset },
+
+  { path: "/leave", element: LeaveList, protected: true },
+  { path: "/leave", element: LeaveCreate, protected: true },
+  { path: "/leave/:id/edit", element: LeaveEdit, protected: true },
+
 
   { path: "/login", element: Login },
   { path: "/signup", element: Signup },
   { path: "/google", element: Google },
   { path: "/401", element: AccessDenied },
   { path: "/403", element: Unauthorized },
-  { path: "*", element: NotFound }, //404
+  { path: "*", element: NotFound },
 ];
 
 const generateRoutes = (routes: AppRoute[]) =>

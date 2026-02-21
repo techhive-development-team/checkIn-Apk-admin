@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { type SidebarRoute, sidebarRoutes, userSidebarRoutes } from "./sidebarRoutes.tsx";
+import { employeeSidebarRoutes, type SidebarRoute, sidebarRoutes, userSidebarRoutes } from "./sidebarRoutes.tsx";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
@@ -19,7 +19,7 @@ const Sidebar = () => {
     } else if( role === "CLIENT") {
       setSideBar(userSidebarRoutes);
     } else {
-      setSideBar([]);
+      setSideBar(employeeSidebarRoutes);
     }
   }, [location.pathname]);
 
