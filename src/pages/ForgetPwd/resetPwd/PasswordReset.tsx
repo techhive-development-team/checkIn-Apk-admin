@@ -37,24 +37,26 @@ const PasswordReset = () => {
               name="newPassword"
               type="password"
               placeholder="Enter new password"
+              required
             />
             <InputText
               label="Confirm Password"
               name="confirmPassword"
               type="password"
               placeholder="Confirm new password"
+              required
             />
 
             <Button
               type="submit"
               label={loading ? "Resetting..." : "Reset Password"}
-              className="w-full mt-2 rounded-xl py-4"
+              className="w-full mt-2 rounded-xl py-4 cursor-pointer"
               disabled={loading}
             />
           </form>
         </FormProvider>
 
-        <div className="text-center mt-6">
+        <div className="text-center py-3 text-black mt-6">
           Remember your password?{" "}
           <Link
             to="/login"
