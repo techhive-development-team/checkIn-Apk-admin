@@ -11,12 +11,12 @@ const Sidebar = () => {
     const token = localStorage.getItem("token");
     if(!token) return;
 
-    const decodedToken = jwtDecode<{ user: {role: string}}> (token);
-    const role = decodedToken?.user?.role;
+    const decodedToken = jwtDecode<{ user: {systemRole: string}}> (token);
+    const systemRole = decodedToken?.user?.systemRole;
 
-    if (role === "ADMIN"){
+    if (systemRole === "SUPER_ADMIN"){
       setSideBar(sidebarRoutes);
-    } else if( role === "CLIENT") {
+    } else if( systemRole === "COMPANY_OWNER") {
       setSideBar(userSidebarRoutes);
     } else {
       setSideBar([]);

@@ -93,7 +93,7 @@ const routes: AppRoute[] = [
   { path: "/user/:id/edit", element: UserEditPage, protected: true },
 
   { path: "/company", element: CompanyPage, protected: true },
-  { path: "/company/create", element: CompanyCreate, protected: true },
+  // { path: "/company/create", element: CompanyCreate, protected: true },
   { path: "/company/:id/edit", element: CompanyEdit, protected: true },
 
   { path: "/employee", element: EmployeePage, protected: true },

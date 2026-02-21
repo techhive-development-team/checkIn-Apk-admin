@@ -35,7 +35,7 @@ export const useUserCreateForm = () => {
     const payload = {
       ...data,
       logo: logo,
-      role: 'admin'
+      systemRole: 'SUPER_ADMIN'
     };
 
     await handleSubmit(() =>

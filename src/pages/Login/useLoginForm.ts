@@ -33,7 +33,7 @@ const useLoginForm = () => {
       localStorage.setItem("token", response.data.token);
       const jwtPayload = jwtDecode<JwtPayload>(response.data.token);
       const user = jwtPayload.user;
-      if (user.role !== "ADMIN" && user.role !== "CLIENT") {
+      if (user.systemRole !== "SUPER_ADMIN" && user.systemRole !== "COMPANY_OWNER") {
         throw new Error("Only Admin and Client users can access this portal.");
       } else {
         window.location.href = "/";

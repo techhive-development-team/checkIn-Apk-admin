@@ -15,7 +15,7 @@ export const useAdminProfileEditForm = () => {
   const token = localStorage.getItem("token");
   if (!token) return;
 
-  const decodedToken = jwtDecode<{ user: { userId: string; role: string } }>(
+  const decodedToken = jwtDecode<{ user: { userId: string; systemRole: string } }>(
     token,
   );
   const userId = decodedToken.user.userId;

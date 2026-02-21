@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 export type JwtUser = {
     userId: string;
     email: string;
-    role: string;
+    systemRole: string;
     status: string;
     companyId?: string | null;
     employeeId?: string | null;

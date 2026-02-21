@@ -13,10 +13,10 @@ const ProfileEdit = () => {
   const token = localStorage.getItem("token");
   if (!token) return null;
 
-  const decodedToken = jwtDecode<{ user: { role: string; userId: string } }>(token);
-  const role = decodedToken?.user?.role;
+  const decodedToken = jwtDecode<{ user: { systemRole: string; userId: string } }>(token);
+  const systemRole = decodedToken?.user?.systemRole;
 
-  if (role === "ADMIN") {
+  if (systemRole === "SUPER_ADMIN") {
     const formHook = useAdminProfileEditForm();
     if (!formHook) return null;
 
@@ -61,7 +61,7 @@ const ProfileEdit = () => {
     );
   }
 
-  if (role === "CLIENT") {
+  if (systemRole === "CLIENT") {
     const formHook = useClientProfileEditForm();
     if (!formHook) return null;
 

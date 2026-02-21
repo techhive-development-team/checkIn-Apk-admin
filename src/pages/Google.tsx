@@ -9,8 +9,8 @@ const Google = () => {
         localStorage.setItem('token', token);
         const jwtPayload = jwtDecode<JwtPayload>(token);
         const user = jwtPayload.user;
-        if (user.role !== 'ADMIN' && user.role !== 'CLIENT') {
-            throw new Error('Only Admin and Client users can access this portal.');
+        if (user.systemRole !== 'SUPER_ADMIN' && user.systemRole !== 'COMPANY_OWNER') {
+            throw new Error('Only Admin and Company users can access this portal.');
         } else {
             window.location.href = '/';
         }
