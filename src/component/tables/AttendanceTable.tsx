@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useGetAttendance } from "../../hooks/useGetAttendance";
 import { attendanceRepository } from "../../repositories/attendanceRepository";
 import { baseUrl } from "../../enum/urls";
+import { jwtDecode } from "jwt-decode";
 
 const PAGE_SIZE = 10;
 
@@ -36,6 +37,9 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   employeeId = "",
 }) => {
 
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token!) as { user: { role: string } };
+  const role = decodedToken?.user?.role;
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -163,21 +167,23 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       attendance.checkOutTime,
                     )}
                   </td>
-                  <td className="flex gap-2">
-                    <Link
-                      to={`/attendance/${attendance.id}/edit`}
-                      className="btn btn-sm"
-                    >
-                      Edit
-                    </Link>
+                  {role !== "USER" && (
+                    <td className="flex gap-2">
+                      <Link
+                        to={`/attendance/${attendance.id}/edit`}
+                        className="btn btn-sm"
+                      >
+                        Edit
+                      </Link>
 
-                    <button
-                      onClick={() => handleDelete(attendance)}
-                      className="btn btn-sm btn-error"
-                    >
-                      Delete
-                    </button>
-                  </td>
+                      <button
+                        onClick={() => handleDelete(attendance)}
+                        className="btn btn-sm btn-error"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
