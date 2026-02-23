@@ -20,18 +20,32 @@ export type LeaveRequest = {
   createdAt: string;
 };
 
-const LeaveRequestTable: React.FC = () => {
+interface LeaveRequestTableProps {
+  fromDate?: string;
+  toDate?: string;
+  employeeId?: string;
+}
+
+const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
+  fromDate = "",
+  toDate = "",
+  employeeId = "",
+}) => {
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
 
   const { data: leaveRequests, total, mutate } = useGetLeave({
     limit: PAGE_SIZE,
     offset,
+    fromDate,
+    toDate,
+    employeeId,
   });
 
   const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
 
-  const [selectedLeave, setSelectedLeave] = useState<LeaveRequest | null>(null);
+  const [selectedLeave, setSelectedLeave] =
+    useState<LeaveRequest | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleDelete = (leave: LeaveRequest) => {
@@ -50,7 +64,9 @@ const LeaveRequestTable: React.FC = () => {
     if (!selectedLeave) return;
 
     try {
-      const response = await leaveRequestRepository.deleteLeave(selectedLeave.id);
+      const response = await leaveRequestRepository.deleteLeave(
+        selectedLeave.id
+      );
 
       if (response?.statusCode === 200) {
         await mutate();
@@ -86,39 +102,60 @@ const LeaveRequestTable: React.FC = () => {
 
           <tbody>
             {leaveRequests && leaveRequests.length > 0 ? (
-              leaveRequests.map((leave: LeaveRequest, index: number) => (
-                <tr key={leave.id}>
-                  <td>{offset + index + 1}</td>
-                  <td>
-                    {leave.employee
-                      ? `${leave.employee.firstName} ${leave.employee.lastName}`
-                      : "-"}
-                  </td>
-                  <td>{leave.leaveType}</td>
-                  <td>{new Date(leave.startDate).toLocaleDateString()}</td>
-                  <td>{new Date(leave.endDate).toLocaleDateString()}</td>
-                  <td>{leave.reason}</td>
-                  <td>{new Date(leave.createdAt).toLocaleString()}</td>
-                  <td className="flex gap-2">
-                    <Link
-                      to={`/leave/${leave.id}/edit`}
-                      className="btn btn-sm"
-                    >
-                      Edit
-                    </Link>
+              leaveRequests.map(
+                (leave: LeaveRequest, index: number) => (
+                  <tr key={leave.id}>
+                    <td>{offset + index + 1}</td>
 
-                    <button
-                      onClick={() => handleDelete(leave)}
-                      className="btn btn-sm btn-error"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    <td>
+                      {leave.employee
+                        ? `${leave.employee.firstName} ${leave.employee.lastName}`
+                        : "-"}
+                    </td>
+
+                    <td>{leave.leaveType}</td>
+
+                    <td>
+                      {new Date(
+                        leave.startDate
+                      ).toLocaleDateString()}
+                    </td>
+
+                    <td>
+                      {new Date(
+                        leave.endDate
+                      ).toLocaleDateString()}
+                    </td>
+
+                    <td>{leave.reason}</td>
+
+                    <td>
+                      {new Date(
+                        leave.createdAt
+                      ).toLocaleString()}
+                    </td>
+
+                    <td className="flex gap-2">
+                      <Link
+                        to={`/leave/${leave.id}/edit`}
+                        className="btn btn-sm"
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        onClick={() => handleDelete(leave)}
+                        className="btn btn-sm btn-error"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )
             ) : (
               <tr>
-                <td colSpan={9} className="text-center py-4">
+                <td colSpan={8} className="text-center py-4">
                   No leave requests found
                 </td>
               </tr>
@@ -146,10 +183,13 @@ const LeaveRequestTable: React.FC = () => {
 
       <dialog id="delete_modal" className="modal">
         <div className="modal-box">
-          <h3 className="font-bold text-lg">Confirm Delete</h3>
+          <h3 className="font-bold text-lg">
+            Confirm Delete
+          </h3>
 
           <p className="py-4">
-            Are you sure you want to delete this leave request?
+            Are you sure you want to delete this leave
+            request?
           </p>
 
           {deleteError && (
@@ -159,8 +199,15 @@ const LeaveRequestTable: React.FC = () => {
           )}
 
           <div className="modal-action">
-            <form method="dialog" className="flex gap-2">
-              <button type="button" onClick={closeModal} className="btn">
+            <form
+              method="dialog"
+              className="flex gap-2"
+            >
+              <button
+                type="button"
+                onClick={closeModal}
+                className="btn"
+              >
                 Cancel
               </button>
 

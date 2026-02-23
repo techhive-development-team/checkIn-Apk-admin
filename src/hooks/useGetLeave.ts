@@ -2,7 +2,7 @@ import useSWR from "swr";
 import { API_URLS } from "../enum/urls";
 import { leaveRequestRepository } from "../repositories/leaveRepository";
 
-export const useGetLeave = (params?: { limit?: number; offset?: number }) => {
+export const useGetLeave = (params?: { limit?: number; offset?: number; fromDate?: string; toDate?: string; employeeId?: string }) => {
     const key = params
     ? [`${API_URLS.LEAVE}`, params]
     :null;
