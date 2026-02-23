@@ -124,13 +124,14 @@ const Leave = () => {
         <div className="card-body">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-2xl font-bold">Leave Request List</h3>
-
-            <Link
-              to="/leave/create"
-              className="btn btn-primary rounded-lg"
-            >
-              Create Leave Form
-            </Link>
+            {role == "USER" && (
+              <Link
+                to="/leave/create"
+                className="btn btn-primary rounded-lg"
+              >
+                Create Leave Form
+              </Link>
+            )}
           </div>
 
           <LeaveRequestTable

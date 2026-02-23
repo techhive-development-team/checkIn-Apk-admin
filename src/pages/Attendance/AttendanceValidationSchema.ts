@@ -45,7 +45,6 @@ export const AttendanceUpdateSchema = z.object({
   checkOutLocation: z.string().optional(),
 
   checkOutPhoto: imageSchema,
-
-  status: z.string().optional(),
+  
 });
 export type AttendanceUpdateForm = z.infer<typeof AttendanceUpdateSchema>;
