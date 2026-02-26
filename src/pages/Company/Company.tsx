@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import Layout from "../../component/layouts/layout";
 import CompanyTable from "../../component/tables/CompanyTable";
 import Breadcrumb from "../../component/layouts/common/Breadcrumb";
