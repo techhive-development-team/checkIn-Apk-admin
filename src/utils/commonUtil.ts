@@ -1,26 +1,24 @@
 import { jwtDecode } from "jwt-decode";
 
-export type JwtUser = {
-    userId: string;
-    email: string;
-    role: string;
-    status: string;
-    companyId?: string | null;
-    employeeId?: string | null;
-};
+interface User {
+  userId: string;
+  name: string;
+  logo: string;
+  email: string;
+  role: string;
+  companyId: string;
+  employeeId: string;
+}
 
 export type JwtPayload = {
-    user: JwtUser;
+    user: User;
     iat: number;
     exp: number;
 };
 
-export const decodeToken = (): JwtPayload | null => {
+export const decodeToken = (token: string | null): JwtPayload | null => {
     try {
-        const token = localStorage.getItem("token");
-
         if (!token) return null;
-
         return jwtDecode<JwtPayload>(token);
     } catch (error) {
         console.error("Invalid token:", error);

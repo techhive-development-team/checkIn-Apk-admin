@@ -7,14 +7,10 @@ import InputText from "../../../component/forms/InputText";
 import InputFile from "../../../component/forms/InputFile";
 import { useAdminProfileEditForm } from "./useAdminProfileForm";
 import { useClientProfileEditForm } from "./useClientProfileForm";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../../stores/authStore";
 
 const ProfileEdit = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-
-  const decodedToken = jwtDecode<{ user: { role: string; userId: string } }>(token);
-  const role = decodedToken?.user?.role;
+  const role = useAuthStore((state) => state.user?.role);
 
   if (role === "ADMIN") {
     const formHook = useAdminProfileEditForm();

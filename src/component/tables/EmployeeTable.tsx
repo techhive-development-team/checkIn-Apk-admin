@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
 import { employeeRepository } from "../../repositories/employeeRepository";
-import { jwtDecode } from "jwt-decode";
 import { baseUrl } from "../../enum/urls";
+import { useAuthStore } from "../../stores/authStore";
 
 const PAGE_SIZE = 10;
 
@@ -24,9 +24,7 @@ export type Employee = {
 };
 
 const EmployeeTable: React.FC = () => {
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
-  const companyId = decodedToken?.user?.companyId;
+  const companyId = useAuthStore((state) => state.user?.companyId ?? "");
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;

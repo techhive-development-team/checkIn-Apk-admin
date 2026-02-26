@@ -6,6 +6,7 @@ import { authRepository } from "../../repositories/authRepository";
 import { jwtDecode } from "jwt-decode";
 import type { JwtPayload } from "../../utils/commonUtil";
 import { useEffect } from "react";
+import { useAuthStore } from "../../stores/authStore";
 
 const useLoginForm = () => {
   const methods = useForm<LoginFormData>({
@@ -28,10 +29,11 @@ const useLoginForm = () => {
   } = useFormState();
 
   const onSubmit = async (data: LoginFormData) => {
+    const {login} = useAuthStore.getState();
     const response = await handleSubmit(() => authRepository.login(data));
     if (response?.data?.token) {
-      localStorage.setItem("token", response.data.token);
       const jwtPayload = jwtDecode<JwtPayload>(response.data.token);
+      login(jwtPayload.user, response.data.token);
       window.location.href = "/";
       return jwtPayload;
     }

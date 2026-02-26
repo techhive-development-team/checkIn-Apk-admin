@@ -1,7 +1,8 @@
 import { baseUrl } from "../enum/urls";
+import { useAuthStore } from "../stores/authStore";
 
 const exec = async (endPoint: RequestInfo, config?: RequestInit) => {
-  const token = localStorage.getItem("token");
+  const token = useAuthStore.getState().token;
   const headers: HeadersInit = {
     "content-type": "application/json",
     Authorization: `Bearer ${token}`,

@@ -1,18 +1,15 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { employeeSidebarRoutes, type SidebarRoute, sidebarRoutes, userSidebarRoutes } from "./sidebarRoutes.tsx";
 import { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../../stores/authStore";
 
 const Sidebar = () => {
   const location = useLocation();
+  const role = useAuthStore((state) => state.user?.role);
 
   const [sideBar, setSideBar] = useState<SidebarRoute[]>([]);
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if(!token) return;
-
-    const decodedToken = jwtDecode<{ user: {role: string}}> (token);
-    const role = decodedToken?.user?.role;
+    if (!role) return;
 
     if (role === "ADMIN"){
       setSideBar(sidebarRoutes);
@@ -21,7 +18,7 @@ const Sidebar = () => {
     } else {
       setSideBar(employeeSidebarRoutes);
     }
-  }, [location.pathname]);
+  }, [location.pathname, role]);
 
   const closeDrawer = () => {
     const drawer = document.getElementById("my-drawer") as HTMLInputElement;

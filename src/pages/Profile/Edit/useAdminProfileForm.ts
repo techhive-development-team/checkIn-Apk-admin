@@ -9,16 +9,11 @@ import {
   type AdminProfileForm,
 } from "../ProfileValidationSchema";
 import { useGetUserById } from "../../../hooks/useGetUser";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../../stores/authStore";
 
 export const useAdminProfileEditForm = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  const decodedToken = jwtDecode<{ user: { userId: string; role: string } }>(
-    token,
-  );
-  const userId = decodedToken.user.userId;
+  const userId = useAuthStore((state) => state.user?.userId);
+  if (!userId) return;
 
   const { data: userData } = useGetUserById(userId);
 

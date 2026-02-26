@@ -3,17 +3,12 @@ import Breadcrumb from "../../component/layouts/common/Breadcrumb";
 import LeaveRequestTable from "../../component/tables/LeaveRequestTable";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { jwtDecode } from "jwt-decode";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
+import { useAuthStore } from "../../stores/authStore";
 
 const Leave = () => {
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as {
-    user: { companyId: string; role: string };
-  };
-
-  const companyId = decodedToken?.user?.companyId;
-  const role = decodedToken?.user?.role;
+  const companyId = useAuthStore((state) => state.user?.companyId ?? "");
+  const role = useAuthStore((state) => state.user?.role);
 
   const { data } = useGetEmployee({ companyId });
 

@@ -22,13 +22,6 @@ const Company = () => {
         <div className="card-body">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-2xl font-bold">Company List</h3>
-
-            <Link
-              to="/company/create"
-              className="btn btn-primary rounded-lg"
-            >
-              Create Company
-            </Link>
           </div>
 
           <CompanyTable />
