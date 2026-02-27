@@ -28,7 +28,7 @@ export const useClientProfileEditForm = () => {
       companyType: userData?.company?.companyType || "",
       phone: userData?.company?.phone || "",
       address: userData?.company?.address || "",
-      totalEmployees: userData?.company?.totalEmployee || "",
+      totalEmployee: userData?.company?.totalEmployee || "",
     },
   });
 
@@ -48,7 +48,7 @@ export const useClientProfileEditForm = () => {
         companyType: userData.company?.companyType || "",
         phone: userData.company?.phone || "",
         address: userData.company?.address || "",
-        totalEmployees: userData.company?.totalEmployee || "",
+        totalEmployee: userData.company?.totalEmployee || "",
       });
 
       if (userData.logo) {
