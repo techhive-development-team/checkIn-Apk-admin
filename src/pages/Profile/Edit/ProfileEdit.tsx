@@ -110,7 +110,7 @@ const ProfileEdit = () => {
                   <InputText label="Company Type" name="companyType" />
                   <InputText label="Phone" name="phone" />
                   <InputText label="Address" name="address" />
-                  <InputText label="Total Employees" name="totalEmployees" />
+                  <InputText label="Total Employees" name="totalEmployee" />
                   <InputFile
                     label="Logo"
                     name="logo"

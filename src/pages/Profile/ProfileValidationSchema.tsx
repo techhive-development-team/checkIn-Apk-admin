@@ -41,7 +41,7 @@ export const UserProfileSchema = z.object({
   position: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
-
+  totalEmployee: z.string().optional(),
   logo: z
     .any()
     .optional()
