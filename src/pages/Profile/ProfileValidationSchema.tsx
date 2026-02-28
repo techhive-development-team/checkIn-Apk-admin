@@ -34,5 +34,27 @@ export const ClientProfileSchema = AdminProfileSchema.extend({
   totalEmployees: z.string().optional(),
 });
 
+export const UserProfileSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().email("Valid email is required"),
+  position: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+
+  logo: z
+    .any()
+    .optional()
+    .refine((file) => !file || file instanceof File || typeof file === "string", {
+      message: "Profile picture is required",
+    })
+    .refine((file) => !(file instanceof File) || file.size <= MAX_FILE_SIZE, checkFileSize())
+    .refine(
+      (file) => !(file instanceof File) || ACCEPTED_IMAGE_MIME_TYPES.includes(file.type),
+      checkFileType()
+    ),
+});
+
+export type UserProfileForm = z.infer<typeof UserProfileSchema>;
 export type AdminProfileForm = z.infer<typeof AdminProfileSchema>;
 export type ClientProfileForm = z.infer<typeof ClientProfileSchema>;
