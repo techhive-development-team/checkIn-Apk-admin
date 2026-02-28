@@ -4,13 +4,11 @@ import { attendanceRepository } from "../../repositories/attendanceRepository";
 import AttendanceTable from "../../component/tables/AttendanceTable";
 import { useState } from "react";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../stores/authStore";
 
 const Attendance = () => {
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as { user: { companyId: string, role: string } };
-  const companyId = decodedToken?.user?.companyId;
-  const role = decodedToken?.user?.role;
+  const companyId = useAuthStore((state) => state.user?.companyId ?? "");
+  const role = useAuthStore((state) => state.user?.role);
 
   const [showSearch, setShowSearch] = useState(true);
   const { data } = useGetEmployee({ companyId });

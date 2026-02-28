@@ -34,17 +34,17 @@ const imageSchema = z
   );
 
 export const AttendanceUpdateSchema = z.object({
-  checkInTime: z.date().optional(),
+  checkInTime: z.coerce.date().optional(),
 
   checkInLocation: z.string().optional(),
 
   checkInPhoto: imageSchema,
 
-  checkOutTime: z.date().optional(),
+  checkOutTime: z.coerce.date().optional(),
 
   checkOutLocation: z.string().optional(),
 
   checkOutPhoto: imageSchema,
-  
 });
-export type AttendanceUpdateForm = z.infer<typeof AttendanceUpdateSchema>;
+export type AttendanceUpdateFormInput = z.input<typeof AttendanceUpdateSchema>;
+export type AttendanceUpdateForm = z.output<typeof AttendanceUpdateSchema>;

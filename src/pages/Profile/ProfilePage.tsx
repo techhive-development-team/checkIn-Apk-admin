@@ -3,19 +3,11 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../../component/layouts/layout";
 import { useGetUserById } from "../../hooks/useGetUser";
 import { baseUrl } from "../../enum/urls";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../stores/authStore";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  const decodedToken = jwtDecode<{
-    user: { userId: string; };
-  }>(token);
-
-  const userId = decodedToken.user.userId;
+  const userId = useAuthStore((state) => state.user?.userId ?? "");
 
   const { data: user, isLoading, error } = useGetUserById(userId);
   if (isLoading) {

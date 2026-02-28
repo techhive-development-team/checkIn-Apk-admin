@@ -2,13 +2,10 @@ import { Link } from "react-router-dom";
 import Layout from "../../component/layouts/layout";
 import Breadcrumb from "../../component/layouts/common/Breadcrumb";
 import EmployeeTable from "../../component/tables/EmployeeTable";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../stores/authStore";
 
 const Employee = () => {
-
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as { user: { role: string } };
-  const role = decodedToken?.user?.role;
+  const role = useAuthStore((state) => state.user?.role);
   
   return (
     <Layout>

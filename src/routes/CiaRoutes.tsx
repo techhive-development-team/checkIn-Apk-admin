@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import { client } from "../repositories/client";
 import Loading from "../component/layouts/common/Loading.tsx";
+import { useAuthStore } from "../stores/authStore";
 
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 
@@ -19,9 +20,6 @@ const UserCreatePage = lazy(
 const UserEditPage = lazy(() => import("../pages/User/Edit/UserEdit.tsx"));
 
 const CompanyPage = lazy(() => import("../pages/Company/Company.tsx"));
-const CompanyCreate = lazy(
-  () => import("../pages/Company/Create/CompanyCreate.tsx"),
-);
 const CompanyEdit = lazy(() => import("../pages/Company/Edit/CompanyEdit.tsx"));
 
 const EmployeePage = lazy(() => import("../pages/Employee/Employee.tsx"));
@@ -33,6 +31,9 @@ const EmployeeUpdate = lazy(
 );
 
 const AttendancePage = lazy(() => import("../pages/Attendance/Attendance.tsx"));
+const AttendanceDetail = lazy(
+  () => import("../pages/Attendance/Detail/AttendanceDetail.tsx"),
+);
 const AttendanceEdit = lazy(
   () => import("../pages/Attendance/Edit/AttendanceEdit.tsx"),
 );
@@ -60,14 +61,15 @@ const LeaveCreate = lazy(() => import("../pages/Leave/Create/LeaveCreate.tsx"));
 
 const ProtectedRoute: React.FC = () => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("token");
       if (!token) return setIsAuth(false);
 
       try {
         const res = await client.exec("/auth/verify-token", { method: "GET" });
+        
         setIsAuth(res?.success ?? false);
       } catch {
         setIsAuth(false);
@@ -75,7 +77,7 @@ const ProtectedRoute: React.FC = () => {
     };
 
     checkAuth();
-  }, []);
+  }, [token]);
 
   if (isAuth === null) return <Loading />;
 
@@ -97,7 +99,6 @@ const routes: AppRoute[] = [
   { path: "/user/:id/edit", element: UserEditPage, protected: true },
 
   { path: "/company", element: CompanyPage, protected: true },
-  { path: "/company/create", element: CompanyCreate, protected: true },
   { path: "/company/:id/edit", element: CompanyEdit, protected: true },
 
   { path: "/employee", element: EmployeePage, protected: true },
@@ -105,6 +106,7 @@ const routes: AppRoute[] = [
   { path: "/employee/:id/edit", element: EmployeeUpdate, protected: true },
 
   { path: "/attendance", element: AttendancePage, protected: true },
+  { path: "/attendance/:id", element: AttendanceDetail, protected: true },
   { path: "/attendance/:id/edit", element: AttendanceEdit, protected: true },
 
   { path: "/profile", element: ProfilePage, protected: true },

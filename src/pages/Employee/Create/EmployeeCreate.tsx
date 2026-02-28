@@ -6,13 +6,10 @@ import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 import Alert from "../../../component/forms/Alert";
 import InputFile from "../../../component/forms/InputFile";
 import InputText from "../../../component/forms/InputText";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../../stores/authStore";
 
 const EmployeeCreate = () => {
-
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
-  const companyId = decodedToken?.user?.companyId;
+  const companyId = useAuthStore((state) => state.user?.companyId ?? "");
   const {
     onSubmit,
     loading,

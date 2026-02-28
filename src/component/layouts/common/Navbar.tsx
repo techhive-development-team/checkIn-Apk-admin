@@ -1,30 +1,26 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import profile from "../../../assets/profile.jpg";
-import { jwtDecode } from "jwt-decode";
 import { baseUrl } from "../../../enum/urls";
+import { useAuthStore } from "../../../stores/authStore";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const logoutModalRef = useRef<HTMLDialogElement>(null);
+  const logout = useAuthStore((state) => state.logout);
 
   const openLogoutModal = () => logoutModalRef.current?.showModal();
   const handleLogout = () => {
     logoutModalRef.current?.close();
-    localStorage.removeItem("token");
+    logout();
     window.location.href = "/login";
   };
 
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  const decodedToken = jwtDecode<{
-    user: { name: string, logo: string };
-  }>(token);
-
-  const displayName = decodedToken.user.name || "User";
-  const displayImage = decodedToken?.user.logo
-    ? `${baseUrl.replace(/\/$/, "")}${decodedToken?.user.logo}`
+  const user = useAuthStore((state) => state.user);
+  
+  const displayName = user?.name || "User";
+  const displayImage = user?.logo
+    ? `${baseUrl.replace(/\/$/, "")}${user?.logo}`
     : profile;
 
   return (

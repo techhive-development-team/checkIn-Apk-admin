@@ -10,16 +10,13 @@ import {
   EmployeeUpdateSchema,
   type EmployeeUpdateForm,
 } from "../EmployeeValidationSchema";
-import { jwtDecode } from "jwt-decode";
 import { baseUrl } from "../../../enum/urls";
+import { useAuthStore } from "../../../stores/authStore";
 
 export const useEmployeeEditForm = () => {
   const { id } = useParams<{ id: string }>();
 
-  const token = localStorage.getItem("token");
-  const companyId = token
-    ? jwtDecode<{ user: { companyId: string } }>(token).user.companyId
-    : "";
+  const companyId = useAuthStore((state) => state.user?.companyId ?? "");
 
   const { data: employeeData } = useGetEmployeeById(companyId ?? "", id ?? "");
 

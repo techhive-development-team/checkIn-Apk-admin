@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useGetAttendance } from "../../hooks/useGetAttendance";
 import { attendanceRepository } from "../../repositories/attendanceRepository";
 import { baseUrl } from "../../enum/urls";
+import { useAuthStore } from "../../stores/authStore";
 
 const PAGE_SIZE = 10;
 
@@ -35,7 +36,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   toDate = "",
   employeeId = "",
 }) => {
-
+  const role = useAuthStore((state) => state.user?.role);
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -165,24 +166,35 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   </td>
                   <td className="flex gap-2">
                     <Link
-                      to={`/attendance/${attendance.id}/edit`}
-                      className="btn btn-sm"
+                      to={`/attendance/${attendance.id}`}
+                      className="btn btn-sm btn-info"
                     >
-                      Edit
+                      Detail
                     </Link>
 
-                    <button
-                      onClick={() => handleDelete(attendance)}
-                      className="btn btn-sm btn-error"
-                    >
-                      Delete
-                    </button>
+                    {role !== "USER" && (
+                      <>
+                        <Link
+                          to={`/attendance/${attendance.id}/edit`}
+                          className="btn btn-sm"
+                        >
+                          Edit
+                        </Link>
+
+                        <button
+                          onClick={() => handleDelete(attendance)}
+                          className="btn btn-sm btn-error"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center py-4">
+                <td colSpan={8} className="text-center py-4">
                   No attendance records found
                 </td>
               </tr>

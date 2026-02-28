@@ -3,6 +3,9 @@ import { useForm, type UseFormReturn } from "react-hook-form";
 import { useFormState } from "../../hooks/useFormState";
 import { authRepository } from "../../repositories/authRepository";
 import { SignupSchema, type SignupForm as Form } from "./signupValidationSchema";
+import { useAuthStore } from "../../stores/authStore";
+import { jwtDecode } from "jwt-decode";
+import type { JwtPayload } from "../../utils/commonUtil";
 
 const useSignupForm = () => {
   const methods: UseFormReturn<Form> = useForm<Form>({
@@ -21,6 +24,7 @@ const useSignupForm = () => {
   const { loading, success, message, show, handleSubmit } = useFormState<Form>();
 
   const onSubmit = async (data: Form) => {
+    const { login } = useAuthStore.getState();
     let logoBase64: string | undefined;
 
     if (data.logo instanceof File) {
@@ -44,7 +48,10 @@ const useSignupForm = () => {
       const response = await authRepository.signup(payload);
       if (response?.statusCode === 200) {
         console.log("Company signup successful:", response);
-        if (response.token) localStorage.setItem("token", response.token);
+        if (response.token) {
+          const jwtPayload = jwtDecode<JwtPayload>(response.token);
+          login(jwtPayload.user, response.token);
+        }
       }
       return response;
 

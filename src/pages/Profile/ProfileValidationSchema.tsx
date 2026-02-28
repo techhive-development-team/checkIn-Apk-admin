@@ -31,7 +31,7 @@ export const ClientProfileSchema = AdminProfileSchema.extend({
   companyType: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
-  totalEmployees: z.string().optional(),
+  totalEmployee: z.string().optional(),
 });
 
 export const UserProfileSchema = z.object({
