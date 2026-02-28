@@ -9,15 +9,10 @@ import {
   type UserProfileForm,
 } from "../ProfileValidationSchema";
 import { useGetUserById } from "../../../hooks/useGetUser";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../../stores/authStore";
 
 export const useUserProfileForm = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  const decodedToken = jwtDecode<{ user: { userId: string } }>(token);
-  const userId = decodedToken.user.userId;
-
+  const userId = useAuthStore((state) => state.user?.userId ?? "");
   // Fetch User table data
   const { data: userData } = useGetUserById(userId);
 
@@ -63,7 +58,7 @@ export const useUserProfileForm = () => {
         setProfilePreview(imageUrl);
       }
     }
-  });
+  }, [userData, reset]);
 
   const { loading, success, message, show, handleSubmit } =
     useFormState<UserProfileForm>();

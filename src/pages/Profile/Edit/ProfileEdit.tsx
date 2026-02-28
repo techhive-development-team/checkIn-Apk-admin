@@ -8,6 +8,7 @@ import InputFile from "../../../component/forms/InputFile";
 import { useAdminProfileEditForm } from "./useAdminProfileForm";
 import { useClientProfileEditForm } from "./useClientProfileForm";
 import { useAuthStore } from "../../../stores/authStore";
+import { useUserProfileForm } from "./useUserProfileForm";
 
 const ProfileEdit = () => {
   const role = useAuthStore((state) => state.user?.role);
