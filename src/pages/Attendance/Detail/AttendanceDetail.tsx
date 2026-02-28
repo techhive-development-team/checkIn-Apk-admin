@@ -6,6 +6,50 @@ import { useGetAttendanceById } from "../../../hooks/useGetAttendance";
 import { useAuthStore } from "../../../stores/authStore";
 import { baseUrl } from "../../../enum/urls";
 
+const parseCoordinates = (value?: string) => {
+  if (!value) return null;
+
+  const match = value.match(
+    /(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/,
+  );
+  if (!match) return null;
+
+  const latitude = Number(match[1]);
+  const longitude = Number(match[2]);
+
+  if (
+    Number.isNaN(latitude) ||
+    Number.isNaN(longitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    return null;
+  }
+
+  return { latitude, longitude };
+};
+
+const getGoogleMapsUrl = (value?: string) => {
+  const coordinates = parseCoordinates(value);
+  if (!coordinates) return null;
+  return `https://www.google.com/maps?q=${coordinates.latitude},${coordinates.longitude}`;
+};
+
+const getOpenStreetMapEmbedUrl = (value?: string) => {
+  const coordinates = parseCoordinates(value);
+  if (!coordinates) return null;
+
+  const delta = 0.0007;
+  const left = coordinates.longitude - delta;
+  const right = coordinates.longitude + delta;
+  const top = coordinates.latitude + delta;
+  const bottom = coordinates.latitude - delta;
+
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${coordinates.latitude}%2C${coordinates.longitude}`;
+};
+
 const AttendanceDetail = () => {
   const { id } = useParams<{ id: string }>();
   const role = useAuthStore((state) => state.user?.role);
@@ -36,6 +80,13 @@ const AttendanceDetail = () => {
     const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     return `${diffHours}h ${diffMinutes}m`;
   };
+
+  const checkInCoordinates = parseCoordinates(attendanceData?.checkInLocation);
+  const checkOutCoordinates = parseCoordinates(attendanceData?.checkOutLocation);
+  const checkInMapUrl = getGoogleMapsUrl(attendanceData?.checkInLocation);
+  const checkOutMapUrl = getGoogleMapsUrl(attendanceData?.checkOutLocation);
+  const checkInEmbedUrl = getOpenStreetMapEmbedUrl(attendanceData?.checkInLocation);
+  const checkOutEmbedUrl = getOpenStreetMapEmbedUrl(attendanceData?.checkOutLocation);
 
   if (isLoading) return <Loading />;
 
@@ -152,12 +203,52 @@ const AttendanceDetail = () => {
 
             <div className="rounded-lg border p-4">
               <p className="text-xs text-gray-500 mb-2">Check In Location</p>
-              <p className="font-semibold">{attendanceData.checkInLocation || "-"}</p>
+              <p className="font-semibold">
+                {checkInMapUrl || attendanceData.checkInLocation || "-"}
+              </p>
+              {checkInMapUrl && checkInCoordinates && (
+                <a
+                  href={checkInMapUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-blue-600 hover:underline mt-2 inline-block"
+                >
+                  View on Map
+                </a>
+              )}
+              {checkInEmbedUrl && (
+                <iframe
+                  title="Check In Map"
+                  src={checkInEmbedUrl}
+                  className="w-full h-48 mt-3 rounded-md border"
+                  loading="lazy"
+                />
+              )}
             </div>
 
             <div className="rounded-lg border p-4">
               <p className="text-xs text-gray-500 mb-2">Check Out Location</p>
-              <p className="font-semibold">{attendanceData.checkOutLocation || "-"}</p>
+              <p className="font-semibold">
+                {checkOutMapUrl || attendanceData.checkOutLocation || "-"}
+              </p>
+              {checkOutMapUrl && checkOutCoordinates && (
+                <a
+                  href={checkOutMapUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-blue-600 hover:underline mt-2 inline-block"
+                >
+                  View on Map
+                </a>
+              )}
+              {checkOutEmbedUrl && (
+                <iframe
+                  title="Check Out Map"
+                  src={checkOutEmbedUrl}
+                  className="w-full h-48 mt-3 rounded-md border"
+                  loading="lazy"
+                />
+              )}
             </div>
 
             <div className="rounded-lg border p-4">
