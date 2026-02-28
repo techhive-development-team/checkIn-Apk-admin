@@ -16,7 +16,15 @@ const ProfileEdit = () => {
     const formHook = useAdminProfileEditForm();
     if (!formHook) return null;
 
-    const { onSubmit, loading, success, message, show, logoPreview, ...methods } = formHook;
+    const {
+      onSubmit,
+      loading,
+      success,
+      message,
+      show,
+      logoPreview,
+      ...methods
+    } = formHook;
 
     return (
       <Layout>
@@ -33,7 +41,10 @@ const ProfileEdit = () => {
               <h3 className="text-2xl font-bold my-4">Edit Profile</h3>
 
               <FormProvider {...methods}>
-                <form className="space-y-4" onSubmit={methods.handleSubmit(onSubmit)}>
+                <form
+                  className="space-y-4"
+                  onSubmit={methods.handleSubmit(onSubmit)}
+                >
                   {show && <Alert success={success} message={message} />}
                   <InputText label="Name" name="name" />
                   <InputText label="Email" name="email" type="email" required />
@@ -43,7 +54,9 @@ const ProfileEdit = () => {
                     defaultImage={logoPreview}
                   />
                   <div className="pt-4 card-actions flex justify-between">
-                    <Link to="/profile" className="btn btn-soft">Back to Profile</Link>
+                    <Link to="/profile" className="btn btn-soft">
+                      Back to Profile
+                    </Link>
                     <button className="btn btn-primary" disabled={loading}>
                       {loading ? "Saving..." : "Update Profile"}
                     </button>
@@ -61,7 +74,15 @@ const ProfileEdit = () => {
     const formHook = useClientProfileEditForm();
     if (!formHook) return null;
 
-    const { onSubmit, loading, success, message, show, logoPreview, ...methods } = formHook;
+    const {
+      onSubmit,
+      loading,
+      success,
+      message,
+      show,
+      logoPreview,
+      ...methods
+    } = formHook;
 
     return (
       <Layout>
@@ -78,7 +99,10 @@ const ProfileEdit = () => {
               <h3 className="text-2xl font-bold my-4">Edit Profile</h3>
 
               <FormProvider {...methods}>
-                <form className="space-y-4" onSubmit={methods.handleSubmit(onSubmit)}>
+                <form
+                  className="space-y-4"
+                  onSubmit={methods.handleSubmit(onSubmit)}
+                >
                   {show && <Alert success={success} message={message} />}
                   <InputText label="Name" name="name" required />
                   <InputText label="Email" name="email" type="email" required />
@@ -92,7 +116,74 @@ const ProfileEdit = () => {
                     defaultImage={logoPreview}
                   />
                   <div className="pt-4 card-actions flex justify-between">
-                    <Link to="/profile" className="btn btn-soft">Back to Profile</Link>
+                    <Link to="/profile" className="btn btn-soft">
+                      Back to Profile
+                    </Link>
+                    <button className="btn btn-primary" disabled={loading}>
+                      {loading ? "Saving..." : "Update Profile"}
+                    </button>
+                  </div>
+                </form>
+              </FormProvider>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (role === "USER") {
+    const formHook = useUserProfileForm();
+    if (!formHook) return null;
+
+    const {
+      onSubmit,
+      loading,
+      success,
+      message,
+      show,
+      profilePreview,
+      ...methods
+    } = formHook;
+
+    return (
+      <Layout>
+        <div className="flex justify-start">
+          <div className="card card-bordered w-full max-w-2xl bg-base-100">
+            <div className="card-body">
+              <Breadcrumb
+                items={[
+                  { label: "Home", path: "/" },
+                  { label: "Profile", path: "/profile" },
+                  { label: "Edit Profile" },
+                ]}
+              />
+              <h3 className="text-2xl font-bold my-4">Edit Profile</h3>
+
+              <FormProvider {...methods}>
+                <form
+                  className="space-y-4"
+                  onSubmit={methods.handleSubmit(onSubmit)}
+                >
+                  {show && <Alert success={success} message={message} />}
+
+                  <InputText label="First Name" name="firstName" required />
+                  <InputText label="Last Name" name="lastName" required />
+                  <InputText label="Email" name="email" type="email" required />
+                  <InputText label="Position" name="position" />
+                  <InputText label="Phone" name="phone" />
+                  <InputText label="Address" name="address" />
+
+                  <InputFile
+                    label="Profile Picture"
+                    name="profilePic"
+                    defaultImage={profilePreview}
+                  />
+
+                  <div className="pt-4 card-actions flex justify-between">
+                    <Link to="/profile" className="btn btn-soft">
+                      Back to Profile
+                    </Link>
                     <button className="btn btn-primary" disabled={loading}>
                       {loading ? "Saving..." : "Update Profile"}
                     </button>
