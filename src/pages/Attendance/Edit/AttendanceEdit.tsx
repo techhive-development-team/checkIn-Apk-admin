@@ -51,6 +51,12 @@ const AttendanceEdit = () => {
                   name="checkInLocation"
                 />
 
+                <InputText
+                  name="checkInTime"
+                  label="Check In Time"
+                  type="datetime-local"
+                />
+
                 <InputFile
                   label="Check In Photo"
                   name="checkInPhoto"
@@ -60,6 +66,12 @@ const AttendanceEdit = () => {
                 <InputText
                   label="Check Out Location"
                   name="checkOutLocation"
+                />
+
+                <InputText
+                  name="checkOutTime"
+                  label="Check Out Time"
+                  type="datetime-local"
                 />
 
                 <InputFile

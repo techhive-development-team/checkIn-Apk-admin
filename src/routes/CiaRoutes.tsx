@@ -31,6 +31,9 @@ const EmployeeUpdate = lazy(
 );
 
 const AttendancePage = lazy(() => import("../pages/Attendance/Attendance.tsx"));
+const AttendanceDetail = lazy(
+  () => import("../pages/Attendance/Detail/AttendanceDetail.tsx"),
+);
 const AttendanceEdit = lazy(
   () => import("../pages/Attendance/Edit/AttendanceEdit.tsx"),
 );
@@ -103,6 +106,7 @@ const routes: AppRoute[] = [
   { path: "/employee/:id/edit", element: EmployeeUpdate, protected: true },
 
   { path: "/attendance", element: AttendancePage, protected: true },
+  { path: "/attendance/:id", element: AttendanceDetail, protected: true },
   { path: "/attendance/:id/edit", element: AttendanceEdit, protected: true },
 
   { path: "/profile", element: ProfilePage, protected: true },

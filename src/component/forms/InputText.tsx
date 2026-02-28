@@ -3,7 +3,7 @@ import { useFormContext } from "react-hook-form";
 type Props = {
   label: string;
   name: string;
-  type?: "text" | "email" | "password" | "checkbox" | "date" | "time";
+  type?: "text" | "email" | "password" | "checkbox" | "date" | "time" | "datetime-local";
   placeholder?: string;
   readonly?: boolean;
   required?: boolean;

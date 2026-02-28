@@ -164,28 +164,37 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       attendance.checkOutTime,
                     )}
                   </td>
-                  {role !== "USER" && (
-                    <td className="flex gap-2">
-                      <Link
-                        to={`/attendance/${attendance.id}/edit`}
-                        className="btn btn-sm"
-                      >
-                        Edit
-                      </Link>
+                  <td className="flex gap-2">
+                    <Link
+                      to={`/attendance/${attendance.id}`}
+                      className="btn btn-sm btn-info"
+                    >
+                      Detail
+                    </Link>
 
-                      <button
-                        onClick={() => handleDelete(attendance)}
-                        className="btn btn-sm btn-error"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  )}
+                    {role !== "USER" && (
+                      <>
+                        <Link
+                          to={`/attendance/${attendance.id}/edit`}
+                          className="btn btn-sm"
+                        >
+                          Edit
+                        </Link>
+
+                        <button
+                          onClick={() => handleDelete(attendance)}
+                          className="btn btn-sm btn-error"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center py-4">
+                <td colSpan={8} className="text-center py-4">
                   No attendance records found
                 </td>
               </tr>

@@ -7,6 +7,7 @@ import { useGetAttendanceById } from "../../../hooks/useGetAttendance";
 import { useFormState } from "../../../hooks/useFormState";
 import {
   AttendanceUpdateSchema,
+  type AttendanceUpdateFormInput,
   type AttendanceUpdateForm,
 } from "../AttendanceValidationSchema";
 import { baseUrl } from "../../../enum/urls";
@@ -15,10 +16,26 @@ export const useAttendanceEditForm = () => {
   const { id } = useParams<{ id: string }>();
   const { data: attendanceData } = useGetAttendanceById(id ?? "");
 
-  const methods: UseFormReturn<AttendanceUpdateForm> =
-    useForm<AttendanceUpdateForm>({
+  const toDateTimeLocalValue = (value?: string | Date) => {
+    if (!value) return undefined;
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return undefined;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const methods: UseFormReturn<AttendanceUpdateFormInput, any, AttendanceUpdateForm> =
+    useForm<AttendanceUpdateFormInput, any, AttendanceUpdateForm>({
       resolver: zodResolver(AttendanceUpdateSchema),
       defaultValues: {
+        checkInTime: undefined,
+        checkOutTime: undefined,
         checkInLocation: "",
         checkInPhoto: undefined,
         checkOutLocation: "",
@@ -41,7 +58,9 @@ export const useAttendanceEditForm = () => {
         checkInLocation: attendanceData.checkInLocation || "",
         checkInPhoto: undefined,
         checkOutLocation: attendanceData.checkOutLocation || "",
-        checkOutPhoto: undefined
+        checkOutPhoto: undefined,
+        checkInTime: toDateTimeLocalValue(attendanceData.checkInTime),
+        checkOutTime: toDateTimeLocalValue(attendanceData.checkOutTime),
       });
 
       if (attendanceData.checkInPhoto) {
