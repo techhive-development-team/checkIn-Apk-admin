@@ -3,11 +3,12 @@ import { useFormContext } from "react-hook-form";
 type Props = {
   label: string;
   name: string;
-  type?: "text" | "email" | "password" | "checkbox" | "date" | "time";
+  type?: "text" | "email" | "password" | "checkbox" | "date" | "time" | "number";
   placeholder?: string;
   readonly?: boolean;
   required?: boolean;
-  min?: string;
+  min?: string | number;
+  max?: string | number;
 };
 
 const InputText = ({
@@ -18,12 +19,19 @@ const InputText = ({
   readonly = false,
   required = false,
   min,
+  max,
 }: Props) => {
   const formContext = useFormContext();
   const register = formContext?.register;
   const errors = formContext?.formState.errors;
-
   const error = errors?.[name]?.message as string | undefined;
+
+  const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (type !== "number") return;
+    let value = e.target.value.replace(/\D/g, ""); 
+    if (value === "0") value = ""; 
+    e.target.value = value;
+  };
 
   if (type === "checkbox") {
     return (
@@ -35,8 +43,7 @@ const InputText = ({
           disabled={readonly}
         />
         <span className="text-sm font-medium text-gray-700">
-          {label}
-          {required && "*"}
+          {label} {required && "*"}
         </span>
         {error && <span className="text-red-500 ml-2 text-xs">{error}</span>}
       </div>
@@ -54,7 +61,9 @@ const InputText = ({
         placeholder={placeholder || `Enter your ${label.toLowerCase()}`}
         readOnly={readonly}
         disabled={readonly}
-        min={type === "date" ? min : undefined}
+        min={min}
+        max={max}
+        onChange={handleNumberInput} 
         className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400
           bg-transparent text-gray-400 placeholder-gray-400
           ${error ? "border-red-500" : "border-gray-300"}

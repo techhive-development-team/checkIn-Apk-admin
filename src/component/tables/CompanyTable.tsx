@@ -14,7 +14,7 @@ export type Company = {
   companyType?: string;
   address?: string;
   phone?: string;
-  // totalEmployee?: string;
+  totalEmployee?: string;
   status: string;
   subScribeStatus: string;
   createdAt: string;
@@ -130,7 +130,7 @@ const CompanyTable: React.FC = () => {
               <th>Email</th>
               <th>Type</th>
               <th>Phone</th>
-              {/* <th>Total Employee</th> */}
+              <th>Total Employee</th>
               <th>Subscription</th>
               <th>Status</th>
               <th>Created At</th>
@@ -162,7 +162,7 @@ const CompanyTable: React.FC = () => {
                   <td>{company.email}</td>
                   <td>{company.companyType || "-"}</td>
                   <td>{company.phone || "-"}</td>
-                  {/* <td>{company.totalEmployee || "-"}</td> */}
+                  <td>{company.totalEmployee || "-"}</td>
 
                   <td>
                     <span

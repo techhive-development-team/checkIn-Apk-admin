@@ -40,7 +40,11 @@ export const CompanyCreateSchema = z.object({
     ),
   companyType: z.string().optional(),
   address: z.string().optional(),
-  phone: z.string().optional()
+  phone: z.string().optional(),
+  totalEmployee: z
+    .string()
+    .min(1, "Total employees must be at least 1")
+    .optional(),
 });
 
 export type CompanyCreateForm = z.infer<typeof CompanyCreateSchema>;
@@ -73,6 +77,10 @@ export const CompanyEditSchema = z.object({
   phone: z.string().optional(),
   subScribeStatus: z.string().optional(), 
   status: z.string().optional(), 
+  totalEmployee: z
+    .string()
+    .min(1, "Total employees must be at least 1")
+    .optional(),
 });
 
 export type CompanyUpdateForm = z.infer<typeof CompanyEditSchema>;

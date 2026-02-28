@@ -25,6 +25,7 @@ export const useCompanyEditForm = () => {
       companyType: "",
       address: "",
       phone: "",
+      totalEmployee: "",
       subScribeStatus: "Inactive",
       status: "active",
     },
@@ -35,7 +36,6 @@ export const useCompanyEditForm = () => {
 
   useEffect(() => {
     if (companyData) {
-
       reset({
         name: companyData.name || "",
         email: companyData.email || "",
@@ -43,6 +43,8 @@ export const useCompanyEditForm = () => {
         companyType: companyData.companyType || "",
         address: companyData.address || "",
         phone: companyData.phone || "",
+        totalEmployee: companyData.totalEmployee || "",
+
         subScribeStatus: companyData.subScribeStatus || "Inactive",
         status: companyData.status || "active",
       });

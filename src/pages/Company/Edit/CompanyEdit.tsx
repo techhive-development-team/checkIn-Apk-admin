@@ -39,7 +39,7 @@ const CompanyEdit = () => {
                 <InputText label="Company Type" name="companyType" />
                 <InputText label="Address" name="address" />
                 <InputText label="Phone" name="phone" />
-                {/* <InputText label="Total Employees" name="totalEmployee" /> */}
+                <InputText label="Total Employees" name="totalEmployee" type="number" />
 
                 <InputFile
                   label="Logo"
