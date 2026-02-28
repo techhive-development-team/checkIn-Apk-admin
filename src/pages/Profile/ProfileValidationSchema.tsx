@@ -42,7 +42,7 @@ export const UserProfileSchema = z.object({
   phone: z.string().optional(),
   address: z.string().optional(),
 
-  logo: z
+  profilePic: z
     .any()
     .optional()
     .refine((file) => !file || file instanceof File || typeof file === "string", {

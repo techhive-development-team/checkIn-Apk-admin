@@ -18,10 +18,8 @@ export const useUserProfileForm = () => {
   const decodedToken = jwtDecode<{ user: { userId: string } }>(token);
   const userId = decodedToken.user.userId;
 
-  // Fetch User table data
   const { data: userData } = useGetUserById(userId);
 
-  // Get employeeId from User table
   const employeeId = userData?.employee?.employeeId;
   const companyId = userData?.employee?.companyId;
 
@@ -32,57 +30,57 @@ export const useUserProfileForm = () => {
       lastName: userData?.employee?.lastName || "",
       email: userData?.email || "",
       position: userData?.employee?.position || "",
-      phone: userData?.employeeData?.phone || "",
-      address: userData?.employeeData?.address || "",
-      logo: userData?.logo || "",
+      phone: userData?.employee?.phone || "",
+      address: userData?.employee?.address || "",
+      profilePic: userData?.employee?.profilePic || "", 
     },
   });
 
   const { reset } = methods;
 
   const [profilePreview, setProfilePreview] = useState<string | undefined>(
-    userData?.logo
-      ? `${baseUrl.replace(/\/$/, "")}/${userData.logo.replace(/^\//, "")}`
-      : undefined,
+    userData?.employee?.profilePic
+      ? `${baseUrl.replace(/\/$/, "")}/${userData.employee.profilePic.replace(/^\//, "")}`
+      : undefined
   );
 
   useEffect(() => {
-    if (userData) {
-      reset({
-        firstName: userData.employee?.firstName || "",
-        lastName: userData.employee?.lastName || "",
-        email: userData.email || "",
-        position: userData.employee?.position || "",
-        phone: userData.employee?.phone || "",
-        address: userData.employee?.address || "",
-        logo: userData.logo || "",
-      });
+    if (!userData) return;
 
-      if (userData.logo) {
-        const imageUrl = `${baseUrl.replace(/\/$/, "")}/${userData.logo.replace(/^\//, "")}`;
-        setProfilePreview(imageUrl);
-      }
+    reset({
+      firstName: userData.employee?.firstName || "",
+      lastName: userData.employee?.lastName || "",
+      email: userData.email || "",
+      position: userData.employee?.position || "",
+      phone: userData.employee?.phone || "",
+      address: userData.employee?.address || "",
+      profilePic: userData.employee?.profilePic || "",
+    });
+
+    if (userData.employee?.profilePic) {
+      const imageUrl = `${baseUrl.replace(/\/$/, "")}/${userData.employee.profilePic.replace(/^\//, "")}`;
+      setProfilePreview(imageUrl);
     }
-  });
+  }, [userData, reset]);
 
   const { loading, success, message, show, handleSubmit } =
     useFormState<UserProfileForm>();
-
+ 
   const onSubmit = async (data: UserProfileForm) => {
     const payload: any = { ...data };
 
-    if (!(data.logo instanceof File)) {
-      delete payload.logo;
+    if (!(data.profilePic instanceof File)) {
+      delete payload.profilePic; 
     } else {
-      payload.logo = await new Promise<string>((resolve) => {
+      payload.profilePic = await new Promise<string>((resolve) => {
         const reader = new FileReader();
-        reader.readAsDataURL(data.logo);
+        reader.readAsDataURL(data.profilePic);
         reader.onloadend = () => resolve(reader.result as string);
       });
     }
 
     await handleSubmit(() =>
-      employeeRepository.updateEmployee(companyId, employeeId, payload),
+      employeeRepository.updateEmployee(companyId, employeeId, payload)
     );
   };
 

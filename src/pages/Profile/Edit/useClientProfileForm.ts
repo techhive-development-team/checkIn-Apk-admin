@@ -37,7 +37,7 @@ export const useClientProfileEditForm = () => {
     },
   });
 
-  const { reset, setValue } = methods;
+  const { reset } = methods;
   const [logoPreview, setLogoPreview] = useState<string | undefined>(
     userData?.logo
       ? `${baseUrl.replace(/\/$/, "")}/${userData.logo.replace(/^\//, "")}`
