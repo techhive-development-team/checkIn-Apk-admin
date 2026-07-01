@@ -2,26 +2,35 @@ import { NavLink, useLocation } from "react-router-dom";
 import { employeeSidebarRoutes, type SidebarRoute, sidebarRoutes, userSidebarRoutes } from "./sidebarRoutes.tsx";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useGetUserById } from "../../../hooks/useGetUser";
 
 const Sidebar = () => {
   const location = useLocation();
 
   const [sideBar, setSideBar] = useState<SidebarRoute[]>([]);
+  const token = localStorage.getItem("token");
+  const decodedToken = token
+    ? jwtDecode<{ user: { role: string; userId: string } }>(token)
+    : null;
+  const role = decodedToken?.user?.role;
+  const userId = decodedToken?.user?.userId;
+  const { data: userData } = useGetUserById(userId || "");
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if(!token) return;
+    if (!token || !role) return;
 
-    const decodedToken = jwtDecode<{ user: {role: string}}> (token);
-    const role = decodedToken?.user?.role;
-
-    if (role === "ADMIN"){
+    if (role === "ADMIN") {
       setSideBar(sidebarRoutes);
-    } else if( role === "CLIENT") {
-      setSideBar(userSidebarRoutes);
+    } else if (role === "CLIENT") {
+      const isCompanyType = userData?.company?.type === "Company";
+      const clientRoutes = isCompanyType
+        ? userSidebarRoutes.filter((route) => route.path !== "/student")
+        : userSidebarRoutes;
+      setSideBar(clientRoutes);
     } else {
       setSideBar(employeeSidebarRoutes);
     }
-  }, [location.pathname]);
+  }, [location.pathname, role, token, userData?.company?.type]);
 
   const closeDrawer = () => {
     const drawer = document.getElementById("my-drawer") as HTMLInputElement;
@@ -36,8 +45,8 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-base-100 h-full min-h-screen border-r border-base-300">
-      <div className="px-6 py-6 border-b border-base-300">
+    <aside className="w-64 app-sidebar h-full min-h-screen border-r app-border">
+      <div className="px-6 py-6 border-b app-border">
         <h2 className="text-lg font-semibold text-base-content">Navigation</h2>
       </div>
 

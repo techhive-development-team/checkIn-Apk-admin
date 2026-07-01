@@ -11,6 +11,7 @@ export const useLeaveCreateForm = () => {
   const methods: UseFormReturn<Form> = useForm<Form>({
     resolver: zodResolver(LeaveRequestCreateSchema),
     defaultValues: {
+      employeeId: "",
       leaveType: undefined, 
       startDate: "",
       endDate: "",
@@ -36,7 +37,11 @@ export const useLeaveCreateForm = () => {
       });
     }
 
-    const payload = { ...data, file: fileBase64 };
+    const payload = {
+      ...data,
+      employeeId: data.employeeId?.trim() || undefined,
+      file: fileBase64,
+    };
     await handleSubmit(() => leaveRequestRepository.createLeave(payload));
   };
 

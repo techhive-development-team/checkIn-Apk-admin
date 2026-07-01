@@ -1,7 +1,13 @@
 import { API_URLS } from "../enum/urls";
 import { client } from "./client";
 
-const getAll = async (params?: { limit?: number; offset?: number }) => {
+const getAll = async (params?: {
+  limit?: number;
+  offset?: number;
+  fromDate?: string;
+  toDate?: string;
+  employeeId?: string;
+}) => {
     const query = new URLSearchParams(params as any).toString();
 
     const response = await client.exec(

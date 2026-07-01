@@ -28,6 +28,7 @@ export const useLeaveEditForm = () => {
     useForm<LeaveRequestCreateForm>({
       resolver: zodResolver(LeaveRequestCreateSchema),
       defaultValues: {
+        employeeId: "",
         leaveType: undefined,
         startDate: "",
         endDate: "",
@@ -42,6 +43,7 @@ export const useLeaveEditForm = () => {
   useEffect(() => {
     if (leaveData) {
       reset({
+        employeeId: leaveData.employeeId || "",
         leaveType: leaveData.leaveType,
         startDate: formatDateForInput(leaveData.startDate),
         endDate: formatDateForInput(leaveData.endDate),
@@ -75,6 +77,7 @@ export const useLeaveEditForm = () => {
 
     const payload = {
       ...data,
+      employeeId: data.employeeId?.trim() || undefined,
       file: fileBase64,
     };
 
@@ -91,5 +94,6 @@ export const useLeaveEditForm = () => {
     message,
     show,
     filePreview,
+    leaveData,
   };
 };

@@ -22,26 +22,23 @@ export default function RadioInput({ name, label, options, required }: Props) {
 
   return (
     <div className="form-control w-full">
-      <label className="label">
-        <span className="label-text font-semibold">
+      <label className="label pb-1">
+        <span className="text-sm font-semibold text-base-content">
           {label}
           {required && <span className="text-red-400">*</span>}
         </span>
       </label>
 
-      <div className="flex flex-row gap-2">
+      <div className="mt-1 flex flex-wrap items-center gap-x-5 gap-y-2">
         {options.map((option) => (
-          <label
-            key={option.value}
-            className="cursor-pointer label justify-start gap-2"
-          >
+          <label key={option.value} className="inline-flex cursor-pointer items-center gap-2.5">
             <input
               type="radio"
-              className="radio radio-primary"
+              className="radio radio-sm text-sky-600"
               value={option.value}
               {...register(name, { required })}
             />
-            <span className="label-text">{option.label}</span>
+            <span className="text-sm text-base-content">{option.label}</span>
           </label>
         ))}
       </div>

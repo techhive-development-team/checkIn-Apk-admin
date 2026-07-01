@@ -20,7 +20,7 @@ export const useClientProfileEditForm = () => {
   );
   const userId = decodedToken.user.userId;
 
-  const { data: userData } = useGetUserById(userId);
+  const { data: userData, mutate: mutateUserData } = useGetUserById(userId);
 
   const companyId = userData?.company?.companyId;
 
@@ -29,11 +29,12 @@ export const useClientProfileEditForm = () => {
     defaultValues: {
       name: userData?.name || "",
       email: userData?.email || "",
+      recoveryEmail: userData?.company?.recoveryEmail || "",
       logo: userData?.logo || "",
-      companyType: userData?.company?.companyType || "",
+      type: (userData?.company?.type as "Company" | "Academic" | undefined) || undefined,
+      subType: userData?.company?.subType || "",
       phone: userData?.company?.phone || "",
       address: userData?.company?.address || "",
-      totalEmployees: userData?.company?.totalEmployee || "",
     },
   });
 
@@ -49,11 +50,12 @@ export const useClientProfileEditForm = () => {
       reset({
         name: userData.name || "",
         email: userData.email || "",
+        recoveryEmail: userData.company?.recoveryEmail || "",
         logo: userData.logo || "",
-        companyType: userData.company?.companyType || "",
+        type: (userData.company?.type as "Company" | "Academic" | undefined) || undefined,
+        subType: userData.company?.subType || "",
         phone: userData.company?.phone || "",
         address: userData.company?.address || "",
-        totalEmployees: userData.company?.totalEmployee || "",
       });
 
       if (userData.logo) {
@@ -65,9 +67,18 @@ export const useClientProfileEditForm = () => {
 
   const { loading, success, message, show, handleSubmit } =
     useFormState<ClientProfileForm>();
+  const [verifyingRecovery, setVerifyingRecovery] = useState(false);
+  const [recoveryVerifySuccess, setRecoveryVerifySuccess] = useState(false);
+  const [recoveryVerifyMessage, setRecoveryVerifyMessage] = useState("");
+  const [showRecoveryVerifyMessage, setShowRecoveryVerifyMessage] =
+    useState(false);
 
   const onSubmit = async (data: ClientProfileForm) => {
-    const payload: any = { ...data };
+    const payload: any = {
+      ...data,
+      recoveryEmail: data.recoveryEmail || undefined,
+      subType: data.type === "Company" ? data.subType : undefined,
+    };
 
     if (!(data.logo instanceof File)) {
       delete payload.logo;
@@ -84,13 +95,50 @@ export const useClientProfileEditForm = () => {
     );
   };
 
+  const sendRecoveryVerification = async () => {
+    if (!companyId) return;
+    setVerifyingRecovery(true);
+    setShowRecoveryVerifyMessage(false);
+    setRecoveryVerifyMessage("");
+    setRecoveryVerifySuccess(false);
+    try {
+      const response = await companyRepository.sendRecoveryEmailVerification(
+        companyId,
+      );
+      setRecoveryVerifySuccess(true);
+      setRecoveryVerifyMessage(
+        response?.message || "Verification email sent successfully.",
+      );
+    } catch (error: any) {
+      setRecoveryVerifySuccess(false);
+      setRecoveryVerifyMessage(
+        error?.message || "Failed to send verification email.",
+      );
+    } finally {
+      setShowRecoveryVerifyMessage(true);
+      setVerifyingRecovery(false);
+    }
+  };
+
+  const refreshVerificationStatus = async () => {
+    await mutateUserData();
+  };
+
   return {
     ...methods,
+    userData,
+    companyId,
     onSubmit,
     loading,
     success,
     message,
     show,
     logoPreview,
+    verifyingRecovery,
+    recoveryVerifySuccess,
+    recoveryVerifyMessage,
+    showRecoveryVerifyMessage,
+    sendRecoveryVerification,
+    refreshVerificationStatus,
   };
 };

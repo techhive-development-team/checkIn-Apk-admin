@@ -6,6 +6,11 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const SignupSchema = z.object({
   name: z.string().min(2, "Company name is required"),
   email: z.string().email("Valid email is required"),
+  recoveryEmail: z.string().email("Valid recovery email is required"),
+  type: z.enum(["Company", "Academic"], {
+    message: "Type is required",
+  }),
+  subType: z.string().optional(),
   logo: z
     .any()
     .optional()
@@ -22,9 +27,16 @@ export const SignupSchema = z.object({
         !(file instanceof File) || ACCEPTED_IMAGE_TYPES.includes(file.type),
       { message: "Only JPEG, PNG, or WEBP are allowed" }
     ),
-  companyType: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-});
+})
+  .refine((data) => data.recoveryEmail !== data.email, {
+    message: "Recovery email must be different from login email",
+    path: ["recoveryEmail"],
+  })
+  .refine((data) => data.type !== "Company" || !!data.subType?.trim(), {
+    message: "Company Type is required when Type is Company",
+    path: ["subType"],
+  });
 
 export type SignupForm = z.infer<typeof SignupSchema>;

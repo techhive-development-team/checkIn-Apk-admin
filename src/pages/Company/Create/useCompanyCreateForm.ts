@@ -10,8 +10,10 @@ export const useCompanyCreateForm = () => {
     defaultValues: {
       name: "",
       email: "",
+      recoveryEmail: "",
+      type: "Academic",
+      subType: "",
       logo: "",
-      companyType: "",
       address: "",
       phone: "",
       // totalEmployee: ""
@@ -35,7 +37,12 @@ export const useCompanyCreateForm = () => {
       });
     }
 
-    const payload = { ...data, logo: logoBase64 };
+    const payload = {
+      ...data,
+      logo: logoBase64,
+      recoveryEmail: data.recoveryEmail || undefined,
+      subType: data.type === "Company" ? data.subType : undefined,
+    };
     await handleSubmit(() => companyRepository.createCompany(payload));
   };
 

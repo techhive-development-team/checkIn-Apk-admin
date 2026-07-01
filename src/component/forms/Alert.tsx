@@ -1,12 +1,33 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type AlertProps = {
   success?: boolean;
   message: string | string[];
+  autoHideMs?: number;
 };
 
-const Alert: React.FC<AlertProps> = ({ success = true, message }) => {
+const Alert: React.FC<AlertProps> = ({
+  success = true,
+  message,
+  autoHideMs = 4000,
+}) => {
   const messages = Array.isArray(message) ? message : [message];
+  const [visible, setVisible] = useState(true);
+  const messageKey = useMemo(
+    () => `${success}-${JSON.stringify(messages)}`,
+    [success, messages],
+  );
+
+  useEffect(() => {
+    setVisible(true);
+    const timer = window.setTimeout(() => {
+      setVisible(false);
+    }, autoHideMs);
+
+    return () => window.clearTimeout(timer);
+  }, [messageKey, autoHideMs]);
+
+  if (!visible) return null;
 
   return (
     <div

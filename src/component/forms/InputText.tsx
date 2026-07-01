@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useFormContext } from "react-hook-form";
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
   required?: boolean;
   min?: string | number;
   max?: string | number;
+  rightBadge?: ReactNode;
 };
 
 const InputText = ({
@@ -20,6 +22,7 @@ const InputText = ({
   required = false,
   min,
   max,
+  rightBadge,
 }: Props) => {
   const formContext = useFormContext();
   const register = formContext?.register;
@@ -55,20 +58,28 @@ const InputText = ({
       <label className="block text-sm font-semibold mb-1 text-gray-700">
         {label} {required && <span className="text-red-400">*</span>}
       </label>
-      <input
-        {...(register ? register(name) : {})}
-        type={type}
-        placeholder={placeholder || `Enter your ${label.toLowerCase()}`}
-        readOnly={readonly}
-        disabled={readonly}
-        min={min}
-        max={max}
-        onChange={handleNumberInput} 
-        className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400
+      <div className="relative">
+        <input
+          {...(register ? register(name) : {})}
+          type={type}
+          placeholder={placeholder || `Enter your ${label.toLowerCase()}`}
+          readOnly={readonly}
+          disabled={readonly}
+          min={min}
+          max={max}
+          onChange={handleNumberInput}
+          className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-400
           bg-transparent text-gray-400 placeholder-gray-400
           ${error ? "border-red-500" : "border-gray-300"}
-          ${readonly ? "cursor-not-allowed" : ""}`}
-      />
+          ${readonly ? "cursor-not-allowed" : ""}
+          ${rightBadge ? "pr-12" : ""}`}
+        />
+        {rightBadge && (
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+            {rightBadge}
+          </span>
+        )}
+      </div>
       {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>
   );

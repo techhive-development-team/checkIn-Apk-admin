@@ -1,14 +1,25 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCompanyCreateForm } from "./useCompanyCreateForm";
 import Layout from "../../../component/layouts/layout";
 import { FormProvider } from "react-hook-form";
 import Alert from "../../../component/forms/Alert";
 import InputText from "../../../component/forms/InputText";
 import InputFile from "../../../component/forms/InputFile";
+import InputSelect from "../../../component/forms/InputSelect";
+import RadioInput from "../../../component/forms/RadioInput";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
+import { useEffect } from "react";
 
 const CompanyCreate = () => {
+  const navigate = useNavigate();
   const { onSubmit, loading, success, message, show, ...methods } = useCompanyCreateForm();
+  const selectedType = methods.watch("type");
+
+  useEffect(() => {
+    if (success) {
+      navigate("/company");
+    }
+  }, [success, navigate]);
 
   return (
     <Layout>
@@ -30,7 +41,37 @@ const CompanyCreate = () => {
 
                 <InputText label="Company Name" name="name" required />
                 <InputText label="Email" name="email" required type="email" />
-                <InputText label="Company Type" name="companyType" />
+                <RadioInput
+                  label="Type"
+                  name="type"
+                  required
+                  options={[
+                    { label: "Company", value: "Company" },
+                    { label: "Academic", value: "Academic" },
+                  ]}
+                />
+                {selectedType === "Company" && (
+                  <InputSelect
+                    label="Company Type"
+                    name="subType"
+                    required
+                    options={[
+                      { label: "Private", value: "Private" },
+                      { label: "Public", value: "Public" },
+                      { label: "NGO", value: "NGO" },
+                      { label: "Startup", value: "Startup" },
+                    ]}
+                  />
+                )}
+                <InputText
+                  label="Recovery Email"
+                  name="recoveryEmail"
+                  type="email"
+                  required
+                />
+                <p className="-mt-2 mb-3 text-xs text-base-content/70">
+                  Used for account recovery if you lose access to primary email.
+                </p>
                 <InputText label="Address" name="address" />
                 <InputText label="Phone" name="phone" />
                 {/* <InputText label="Total Employees" name="totalEmployee" /> */}

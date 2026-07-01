@@ -4,12 +4,11 @@ import Breadcrumb from "../../component/layouts/common/Breadcrumb";
 import EmployeeTable from "../../component/tables/EmployeeTable";
 import { jwtDecode } from "jwt-decode";
 
-const Employee = () => {
-
+const Student = () => {
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token!) as { user: { role: string } };
   const role = decodedToken?.user?.role;
-  
+
   return (
     <Layout>
       <div className="card card-bordered w-full bg-base-100 mb-6">
@@ -17,7 +16,7 @@ const Employee = () => {
           <Breadcrumb
             items={[
               { label: "Home", path: "/" },
-              { label: "Employee Management" },
+              { label: "Student Management" },
             ]}
           />
         </div>
@@ -26,21 +25,21 @@ const Employee = () => {
       <div className="card card-bordered w-full bg-base-100">
         <div className="card-body">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-bold">Employee List</h3>
+            <h3 className="text-2xl font-bold">Student List</h3>
             {role === "CLIENT" && (
               <Link
-                to="/employee/create"
+                to="/student/create"
                 className="btn btn-primary rounded-lg"
               >
-                Create Employee
+                Create Student
               </Link>
             )}
           </div>
-          <EmployeeTable memberType="EMPLOYEE" editBasePath="/employee" />
+          <EmployeeTable memberType="STUDENT" editBasePath="/student" />
         </div>
       </div>
     </Layout>
   );
 };
 
-export default Employee;
+export default Student;

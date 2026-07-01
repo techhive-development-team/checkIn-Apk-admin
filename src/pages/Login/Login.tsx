@@ -23,13 +23,15 @@ const Login = () => {
         >
           <div className="w-full max-w-md mx-auto">
             
-            <div className="flex justify-center mb-3 items-start">
-              <span className="text-4xl sm:text-4xl md:text-6xl font-extrabold text-sky-600">
-                CheckIn+
+            <div className="flex flex-col items-center mb-7 w-full">
+              <img
+                src="/login-logo.png"
+                alt="CheckIn logo"
+                className="h-auto max-h-[56px] w-auto max-w-[220px] object-contain"
+              />
+              <span className="mt-2 text-center text-gray-500 font-semibold">
+                Login to your account
               </span>
-            </div>
-            <div className="flex justify-center mb-9">
-              <span className="text-gray-500 font-semibold">Login to your account</span>
             </div>
 
             <FormProvider {...methods}>
@@ -104,10 +106,10 @@ const Login = () => {
         <div className="hidden md:flex flex-1 items-center justify-center p-12">
           <div className="text-center max-w-sm pointer-events-none">
             <h2 className="text-5xl font-extrabold text-[#23356b] mb-6 leading-[1.1] tracking-tight">
-              Welcome back
+              Welcome 
             </h2>
             <p className="text-blue-950 text-xl leading-relaxed">
-              Everything is ready for you to dive back into your projects.
+            Smart, Secure and Scalable
             </p>
           </div>
         </div>

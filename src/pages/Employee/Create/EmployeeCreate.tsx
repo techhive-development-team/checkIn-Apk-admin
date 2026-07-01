@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FormProvider } from "react-hook-form";
 import { useEmployeeCreateForm } from "./useEmployeeCreateForm";
 import Layout from "../../../component/layouts/layout";
@@ -7,8 +7,13 @@ import Alert from "../../../component/forms/Alert";
 import InputFile from "../../../component/forms/InputFile";
 import InputText from "../../../component/forms/InputText";
 import { jwtDecode } from "jwt-decode";
+import { useEffect } from "react";
 
 const EmployeeCreate = () => {
+  const navigate = useNavigate();
+  const createLabel = "Create Employee";
+  const backPath = "/employee";
+  const backLabel = "Back to Employees";
 
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
@@ -20,7 +25,13 @@ const EmployeeCreate = () => {
     message,
     show,
     ...methods
-  } = useEmployeeCreateForm(companyId);
+  } = useEmployeeCreateForm(companyId, "EMPLOYEE");
+
+  useEffect(() => {
+    if (success) {
+      navigate(backPath);
+    }
+  }, [success, navigate, backPath]);
 
   return (
     <Layout>
@@ -29,12 +40,12 @@ const EmployeeCreate = () => {
           <Breadcrumb
             items={[
               { label: "Home", path: "/" },
-              { label: "Employee", path: `/employee` },
+              { label: "Employee", path: "/employee" },
               { label: "Add Employee" },
             ]}
           />
 
-          <h3 className="text-2xl font-bold my-4">Create Employee</h3>
+          <h3 className="text-2xl font-bold my-4">{createLabel}</h3>
 
           <FormProvider {...methods}>
             <form
@@ -62,14 +73,14 @@ const EmployeeCreate = () => {
 
               <div className="pt-4 card-actions flex justify-between">
                 <Link
-                  to={`/employee`}
+                  to={backPath}
                   className="btn btn-soft"
                 >
-                  Back to Employees
+                  {backLabel}
                 </Link>
 
                 <button className="btn btn-primary" disabled={loading}>
-                  {loading ? "loading..." : "Create Employee"}
+                  {loading ? "loading..." : createLabel}
                 </button>
               </div>
             </form>

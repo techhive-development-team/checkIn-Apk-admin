@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type UseFormReturn, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useFormState } from "../../../hooks/useFormState";
 import { employeeRepository } from "../../../repositories/employeeRepository";
 import {
@@ -7,13 +7,25 @@ import {
   type EmployeeCreateForm as Form,
 } from "../EmployeeValidationSchema";
 
-export const useEmployeeCreateForm = (companyId: string) => {
-  const methods: UseFormReturn<Form> = useForm<Form>({
+export const useEmployeeCreateForm = (
+  companyId: string,
+  fixedMemberType: "EMPLOYEE" | "STUDENT" = "EMPLOYEE",
+) => {
+  const methods = useForm<Form>({
     resolver: zodResolver(EmployeeCreateSchema),
     defaultValues: {
+      memberType: fixedMemberType,
       profilePic: undefined,
       firstName: "",
       lastName: "",
+      studentClass: "",
+      classTime: "",
+      classTimeFrom: "",
+      classTimeTo: "",
+      duration: "",
+      durationFrom: "",
+      durationTo: "",
+      classDays: [],
       position: "",
       email: "",
       phone: "",
@@ -40,9 +52,10 @@ export const useEmployeeCreateForm = (companyId: string) => {
     }
 
     const payload = {
-    ...data,
-    profilePic: profilePicBase64, 
-  };
+      ...data,
+      memberType: fixedMemberType,
+      profilePic: profilePicBase64,
+    };
 
     await handleSubmit(() =>
       employeeRepository.createEmployee(companyId, payload)

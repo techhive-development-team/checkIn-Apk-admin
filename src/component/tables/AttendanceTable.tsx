@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetAttendance } from "../../hooks/useGetAttendance";
 import { attendanceRepository } from "../../repositories/attendanceRepository";
 import { baseUrl } from "../../enum/urls";
+import { useGetEmployee } from "../../hooks/useGetEmployee";
+import { useGetLeave } from "../../hooks/useGetLeave";
+import { jwtDecode } from "jwt-decode";
 
 const PAGE_SIZE = 10;
 
@@ -22,65 +25,167 @@ export type Attendance = {
   checkInLocation?: string;
   checkOutLocation?: string;
   createdAt: string;
+  rowStatus?: "PRESENT" | "LEAVE" | "ABSENT";
+  leaveType?: string;
+  synthetic?: boolean;
 };
 
 interface AttendanceTableProps {
   fromDate?: string;
   toDate?: string;
   employeeId?: string;
+  workStartTime?: string;
+  workEndTime?: string;
+  graceMinutes?: number;
+  memberType?: "EMPLOYEE" | "STUDENT";
 }
 
 const AttendanceTable: React.FC<AttendanceTableProps> = ({
   fromDate = "",
   toDate = "",
   employeeId = "",
+  workStartTime = "",
+  workEndTime = "",
+  graceMinutes = 0,
+  memberType,
 }) => {
+  const token = localStorage.getItem("token");
+  const decodedToken = token
+    ? jwtDecode<{ user: { companyId?: string; role: string } }>(token)
+    : null;
+  const companyId = decodedToken?.user?.companyId;
+  const role = decodedToken?.user?.role;
+  const isSingleDateView =
+    !!fromDate && !!toDate && fromDate === toDate;
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
+  const apiLimit = isSingleDateView ? 1000 : PAGE_SIZE;
+  const apiOffset = isSingleDateView ? 0 : offset;
 
   const {
     data: attendances,
     total,
     mutate,
   } = useGetAttendance({
-    limit: PAGE_SIZE,
-    offset,
+    limit: apiLimit,
+    offset: apiOffset,
     fromDate,
     toDate,
-    employeeId
+    employeeId,
   });
 
-  const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
+  const { data: employees } = useGetEmployee(
+    role === "USER"
+      ? undefined
+      : {
+          companyId,
+          memberType,
+          limit: 1000,
+          offset: 0,
+        },
+  );
+  const { data: leaves } = useGetLeave({
+    limit: 1000,
+    offset: 0,
+    fromDate,
+    toDate,
+    employeeId: employeeId || undefined,
+  });
 
   const [selectedAttendance, setSelectedAttendance] =
     useState<Attendance | null>(null);
+  const [selectedAttendanceIds, setSelectedAttendanceIds] = useState<string[]>(
+    [],
+  );
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  useEffect(() => {
+    setSelectedAttendanceIds([]);
+  }, [page, attendances, fromDate, toDate, employeeId, workStartTime, workEndTime, graceMinutes]);
+
   const handleDelete = (attendance: Attendance) => {
+    setIsBulkDelete(false);
     setSelectedAttendance(attendance);
     setDeleteError(null);
     (document.getElementById("delete_modal") as HTMLDialogElement).showModal();
   };
 
+  const toggleAttendanceSelection = (attendanceId: string) => {
+    setSelectedAttendanceIds((prev) =>
+      prev.includes(attendanceId)
+        ? prev.filter((id) => id !== attendanceId)
+        : [...prev, attendanceId],
+    );
+  };
+
+  const toggleSelectAllAttendance = () => {
+    const selectableRows = displayRows.filter((row: Attendance) => !row.synthetic);
+    if (selectableRows.length === 0) return;
+    const currentPageAttendanceIds = selectableRows.map(
+      (attendance: Attendance) => attendance.id,
+    );
+    const areAllSelected = currentPageAttendanceIds.every((id: string) =>
+      selectedAttendanceIds.includes(id),
+    );
+
+    setSelectedAttendanceIds((prev) => {
+      if (areAllSelected) {
+        return prev.filter((id) => !currentPageAttendanceIds.includes(id));
+      }
+      return [...new Set([...prev, ...currentPageAttendanceIds])];
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedAttendanceIds.length === 0) return;
+    setIsBulkDelete(true);
+    setSelectedAttendance(null);
+    setDeleteError(null);
+    (document.getElementById("delete_modal") as HTMLDialogElement).showModal();
+  };
+
   const closeModal = () => {
+    setIsBulkDelete(false);
     setSelectedAttendance(null);
     setDeleteError(null);
     (document.getElementById("delete_modal") as HTMLDialogElement).close();
   };
 
   const confirmDelete = async () => {
-    if (!selectedAttendance) return;
-
     try {
-      const response = await attendanceRepository.deleteAttendance(
-        selectedAttendance.id,
-      );
+      if (isBulkDelete) {
+        if (selectedAttendanceIds.length === 0) return;
+        const results = await Promise.allSettled(
+          selectedAttendanceIds.map((attendanceId) =>
+            attendanceRepository.deleteAttendance(attendanceId),
+          ),
+        );
 
-      if (response?.statusCode === 200) {
-        await mutate();
-        closeModal();
+        const failed = results.filter((result) => result.status === "rejected");
+        if (failed.length > 0) {
+          setDeleteError(
+            `${failed.length} of ${selectedAttendanceIds.length} selected records could not be deleted.`,
+          );
+          return;
+        }
+
+        setSelectedAttendanceIds([]);
+      } else {
+        if (!selectedAttendance) return;
+        const response = await attendanceRepository.deleteAttendance(
+          selectedAttendance.id,
+        );
+
+        if (response?.statusCode !== 200) return;
+        setSelectedAttendanceIds((prev) =>
+          prev.filter((id) => id !== selectedAttendance.id),
+        );
       }
+
+      await mutate();
+      closeModal();
     } catch (err: any) {
       if (Array.isArray(err?.data)) {
         setDeleteError(err.data.map((d: any) => d.message).join("\n"));
@@ -103,27 +208,249 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     return `${diffHours}h ${diffMinutes}m`;
   };
 
+  const parseTime = (value: string) => {
+    const [hour, minute] = value.split(":").map(Number);
+    if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
+    return { hour, minute };
+  };
+
+  const getAttendanceCategory = (attendance: Attendance) => {
+    if (attendance.rowStatus === "LEAVE" || attendance.rowStatus === "ABSENT") {
+      return attendance.rowStatus === "LEAVE" ? "leave" : "absent";
+    }
+    if (!workStartTime || !workEndTime) return "none";
+    const start = parseTime(workStartTime);
+    const end = parseTime(workEndTime);
+    if (!start || !end) return "none";
+
+    const referenceTime = attendance.checkInTime || attendance.checkOutTime;
+    if (!referenceTime) return "none";
+
+    const referenceDate = new Date(referenceTime);
+    const shiftStart = new Date(referenceDate);
+    shiftStart.setHours(start.hour, start.minute, 0, 0);
+
+    const shiftEnd = new Date(referenceDate);
+    shiftEnd.setHours(end.hour, end.minute, 0, 0);
+    if (shiftEnd.getTime() <= shiftStart.getTime()) {
+      shiftEnd.setDate(shiftEnd.getDate() + 1);
+    }
+
+    const graceThreshold = shiftStart.getTime() + graceMinutes * 60 * 1000;
+    const isLate = attendance.checkInTime
+      ? new Date(attendance.checkInTime).getTime() > graceThreshold
+      : false;
+    const isOvertime = attendance.checkOutTime
+      ? new Date(attendance.checkOutTime).getTime() > shiftEnd.getTime()
+      : false;
+
+    if (isLate && isOvertime) return "late-overtime";
+    if (isLate) return "late";
+    if (isOvertime) return "overtime";
+    return "none";
+  };
+
+  const getRowClassName = (attendance: Attendance) => {
+    const category = getAttendanceCategory(attendance);
+    const isStudentMode = memberType === "STUDENT";
+
+    if (isStudentMode) {
+      if (category === "late") return "!bg-purple-100/70 dark:!bg-purple-900/30";
+      if (category === "overtime") return "!bg-cyan-100/70 dark:!bg-cyan-900/30";
+      if (category === "late-overtime") return "!bg-blue-100/70 dark:!bg-blue-900/30";
+      if (category === "leave") return "!bg-yellow-100/70 dark:!bg-yellow-900/30";
+      if (category === "absent") return "!bg-slate-300/80 dark:!bg-slate-700/50";
+      return "";
+    }
+
+    if (category === "late") return "!bg-red-100/70 dark:!bg-red-900/30";
+    if (category === "overtime") return "!bg-green-100/70 dark:!bg-green-900/30";
+    if (category === "late-overtime") return "!bg-sky-100/70 dark:!bg-sky-900/30";
+    if (category === "leave") return "!bg-yellow-100/70 dark:!bg-yellow-900/30";
+    if (category === "absent") return "!bg-slate-300/80 dark:!bg-slate-700/50";
+    return "";
+  };
+
+  const isDateWithin = (targetKey: string, start: string, end: string) => {
+    const target = new Date(targetKey);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+    return target >= startDate && target <= endDate;
+  };
+
+  const displayRows = useMemo(() => {
+    const attendanceList = (attendances || [])
+      .filter((row: Attendance) => {
+        if (!memberType) return true;
+        return (row as any).employee?.memberType === memberType;
+      })
+      .map((row: Attendance) => ({
+        ...row,
+        rowStatus: "PRESENT" as const,
+        synthetic: false,
+      }));
+
+    if (!isSingleDateView || !fromDate) return attendanceList;
+    if (role === "USER") return attendanceList;
+
+    const targetDay = fromDate;
+    const attendanceByEmployee = new Map<string, Attendance>();
+    for (const row of attendanceList) {
+      attendanceByEmployee.set(row.employeeId, row);
+    }
+
+    const leaveByEmployee = new Map<string, any>();
+    for (const leave of leaves || []) {
+      if (isDateWithin(targetDay, leave.startDate, leave.endDate)) {
+        leaveByEmployee.set(leave.employeeId, leave);
+      }
+    }
+
+    const start = parseTime(workStartTime);
+    const now = new Date();
+    const targetDate = new Date(targetDay);
+    const absentCutoff = start
+      ? new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), start.hour, start.minute + graceMinutes + 60, 0, 0)
+      : null;
+    const isPastDay =
+      new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999).getTime() <
+      now.getTime();
+    const canMarkAbsent = absentCutoff ? now.getTime() >= absentCutoff.getTime() : isPastDay;
+
+    const sourceEmployees = employeeId
+      ? (employees || []).filter((emp: any) => emp.employeeId === employeeId)
+      : employees || [];
+
+    const syntheticRows: Attendance[] = [];
+    for (const emp of sourceEmployees) {
+      if (attendanceByEmployee.has(emp.employeeId)) continue;
+
+      const leave = leaveByEmployee.get(emp.employeeId);
+      if (leave) {
+        syntheticRows.push({
+          id: `leave-${emp.employeeId}-${targetDay}`,
+          employeeId: emp.employeeId,
+          employee: {
+            firstName: emp.firstName,
+            lastName: emp.lastName,
+            profilePic: emp.profilePic,
+            company: { name: emp.company?.name || "-" },
+          },
+          createdAt: new Date(targetDay).toISOString(),
+          rowStatus: "LEAVE",
+          leaveType: leave.leaveType,
+          synthetic: true,
+        });
+        continue;
+      }
+
+      if (canMarkAbsent) {
+        syntheticRows.push({
+          id: `absent-${emp.employeeId}-${targetDay}`,
+          employeeId: emp.employeeId,
+          employee: {
+            firstName: emp.firstName,
+            lastName: emp.lastName,
+            profilePic: emp.profilePic,
+            company: { name: emp.company?.name || "-" },
+          },
+          createdAt: new Date(targetDay).toISOString(),
+          rowStatus: "ABSENT",
+          synthetic: true,
+        });
+      }
+    }
+
+    return [...attendanceList, ...syntheticRows].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [
+    attendances,
+    isSingleDateView,
+    fromDate,
+    role,
+    memberType,
+    employees,
+    leaves,
+    employeeId,
+    workStartTime,
+    graceMinutes,
+  ]);
+
+  const pagedRows = useMemo(() => {
+    if (isSingleDateView) {
+      const localOffset = (page - 1) * PAGE_SIZE;
+      return displayRows.slice(localOffset, localOffset + PAGE_SIZE);
+    }
+    return displayRows;
+  }, [displayRows, isSingleDateView, page]);
+
+  const totalPages = isSingleDateView
+    ? Math.max(1, Math.ceil(displayRows.length / PAGE_SIZE))
+    : total
+      ? Math.ceil(total / PAGE_SIZE)
+      : 1;
+
   return (
     <div>
+      <div className="mb-4 flex items-center gap-2">
+        <button
+          type="button"
+          className="btn btn-error btn-sm"
+          disabled={selectedAttendanceIds.length === 0}
+          onClick={handleBulkDelete}
+        >
+          Delete Selected ({selectedAttendanceIds.length})
+        </button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="table table-zebra w-full">
           <thead>
             <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={
+                    !!pagedRows &&
+                    pagedRows.filter((attendance: Attendance) => !attendance.synthetic).length > 0 &&
+                    pagedRows
+                      .filter((attendance: Attendance) => !attendance.synthetic)
+                      .every((attendance: Attendance) =>
+                      selectedAttendanceIds.includes(attendance.id),
+                      )
+                  }
+                  onChange={toggleSelectAllAttendance}
+                />
+              </th>
               <th>No</th>
-              <th>Employee Photo</th>
-              <th>Employee Name</th>
+              <th>Photo</th>
+              <th>Name</th>
               <th>Company Name</th>
               <th>Check In Time</th>
               <th>Check Out Time</th>
               <th>Total Hours</th>
+              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {attendances && attendances.length > 0 ? (
-              attendances.map((attendance: Attendance, index: number) => (
-                <tr key={attendance.id}>
+            {pagedRows && pagedRows.length > 0 ? (
+              pagedRows.map((attendance: Attendance, index: number) => (
+                <tr key={attendance.id} className={getRowClassName(attendance)}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm"
+                      disabled={attendance.synthetic}
+                      checked={selectedAttendanceIds.includes(attendance.id)}
+                      onChange={() => toggleAttendanceSelection(attendance.id)}
+                    />
+                  </td>
                   <td>{offset + index + 1}</td>
                   <td>
                     {attendance.employee?.profilePic ? (
@@ -149,12 +476,20 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   <td>
                     {attendance.checkInTime
                       ? new Date(attendance.checkInTime).toLocaleString()
-                      : "-"}
+                      : attendance.rowStatus === "LEAVE"
+                        ? `Approved ${attendance.leaveType || "Leave"}`
+                        : attendance.rowStatus === "ABSENT"
+                          ? "Absent (No Check-in)"
+                          : "-"}
                   </td>
                   <td>
                     {attendance.checkOutTime
                       ? new Date(attendance.checkOutTime).toLocaleString()
-                      : "-"}
+                      : attendance.rowStatus === "LEAVE"
+                        ? "Leave Day"
+                        : attendance.rowStatus === "ABSENT"
+                          ? "No Check-out"
+                          : "-"}
                   </td>
 
                   <td>
@@ -163,26 +498,37 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       attendance.checkOutTime,
                     )}
                   </td>
+                  <td>
+                    {attendance.rowStatus === "LEAVE" && "Approved Leave"}
+                    {attendance.rowStatus === "ABSENT" && "Absent"}
+                    {(!attendance.rowStatus || attendance.rowStatus === "PRESENT") && "Present"}
+                  </td>
                   <td className="flex gap-2">
-                    <Link
-                      to={`/attendance/${attendance.id}/edit`}
-                      className="btn btn-sm"
-                    >
-                      Edit
-                    </Link>
+                    {!attendance.synthetic ? (
+                      <>
+                        <Link
+                          to={`/attendance/${attendance.id}/edit`}
+                          className="btn btn-sm"
+                        >
+                          Edit
+                        </Link>
 
-                    <button
-                      onClick={() => handleDelete(attendance)}
-                      className="btn btn-sm btn-error"
-                    >
-                      Delete
-                    </button>
+                        <button
+                          onClick={() => handleDelete(attendance)}
+                          className="btn btn-sm btn-error"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-xs opacity-70">Auto</span>
+                    )}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center py-4">
+                <td colSpan={10} className="text-center py-4">
                   No attendance records found
                 </td>
               </tr>
@@ -213,7 +559,15 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
           <h3 className="font-bold text-lg">Confirm Delete</h3>
 
           <p className="py-4">
-            Are you sure you want to delete this attendance record?
+            {isBulkDelete ? (
+              <>
+                Are you sure you want to delete{" "}
+                <span className="font-semibold">{selectedAttendanceIds.length}</span>{" "}
+                selected attendance records?
+              </>
+            ) : (
+              "Are you sure you want to delete this attendance record?"
+            )}
           </p>
 
           {deleteError && (

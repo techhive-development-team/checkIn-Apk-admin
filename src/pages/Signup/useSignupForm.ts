@@ -10,8 +10,10 @@ const useSignupForm = () => {
     defaultValues: {
       name: "",
       email: "",
+      recoveryEmail: "",
+      type: "Academic",
+      subType: "",
       logo: undefined,
-      companyType: "",
       address: "",
       phone: "",
       
@@ -38,6 +40,8 @@ const useSignupForm = () => {
     const payload = {
       ...data,
       logo: logoBase64,
+      recoveryEmail: data.recoveryEmail,
+      subType: data.type === "Company" ? data.subType : undefined,
     };
 
     return await handleSubmit(async () => {

@@ -7,10 +7,57 @@ import InputText from "../../../component/forms/InputText";
 import InputFile from "../../../component/forms/InputFile";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 import InputSelect from "../../../component/forms/InputSelect";
+import { jwtDecode } from "jwt-decode";
+import { useGetEmployee } from "../../../hooks/useGetEmployee";
+import { useEffect, useState } from "react";
+import { useGetUserById } from "../../../hooks/useGetUser";
 
 const LeaveCreate = () => {
   const { onSubmit, loading, success, message, show, ...methods } =
     useLeaveCreateForm();
+  const token = localStorage.getItem("token");
+  const decodedToken = token
+    ? jwtDecode<{ user: { role: string; companyId?: string; userId?: string } }>(token)
+    : null;
+  const role = decodedToken?.user?.role;
+  const companyId = decodedToken?.user?.companyId;
+  const userId = decodedToken?.user?.userId;
+  const { data: userData } = useGetUserById(userId || "");
+  const hideStudentForClient =
+    role === "CLIENT" && userData?.company?.type === "Company";
+  const showEmployeeSelect = role === "ADMIN" || role === "CLIENT";
+  const showPersonTypeSelector = role === "CLIENT" && !hideStudentForClient;
+  const [selectedMemberType, setSelectedMemberType] = useState<
+    "EMPLOYEE" | "STUDENT"
+  >("EMPLOYEE");
+
+  useEffect(() => {
+    methods.setValue("employeeId", "");
+  }, [selectedMemberType, methods]);
+
+  useEffect(() => {
+    if (hideStudentForClient && selectedMemberType !== "EMPLOYEE") {
+      setSelectedMemberType("EMPLOYEE");
+      methods.setValue("employeeId", "");
+    }
+  }, [hideStudentForClient, selectedMemberType, methods]);
+
+  const { data: employees } = useGetEmployee({
+    companyId: role === "CLIENT" ? companyId : undefined,
+    memberType:
+      role === "CLIENT" && hideStudentForClient
+        ? "EMPLOYEE"
+        : showPersonTypeSelector
+          ? selectedMemberType
+          : "EMPLOYEE",
+    limit: 1000,
+    offset: 0,
+  });
+
+  const employeeOptions = (employees ?? []).map((employee: any) => ({
+    label: `${employee.firstName} ${employee.lastName}`,
+    value: employee.employeeId,
+  }));
 
   const leaveOptions = [
     { label: "Annual", value: "ANNUAL" },
@@ -35,8 +82,58 @@ const LeaveCreate = () => {
             <h3 className="text-2xl font-bold my-4">Create Leave Request</h3>
 
             <FormProvider {...methods}>
-              <form className="space-y-4" onSubmit={methods.handleSubmit(onSubmit)}>
+              <form className="space-y-5" onSubmit={methods.handleSubmit(onSubmit)}>
                 {show && <Alert success={success} message={message} />}
+                {showPersonTypeSelector && (
+                  <div className="form-control w-full">
+                    <label className="label pb-2">
+                      <span className="label-text text-sm font-semibold text-base-content">
+                        Person Type
+                      </span>
+                    </label>
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                      <label className="inline-flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          className="radio radio-sm text-sky-600"
+                          name="leavePersonType"
+                          value="EMPLOYEE"
+                          checked={selectedMemberType === "EMPLOYEE"}
+                          onChange={() => setSelectedMemberType("EMPLOYEE")}
+                        />
+                        <span className="text-sm text-base-content">Employee</span>
+                      </label>
+                      <label className="inline-flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          className="radio radio-sm text-sky-600"
+                          name="leavePersonType"
+                          value="STUDENT"
+                          checked={selectedMemberType === "STUDENT"}
+                          onChange={() => setSelectedMemberType("STUDENT")}
+                        />
+                        <span className="text-sm text-base-content">Student</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+                {showEmployeeSelect && (
+                  <InputSelect
+                    label={
+                      showPersonTypeSelector && selectedMemberType === "STUDENT"
+                        ? "Student"
+                        : "Employee"
+                    }
+                    name="employeeId"
+                    options={employeeOptions}
+                    placeholder={
+                      showPersonTypeSelector && selectedMemberType === "STUDENT"
+                        ? "Select Student"
+                        : "Select Employee"
+                    }
+                    required
+                  />
+                )}
                 <InputSelect
                   label="Leave Type"
                   name="leaveType"

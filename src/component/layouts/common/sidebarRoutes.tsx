@@ -13,22 +13,24 @@ export interface SidebarRoute {
 
 export const sidebarRoutes: SidebarRoute[] = [
   { path: "/", name: "Dashboard", icon: <Home size={18} /> },
-  { path: "/company", name: "Company Mangement", icon: <Briefcase size={18} /> },
-  { path: "/employee", name: "Employee Mangement", icon: <FileUser size={18} /> },
-  { path: "/attendance", name: "Attendance Mangement", icon: <FileUser size={18} /> },
+  { path: "/company", name: "Company Management", icon: <Briefcase size={18} /> },
+  { path: "/employee", name: "Employee Management", icon: <FileUser size={18} /> },
+  { path: "/student", name: "Student Management", icon: <FileUser size={18} /> },
+  { path: "/attendance", name: "Attendance Management", icon: <FileUser size={18} /> },
   { path: "/leave", name: "Leave Management", icon: <FileUser size={18} /> },
-  { path: "/user", name: "User Mangement", icon: <FileUser size={18} /> },
+  { path: "/user", name: "User Management", icon: <FileUser size={18} /> },
 ];
 
 export const userSidebarRoutes: SidebarRoute[] = [
   { path: "/", name: "Dashboard", icon: <Home size={18} /> },
-  { path: "/employee", name: "Employee Mangement", icon: <FileUser size={18} /> },
-  { path: "/attendance", name: "Attendance Mangement", icon: <FileUser size={18} /> },
+  { path: "/employee", name: "Employee Management", icon: <FileUser size={18} /> },
+  { path: "/student", name: "Student Management", icon: <FileUser size={18} /> },
+  { path: "/attendance", name: "Attendance Management", icon: <FileUser size={18} /> },
   { path: "/leave", name: "Leave Management", icon: <FileUser size={18} /> }
 ]
 
 export const employeeSidebarRoutes: SidebarRoute[] = [
   { path: "/", name: "Dashboard", icon: <Home size={18} /> },
-  { path: "/attendance", name: "Attendance Mangement", icon: <FileUser size={18} /> },
+  { path: "/attendance", name: "Attendance Management", icon: <FileUser size={18} /> },
   { path: "/leave", name: "Leave Management", icon: <FileUser size={18} /> }
 ]
