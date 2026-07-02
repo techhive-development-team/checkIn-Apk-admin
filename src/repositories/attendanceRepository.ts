@@ -7,8 +7,14 @@ const getAll = async (params?: {
   fromDate?: string;
   toDate?: string;
   employeeId?: string;
+  memberType?: "EMPLOYEE" | "STUDENT";
 }) => {
-    const query = new URLSearchParams(params as any).toString();
+    const sanitizedParams = Object.fromEntries(
+      Object.entries(params ?? {}).filter(
+        ([, value]) => value !== undefined && value !== null && value !== "",
+      ),
+    );
+    const query = new URLSearchParams(sanitizedParams as any).toString();
 
     const response = await client.exec(
         `${API_URLS.ATTENDANCE}?${query}`,

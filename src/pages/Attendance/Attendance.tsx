@@ -12,7 +12,16 @@ type PersonOption = {
   fullName: string;
 };
 
+const getTodayDateKey = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const Attendance = () => {
+  const today = getTodayDateKey();
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token!) as {
     user: { companyId: string; role: string; userId?: string };
@@ -22,18 +31,29 @@ const Attendance = () => {
   const userId = decodedToken?.user?.userId;
   const canUseSearch = role === "ADMIN" || role === "CLIENT";
   const { data: userData } = useGetUserById(userId || "");
+  const hideStudentForClient =
+    role === "CLIENT" && userData?.company?.type === "Company";
   const showPersonTypeSelector =
-    role === "CLIENT" && userData?.company?.type === "Academic";
+    role === "ADMIN" || (role === "CLIENT" && !hideStudentForClient);
   const [searchMemberType, setSearchMemberType] = useState<
     "EMPLOYEE" | "STUDENT"
   >("EMPLOYEE");
   const isStudentSearch =
     showPersonTypeSelector && searchMemberType === "STUDENT";
 
+  const handlePersonTypeChange = (type: "EMPLOYEE" | "STUDENT") => {
+    setSearchMemberType(type);
+    setEmployeeId("");
+    setEmployeeSearchText("");
+    setSearchEmployeeId("");
+  };
+
   const [showSearch, setShowSearch] = useState(true);
   const { data } = useGetEmployee({
-    companyId,
+    companyId: role === "CLIENT" ? companyId : undefined,
     memberType: showPersonTypeSelector ? searchMemberType : undefined,
+    limit: 1000,
+    offset: 0,
   });
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -64,9 +84,22 @@ const Attendance = () => {
   }, [data, employeeSearchText]);
 
   const handleSearch = () => {
+    const effectiveFromDate = fromDate || toDate;
+    const effectiveToDate = toDate || fromDate;
     setSearchEmployeeId(employeeId);
-    setSearchFromDate(fromDate);
-    setSearchToDate(toDate);
+    setSearchFromDate(effectiveFromDate);
+    setSearchToDate(effectiveToDate);
+    setSearchWorkStartTime(workStartTime);
+    setSearchWorkEndTime(workEndTime);
+    setSearchGraceMinutes(graceMinutes);
+  };
+
+  const handleToday = () => {
+    setFromDate(today);
+    setToDate(today);
+    setSearchEmployeeId(employeeId);
+    setSearchFromDate(today);
+    setSearchToDate(today);
     setSearchWorkStartTime(workStartTime);
     setSearchWorkEndTime(workEndTime);
     setSearchGraceMinutes(graceMinutes);
@@ -123,12 +156,7 @@ const Attendance = () => {
                         name="attendancePersonType"
                         value="EMPLOYEE"
                         checked={searchMemberType === "EMPLOYEE"}
-                        onChange={() => {
-                          setSearchMemberType("EMPLOYEE");
-                          setEmployeeId("");
-                          setEmployeeSearchText("");
-                          setSearchEmployeeId("");
-                        }}
+                        onChange={() => handlePersonTypeChange("EMPLOYEE")}
                       />
                       <span className="text-sm text-base-content">Employee</span>
                     </label>
@@ -139,12 +167,7 @@ const Attendance = () => {
                         name="attendancePersonType"
                         value="STUDENT"
                         checked={searchMemberType === "STUDENT"}
-                        onChange={() => {
-                          setSearchMemberType("STUDENT");
-                          setEmployeeId("");
-                          setEmployeeSearchText("");
-                          setSearchEmployeeId("");
-                        }}
+                        onChange={() => handlePersonTypeChange("STUDENT")}
                       />
                       <span className="text-sm text-base-content">Student</span>
                     </label>
@@ -285,12 +308,19 @@ const Attendance = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 md:flex-row">
+              <div className="flex flex-col gap-2 md:flex-row md:flex-wrap">
                 <button
                   className="btn btn-primary w-full md:w-auto rounded-lg"
                   onClick={handleSearch}
                 >
                   Search
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline w-full md:w-auto rounded-lg"
+                  onClick={handleToday}
+                >
+                  Today
                 </button>
                 <button
                   className="btn btn-secondary w-full md:w-auto rounded-lg"
@@ -304,11 +334,13 @@ const Attendance = () => {
           )}
           {canUseSearch && showSearch && (
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-semibold">Time Filter Legend:</span>
-              <span className="px-2 py-1 rounded bg-base-200">No Color: On Time + Regular</span>
+              <span className="font-semibold">Legend:</span>
+              <span className="px-2 py-1 rounded bg-base-200">On Time / Present</span>
               <span className="px-2 py-1 rounded bg-red-100 text-red-800">Late Only</span>
               <span className="px-2 py-1 rounded bg-green-100 text-green-800">Overtime Only</span>
               <span className="px-2 py-1 rounded bg-sky-100 text-sky-800">Late + Overtime</span>
+              <span className="px-2 py-1 rounded bg-yellow-100 text-yellow-800">Leave</span>
+              <span className="px-2 py-1 rounded bg-slate-300 text-slate-800">Absent</span>
             </div>
           )}
         </div>

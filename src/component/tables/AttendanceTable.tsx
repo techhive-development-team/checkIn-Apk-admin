@@ -3,31 +3,61 @@ import { Link } from "react-router-dom";
 import { useGetAttendance } from "../../hooks/useGetAttendance";
 import { attendanceRepository } from "../../repositories/attendanceRepository";
 import { baseUrl } from "../../enum/urls";
-import { useGetEmployee } from "../../hooks/useGetEmployee";
-import { useGetLeave } from "../../hooks/useGetLeave";
-import { jwtDecode } from "jwt-decode";
 
 const PAGE_SIZE = 10;
+const SINGLE_DAY_LIMIT = 1000;
+
+const getTodayDateKey = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateKey = (value?: string | null): string => {
+  if (!value) return "";
+  const trimmed = String(value).trim();
+  const isoPrefix = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoPrefix) return isoPrefix[1];
+  return "";
+};
+
+const formatDateKey = (key: string) => {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(undefined, {
+    timeZone: "UTC",
+  });
+};
+
+const formatAttendanceDate = (value?: string) => {
+  const key = parseDateKey(value);
+  return key ? formatDateKey(key) : "-";
+};
 
 export type Attendance = {
   id: string;
   employeeId: string;
+  date?: string;
   employee?: {
     firstName: string;
     lastName: string;
     profilePic: string;
     company: {
       name: string;
-    }
+    };
+    memberType?: string;
   };
   checkInTime?: string;
   checkOutTime?: string;
   checkInLocation?: string;
   checkOutLocation?: string;
   createdAt: string;
+  status?: "PRESENT" | "LEAVE" | "ABSENT";
   rowStatus?: "PRESENT" | "LEAVE" | "ABSENT";
   leaveType?: string;
-  synthetic?: boolean;
+  leaveRequestId?: string;
+  leaveId?: string;
 };
 
 interface AttendanceTableProps {
@@ -40,6 +70,18 @@ interface AttendanceTableProps {
   memberType?: "EMPLOYEE" | "STUDENT";
 }
 
+const mapAttendanceRow = (row: Attendance): Attendance => {
+  const rowStatus =
+    row.status ||
+    (row.checkInTime ? "PRESENT" : "ABSENT");
+
+  return {
+    ...row,
+    rowStatus,
+    leaveId: row.leaveRequestId,
+  };
+};
+
 const AttendanceTable: React.FC<AttendanceTableProps> = ({
   fromDate = "",
   toDate = "",
@@ -49,19 +91,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   graceMinutes = 0,
   memberType,
 }) => {
-  const token = localStorage.getItem("token");
-  const decodedToken = token
-    ? jwtDecode<{ user: { companyId?: string; role: string } }>(token)
-    : null;
-  const companyId = decodedToken?.user?.companyId;
-  const role = decodedToken?.user?.role;
-  const isSingleDateView =
-    !!fromDate && !!toDate && fromDate === toDate;
+  const effectiveToDate = toDate || fromDate;
+  const isSingleDayFilter =
+    !!fromDate && effectiveToDate === fromDate;
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
-  const apiLimit = isSingleDateView ? 1000 : PAGE_SIZE;
-  const apiOffset = isSingleDateView ? 0 : offset;
+  const apiLimit = isSingleDayFilter ? SINGLE_DAY_LIMIT : PAGE_SIZE;
+  const apiOffset = isSingleDayFilter ? 0 : offset;
 
   const {
     data: attendances,
@@ -70,27 +107,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   } = useGetAttendance({
     limit: apiLimit,
     offset: apiOffset,
-    fromDate,
-    toDate,
-    employeeId,
-  });
-
-  const { data: employees } = useGetEmployee(
-    role === "USER"
-      ? undefined
-      : {
-          companyId,
-          memberType,
-          limit: 1000,
-          offset: 0,
-        },
-  );
-  const { data: leaves } = useGetLeave({
-    limit: 1000,
-    offset: 0,
-    fromDate,
-    toDate,
+    fromDate: fromDate || undefined,
+    toDate: effectiveToDate || undefined,
     employeeId: employeeId || undefined,
+    memberType,
   });
 
   const [selectedAttendance, setSelectedAttendance] =
@@ -104,6 +124,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   useEffect(() => {
     setSelectedAttendanceIds([]);
   }, [page, attendances, fromDate, toDate, employeeId, workStartTime, workEndTime, graceMinutes]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [fromDate, toDate, employeeId, memberType]);
 
   const handleDelete = (attendance: Attendance) => {
     setIsBulkDelete(false);
@@ -120,10 +144,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     );
   };
 
+  const displayRows = useMemo(
+    () => (attendances || []).map(mapAttendanceRow),
+    [attendances],
+  );
+
   const toggleSelectAllAttendance = () => {
-    const selectableRows = displayRows.filter((row: Attendance) => !row.synthetic);
-    if (selectableRows.length === 0) return;
-    const currentPageAttendanceIds = selectableRows.map(
+    if (displayRows.length === 0) return;
+    const currentPageAttendanceIds = displayRows.map(
       (attendance: Attendance) => attendance.id,
     );
     const areAllSelected = currentPageAttendanceIds.every((id: string) =>
@@ -215,9 +243,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   };
 
   const getAttendanceCategory = (attendance: Attendance) => {
-    if (attendance.rowStatus === "LEAVE" || attendance.rowStatus === "ABSENT") {
-      return attendance.rowStatus === "LEAVE" ? "leave" : "absent";
-    }
+    if (attendance.rowStatus === "LEAVE") return "leave";
+    if (attendance.rowStatus === "ABSENT") return "absent";
     if (!workStartTime || !workEndTime) return "none";
     const start = parseTime(workStartTime);
     const end = parseTime(workEndTime);
@@ -271,127 +298,13 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     return "";
   };
 
-  const isDateWithin = (targetKey: string, start: string, end: string) => {
-    const target = new Date(targetKey);
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(23, 59, 59, 999);
-    return target >= startDate && target <= endDate;
-  };
-
-  const displayRows = useMemo(() => {
-    const attendanceList = (attendances || [])
-      .filter((row: Attendance) => {
-        if (!memberType) return true;
-        return (row as any).employee?.memberType === memberType;
-      })
-      .map((row: Attendance) => ({
-        ...row,
-        rowStatus: "PRESENT" as const,
-        synthetic: false,
-      }));
-
-    if (!isSingleDateView || !fromDate) return attendanceList;
-    if (role === "USER") return attendanceList;
-
-    const targetDay = fromDate;
-    const attendanceByEmployee = new Map<string, Attendance>();
-    for (const row of attendanceList) {
-      attendanceByEmployee.set(row.employeeId, row);
-    }
-
-    const leaveByEmployee = new Map<string, any>();
-    for (const leave of leaves || []) {
-      if (isDateWithin(targetDay, leave.startDate, leave.endDate)) {
-        leaveByEmployee.set(leave.employeeId, leave);
-      }
-    }
-
-    const start = parseTime(workStartTime);
-    const now = new Date();
-    const targetDate = new Date(targetDay);
-    const absentCutoff = start
-      ? new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), start.hour, start.minute + graceMinutes + 60, 0, 0)
-      : null;
-    const isPastDay =
-      new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999).getTime() <
-      now.getTime();
-    const canMarkAbsent = absentCutoff ? now.getTime() >= absentCutoff.getTime() : isPastDay;
-
-    const sourceEmployees = employeeId
-      ? (employees || []).filter((emp: any) => emp.employeeId === employeeId)
-      : employees || [];
-
-    const syntheticRows: Attendance[] = [];
-    for (const emp of sourceEmployees) {
-      if (attendanceByEmployee.has(emp.employeeId)) continue;
-
-      const leave = leaveByEmployee.get(emp.employeeId);
-      if (leave) {
-        syntheticRows.push({
-          id: `leave-${emp.employeeId}-${targetDay}`,
-          employeeId: emp.employeeId,
-          employee: {
-            firstName: emp.firstName,
-            lastName: emp.lastName,
-            profilePic: emp.profilePic,
-            company: { name: emp.company?.name || "-" },
-          },
-          createdAt: new Date(targetDay).toISOString(),
-          rowStatus: "LEAVE",
-          leaveType: leave.leaveType,
-          synthetic: true,
-        });
-        continue;
-      }
-
-      if (canMarkAbsent) {
-        syntheticRows.push({
-          id: `absent-${emp.employeeId}-${targetDay}`,
-          employeeId: emp.employeeId,
-          employee: {
-            firstName: emp.firstName,
-            lastName: emp.lastName,
-            profilePic: emp.profilePic,
-            company: { name: emp.company?.name || "-" },
-          },
-          createdAt: new Date(targetDay).toISOString(),
-          rowStatus: "ABSENT",
-          synthetic: true,
-        });
-      }
-    }
-
-    return [...attendanceList, ...syntheticRows].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-  }, [
-    attendances,
-    isSingleDateView,
-    fromDate,
-    role,
-    memberType,
-    employees,
-    leaves,
-    employeeId,
-    workStartTime,
-    graceMinutes,
-  ]);
-
-  const pagedRows = useMemo(() => {
-    if (isSingleDateView) {
-      const localOffset = (page - 1) * PAGE_SIZE;
-      return displayRows.slice(localOffset, localOffset + PAGE_SIZE);
-    }
-    return displayRows;
-  }, [displayRows, isSingleDateView, page]);
-
-  const totalPages = isSingleDateView
-    ? Math.max(1, Math.ceil(displayRows.length / PAGE_SIZE))
+  const totalPages = isSingleDayFilter
+    ? 1
     : total
       ? Math.ceil(total / PAGE_SIZE)
       : 1;
+  const rowOffset = isSingleDayFilter ? 0 : offset;
+  const todayKey = getTodayDateKey();
 
   return (
     <div>
@@ -415,13 +328,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   type="checkbox"
                   className="checkbox checkbox-sm"
                   checked={
-                    !!pagedRows &&
-                    pagedRows.filter((attendance: Attendance) => !attendance.synthetic).length > 0 &&
-                    pagedRows
-                      .filter((attendance: Attendance) => !attendance.synthetic)
-                      .every((attendance: Attendance) =>
+                    displayRows.length > 0 &&
+                    displayRows.every((attendance: Attendance) =>
                       selectedAttendanceIds.includes(attendance.id),
-                      )
+                    )
                   }
                   onChange={toggleSelectAllAttendance}
                 />
@@ -430,6 +340,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <th>Photo</th>
               <th>Name</th>
               <th>Company Name</th>
+              <th>Date</th>
               <th>Check In Time</th>
               <th>Check Out Time</th>
               <th>Total Hours</th>
@@ -439,19 +350,18 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </thead>
 
           <tbody>
-            {pagedRows && pagedRows.length > 0 ? (
-              pagedRows.map((attendance: Attendance, index: number) => (
+            {displayRows.length > 0 ? (
+              displayRows.map((attendance: Attendance, index: number) => (
                 <tr key={attendance.id} className={getRowClassName(attendance)}>
                   <td>
                     <input
                       type="checkbox"
                       className="checkbox checkbox-sm"
-                      disabled={attendance.synthetic}
                       checked={selectedAttendanceIds.includes(attendance.id)}
                       onChange={() => toggleAttendanceSelection(attendance.id)}
                     />
                   </td>
-                  <td>{offset + index + 1}</td>
+                  <td>{rowOffset + index + 1}</td>
                   <td>
                     {attendance.employee?.profilePic ? (
                       <img
@@ -470,14 +380,18 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       ? `${attendance.employee.firstName} ${attendance.employee.lastName}`
                       : "-"}
                   </td>
+                  <td>{attendance.employee?.company.name}</td>
                   <td>
-                    {attendance.employee?.company.name}
+                    {formatAttendanceDate(attendance.date)}
+                    {parseDateKey(attendance.date) === todayKey && (
+                      <span className="ml-2 badge badge-sm badge-primary">Today</span>
+                    )}
                   </td>
                   <td>
                     {attendance.checkInTime
                       ? new Date(attendance.checkInTime).toLocaleString()
                       : attendance.rowStatus === "LEAVE"
-                        ? `Approved ${attendance.leaveType || "Leave"}`
+                        ? `${attendance.leaveType || "Leave"} Leave`
                         : attendance.rowStatus === "ABSENT"
                           ? "Absent (No Check-in)"
                           : "-"}
@@ -491,7 +405,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                           ? "No Check-out"
                           : "-"}
                   </td>
-
                   <td>
                     {getTotalWorking(
                       attendance.checkInTime,
@@ -499,12 +412,12 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     )}
                   </td>
                   <td>
-                    {attendance.rowStatus === "LEAVE" && "Approved Leave"}
+                    {attendance.rowStatus === "LEAVE" && "Leave"}
                     {attendance.rowStatus === "ABSENT" && "Absent"}
-                    {(!attendance.rowStatus || attendance.rowStatus === "PRESENT") && "Present"}
+                    {attendance.rowStatus === "PRESENT" && "Present"}
                   </td>
                   <td className="flex gap-2">
-                    {!attendance.synthetic ? (
+                    {attendance.rowStatus === "PRESENT" && attendance.checkInTime ? (
                       <>
                         <Link
                           to={`/attendance/${attendance.id}/edit`}
@@ -520,6 +433,13 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                           Delete
                         </button>
                       </>
+                    ) : attendance.rowStatus === "LEAVE" && attendance.leaveId ? (
+                      <Link
+                        to={`/leave/${attendance.leaveId}/edit`}
+                        className="btn btn-sm btn-warning"
+                      >
+                        View Leave
+                      </Link>
                     ) : (
                       <span className="text-xs opacity-70">Auto</span>
                     )}
@@ -528,7 +448,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
               ))
             ) : (
               <tr>
-                <td colSpan={10} className="text-center py-4">
+                <td colSpan={11} className="text-center py-4">
                   No attendance records found
                 </td>
               </tr>
@@ -537,22 +457,24 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
         </table>
       </div>
 
-      <div className="join flex justify-end my-4">
-        {[...Array(totalPages)].map((_, idx) => {
-          const pageNumber = idx + 1;
-          return (
-            <input
-              key={pageNumber}
-              className="join-item btn btn-square"
-              type="radio"
-              name="options"
-              aria-label={String(pageNumber)}
-              checked={page === pageNumber}
-              onChange={() => setPage(pageNumber)}
-            />
-          );
-        })}
-      </div>
+      {!isSingleDayFilter && (
+        <div className="join flex justify-end my-4">
+          {[...Array(totalPages)].map((_, idx) => {
+            const pageNumber = idx + 1;
+            return (
+              <input
+                key={pageNumber}
+                className="join-item btn btn-square"
+                type="radio"
+                name="attendance-pagination"
+                aria-label={String(pageNumber)}
+                checked={page === pageNumber}
+                onChange={() => setPage(pageNumber)}
+              />
+            );
+          })}
+        </div>
+      )}
 
       <dialog id="delete_modal" className="modal">
         <div className="modal-box">

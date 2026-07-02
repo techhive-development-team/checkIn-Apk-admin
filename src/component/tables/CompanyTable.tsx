@@ -161,11 +161,7 @@ const CompanyTable: React.FC = () => {
 
                   <td>{company.name}</td>
                   <td>{company.email}</td>
-                  <td>
-                    {company.type === "Company"
-                      ? company.subType || "Company"
-                      : company.type || "-"}
-                  </td>
+                  <td>{company.type || "-"}</td>
                   <td>{company.phone || "-"}</td>
                   <td>{company.totalEmployee || "-"}</td>
 

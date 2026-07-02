@@ -2,7 +2,7 @@ import useSWR from "swr";
 import { API_URLS } from "../enum/urls";
 import { attendanceRepository } from "../repositories/attendanceRepository";
 
-export const useGetAttendance = (params?: { limit?: number; offset?: number; fromDate?: string; toDate?: string; employeeId?: string }) => {
+export const useGetAttendance = (params?: { limit?: number; offset?: number; fromDate?: string; toDate?: string; employeeId?: string; memberType?: "EMPLOYEE" | "STUDENT" }) => {
   const key = params
     ? [`${API_URLS.ATTENDANCE}`, params]
     : null;
