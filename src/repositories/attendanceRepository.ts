@@ -1,6 +1,9 @@
 import { API_URLS } from "../enum/urls";
 import { client } from "./client";
 
+const getBrowserTimezone = () =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Yangon";
+
 const getAll = async (params?: {
   limit?: number;
   offset?: number;
@@ -8,9 +11,11 @@ const getAll = async (params?: {
   toDate?: string;
   employeeId?: string;
   memberType?: "EMPLOYEE" | "STUDENT";
+  timezone?: string;
 }) => {
+    const timezone = params?.timezone || getBrowserTimezone();
     const sanitizedParams = Object.fromEntries(
-      Object.entries(params ?? {}).filter(
+      Object.entries({ ...(params ?? {}), timezone }).filter(
         ([, value]) => value !== undefined && value !== null && value !== "",
       ),
     );
@@ -25,9 +30,11 @@ const getAll = async (params?: {
     return response;
 }
 
-const exportFile = async () => {
+const exportFile = async (timezone?: string) => {
   try {
-    const blob = await client.exec(`${API_URLS.ATTENDANCE}/export`, {
+    const resolvedTimezone = timezone || getBrowserTimezone();
+    const query = new URLSearchParams({ timezone: resolvedTimezone }).toString();
+    const blob = await client.exec(`${API_URLS.ATTENDANCE}/export?${query}`, {
       method: "get",
     });
 

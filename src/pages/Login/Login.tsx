@@ -30,7 +30,7 @@ const Login = () => {
                 className="h-auto max-h-[56px] w-auto max-w-[220px] object-contain"
               />
               <span className="mt-2 text-center text-gray-500 font-semibold">
-                Login to your account
+              Smart. Secure. Scalable
               </span>
             </div>
 
@@ -105,11 +105,11 @@ const Login = () => {
 
         <div className="hidden md:flex flex-1 items-center justify-center p-12">
           <div className="text-center max-w-sm pointer-events-none">
-            <h2 className="text-5xl font-extrabold text-[#23356b] mb-6 leading-[1.1] tracking-tight">
+            <h2 className="text-6xl font-extrabold text-[#23356b] mb-1 leading-[1.1] tracking-tight">
               Welcome 
             </h2>
-            <p className="text-blue-950 text-xl leading-relaxed">
-            Smart, Secure and Scalable
+            <p className="text-[#455379] text-xl leading-relaxed">
+            Login to your account
             </p>
           </div>
         </div>

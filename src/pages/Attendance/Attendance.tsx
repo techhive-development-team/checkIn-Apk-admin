@@ -12,6 +12,20 @@ type PersonOption = {
   fullName: string;
 };
 
+const DEFAULT_TIMEZONE =
+  Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Yangon";
+
+const TIMEZONE_OPTIONS = [
+  "Asia/Yangon",
+  "Asia/Bangkok",
+  "Asia/Singapore",
+  "Asia/Tokyo",
+  "Europe/London",
+  "Europe/Paris",
+  "America/New_York",
+  "UTC",
+];
+
 const getTodayDateKey = () => {
   const now = new Date();
   const year = now.getFullYear();
@@ -63,6 +77,7 @@ const Attendance = () => {
   const [workStartTime, setWorkStartTime] = useState("");
   const [workEndTime, setWorkEndTime] = useState("");
   const [graceMinutes, setGraceMinutes] = useState("0");
+  const [timezone, setTimezone] = useState(DEFAULT_TIMEZONE);
 
   const [searchFromDate, setSearchFromDate] = useState("");
   const [searchToDate, setSearchToDate] = useState("");
@@ -70,6 +85,7 @@ const Attendance = () => {
   const [searchWorkStartTime, setSearchWorkStartTime] = useState("");
   const [searchWorkEndTime, setSearchWorkEndTime] = useState("");
   const [searchGraceMinutes, setSearchGraceMinutes] = useState("0");
+  const [searchTimezone, setSearchTimezone] = useState(DEFAULT_TIMEZONE);
 
   const filteredPeople = useMemo(() => {
     const keyword = employeeSearchText.trim().toLowerCase();
@@ -92,6 +108,7 @@ const Attendance = () => {
     setSearchWorkStartTime(workStartTime);
     setSearchWorkEndTime(workEndTime);
     setSearchGraceMinutes(graceMinutes);
+    setSearchTimezone(timezone);
   };
 
   const handleToday = () => {
@@ -103,6 +120,7 @@ const Attendance = () => {
     setSearchWorkStartTime(workStartTime);
     setSearchWorkEndTime(workEndTime);
     setSearchGraceMinutes(graceMinutes);
+    setSearchTimezone(timezone);
   };
 
   const handleReset = () => {
@@ -114,12 +132,14 @@ const Attendance = () => {
     setWorkStartTime("");
     setWorkEndTime("");
     setGraceMinutes("0");
+    setTimezone(DEFAULT_TIMEZONE);
     setSearchEmployeeId("");
     setSearchFromDate("");
     setSearchToDate("");
     setSearchWorkStartTime("");
     setSearchWorkEndTime("");
     setSearchGraceMinutes("0");
+    setSearchTimezone(DEFAULT_TIMEZONE);
   };
   return (
     <Layout>
@@ -305,6 +325,22 @@ const Attendance = () => {
                       placeholder="Grace Period (0-15 min)"
                     />
                   </div>
+                  <div>
+                    <p className="mb-1 text-xs font-medium text-base-content/80">Time Zone</p>
+                    <select
+                      className="select select-bordered w-full rounded-lg"
+                      value={timezone}
+                      aria-label="Select attendance timezone"
+                      title="Select attendance timezone"
+                      onChange={(e) => setTimezone(e.target.value)}
+                    >
+                      {TIMEZONE_OPTIONS.map((zone) => (
+                        <option key={zone} value={zone}>
+                          {zone}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -352,7 +388,7 @@ const Attendance = () => {
             <h3 className="text-2xl font-bold">Attendance List</h3>
 
             <button
-              onClick={attendanceRepository.exportFile}
+              onClick={() => attendanceRepository.exportFile(searchTimezone)}
               className="btn btn-primary rounded-lg"
             >
               Export File
@@ -366,6 +402,7 @@ const Attendance = () => {
             workEndTime={searchWorkEndTime}
             graceMinutes={Number(searchGraceMinutes || "0")}
             memberType={showPersonTypeSelector ? searchMemberType : undefined}
+            timezone={searchTimezone}
           />
         </div>
       </div>
