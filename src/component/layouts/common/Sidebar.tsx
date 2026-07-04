@@ -72,7 +72,9 @@ const Sidebar = () => {
                       aria-hidden="true"
                     />
                   )}
-                  <span className="text-xl">{route.icon}</span>
+                  <span className="inline-flex h-[18px] w-[18px] items-center justify-center shrink-0">
+                    {route.icon}
+                  </span>
 
                   <span className="text-base font-semibold">{route.name}</span>
                 </NavLink>
