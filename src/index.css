@@ -1,2 +1,221 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+:root[data-theme="light"] {
+  --app-navbar-bg: #ffffff;
+  --app-sidebar-bg: #ffffff;
+  --app-main-bg: #e9eef9;
+  --app-border: #d3dbea;
+  --mesh-bg-base: #f3f8ff;
+  --mesh-blob-a: rgba(14, 165, 233, 0.45);
+  --mesh-blob-b: rgba(99, 102, 241, 0.35);
+  --mesh-blob-c: rgba(251, 191, 36, 0.35);
+  --mesh-blob-d: rgba(59, 130, 246, 0.35);
+  --mesh-blob-e: rgba(244, 114, 182, 0.35);
+  --mesh-blob-f: rgba(16, 185, 129, 0.3);
+  --mesh-blob-g: rgba(168, 85, 247, 0.35);
+  --mesh-blob-h: rgba(217, 70, 239, 0.22);
+  --app-btn-bg: #ffffff;
+  --app-btn-hover-bg: #eef3ff;
+  --app-btn-border: #c6d2e8;
+  --app-btn-text: #1f2a44;
+  --app-btn-primary-bg: #2563eb;
+  --app-btn-primary-hover: #1d4ed8;
+  --app-btn-primary-text: #ffffff;
+  --app-btn-outline-text: #1e40af;
+  --app-btn-outline-border: #93b4ef;
+  --app-btn-ghost-text: #334155;
+  --app-profile-hover-bg: #e8effd;
+  --app-profile-hover-border: #bfd0f0;
+  --app-profile-hover-text: #12213f;
+}
+
+:root[data-theme="dark"] {
+  --app-navbar-bg: #030714;
+  --app-sidebar-bg: #030714;
+  --app-main-bg: #0f1733;
+  --app-border: #1a2746;
+  --mesh-bg-base: #070b18;
+  --mesh-blob-a: rgba(14, 116, 144, 0.45);
+  --mesh-blob-b: rgba(79, 70, 229, 0.35);
+  --mesh-blob-c: rgba(180, 83, 9, 0.3);
+  --mesh-blob-d: rgba(30, 64, 175, 0.4);
+  --mesh-blob-e: rgba(190, 24, 93, 0.28);
+  --mesh-blob-f: rgba(4, 120, 87, 0.26);
+  --mesh-blob-g: rgba(109, 40, 217, 0.35);
+  --mesh-blob-h: rgba(134, 25, 143, 0.24);
+  --app-btn-bg: #1a2544;
+  --app-btn-hover-bg: #23315a;
+  --app-btn-border: #2b3c66;
+  --app-btn-text: #e6edff;
+  --app-btn-primary-bg: #4f83ff;
+  --app-btn-primary-hover: #3a6df0;
+  --app-btn-primary-text: #f8fbff;
+  --app-btn-outline-text: #a9c4ff;
+  --app-btn-outline-border: #4f83ff;
+  --app-btn-ghost-text: #d3ddf8;
+  --app-profile-hover-bg: #1a2749;
+  --app-profile-hover-border: #334a7a;
+  --app-profile-hover-text: #eef4ff;
+}
+
+.app-navbar {
+  background-color: var(--app-navbar-bg);
+  box-shadow: 0 1px 0 0 var(--app-border);
+}
+
+.app-sidebar {
+  background-color: var(--app-sidebar-bg);
+  box-shadow: inset -1px 0 0 0 var(--app-border);
+}
+
+.app-main-bg {
+  background-color: var(--app-main-bg);
+}
+
+.app-border {
+  border-color: var(--app-border);
+}
+
+.app-match-navbar-bg {
+  background-color: var(--app-navbar-bg) !important;
+}
+
+.app-main-bg .card.bg-base-100 {
+  background-color: var(--app-navbar-bg) !important;
+}
+
+.mesh-bg-base {
+  background-color: var(--mesh-bg-base);
+}
+
+.mesh-blob-a {
+  background-color: var(--mesh-blob-a);
+}
+
+.mesh-blob-b {
+  background-color: var(--mesh-blob-b);
+}
+
+.mesh-blob-c {
+  background-color: var(--mesh-blob-c);
+}
+
+.mesh-blob-d {
+  background-color: var(--mesh-blob-d);
+}
+
+.mesh-blob-e {
+  background-color: var(--mesh-blob-e);
+}
+
+.mesh-blob-f {
+  background-color: var(--mesh-blob-f);
+}
+
+.mesh-blob-g {
+  background-color: var(--mesh-blob-g);
+}
+
+.mesh-blob-h {
+  background-color: var(--mesh-blob-h);
+}
+
+.btn {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.btn:not(.btn-primary):not(.btn-error):not(.btn-warning):not(.btn-success):not(.btn-info):not(.btn-link):not(.btn-ghost):not(.btn-outline):not(.btn-soft) {
+  background-color: var(--app-btn-bg);
+  border-color: var(--app-btn-border);
+  color: var(--app-btn-text);
+}
+
+.btn:not(.btn-primary):not(.btn-error):not(.btn-warning):not(.btn-success):not(.btn-info):not(.btn-link):not(.btn-ghost):not(.btn-outline):not(.btn-soft):hover {
+  background-color: var(--app-btn-hover-bg);
+  border-color: var(--app-btn-border);
+}
+
+.btn-primary {
+  background-color: var(--app-btn-primary-bg);
+  border-color: var(--app-btn-primary-bg);
+  color: var(--app-btn-primary-text);
+}
+
+.btn-primary:hover {
+  background-color: var(--app-btn-primary-hover);
+  border-color: var(--app-btn-primary-hover);
+}
+
+.btn-outline {
+  color: var(--app-btn-outline-text);
+  border-color: var(--app-btn-outline-border);
+}
+
+.btn-outline:hover {
+  background-color: var(--app-btn-primary-bg);
+  border-color: var(--app-btn-primary-bg);
+  color: var(--app-btn-primary-text);
+}
+
+.btn-soft {
+  background-color: color-mix(in srgb, var(--app-btn-bg) 75%, transparent);
+  border-color: var(--app-btn-border);
+  color: var(--app-btn-text);
+}
+
+.btn-soft:hover {
+  background-color: var(--app-btn-hover-bg);
+}
+
+.btn-ghost {
+  color: var(--app-btn-ghost-text);
+}
+
+.app-profile-trigger {
+  border: 1px solid transparent;
+}
+
+.app-profile-trigger:hover,
+.app-profile-trigger:focus-visible {
+  background-color: transparent !important;
+  border-color: transparent;
+}
+
+.app-profile-text {
+  display: inline-block;
+  transition: transform 0.18s ease, color 0.18s ease;
+  transform-origin: left center;
+}
+
+.app-profile-trigger:hover .app-profile-text,
+.app-profile-trigger:focus-visible .app-profile-text {
+  transform: scale(1.06);
+  color: var(--app-profile-hover-text);
+}
+
+:root[data-theme="light"] .app-theme-toggle {
+  background-color: #00a8cc !important;
+  border-color: #00a8cc !important;
+  color: #ffffff !important;
+}
+
+.home-icon {
+  display: block;
+}
+
+.app-status-badge {
+  background-color: #00A8CC !important;
+  border-color: #00A8CC !important;
+  color: #ffffff !important;
+}
+
+.app-status-badge-inactive {
+  background-color: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #111827 !important;
+}
+

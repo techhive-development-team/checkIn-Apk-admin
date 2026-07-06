@@ -32,6 +32,8 @@ const imageSchema = z
 
 export const LeaveRequestCreateSchema = z
   .object({
+    employeeId: z.string().optional(),
+
     leaveType: z.enum(["ANNUAL", "SICK", "EMERGENCY", "UNPAID", "PATERNITY"]),
 
     startDate: z

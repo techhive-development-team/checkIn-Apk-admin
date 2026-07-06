@@ -11,10 +11,11 @@ export type Company = {
   name: string;
   email: string;
   logo?: string;
-  companyType?: string;
+  type?: string;
+  subType?: string;
   address?: string;
   phone?: string;
-  // totalEmployee?: string;
+  totalEmployee?: string;
   status: string;
   subScribeStatus: string;
   createdAt: string;
@@ -130,7 +131,7 @@ const CompanyTable: React.FC = () => {
               <th>Email</th>
               <th>Type</th>
               <th>Phone</th>
-              {/* <th>Total Employee</th> */}
+              <th>Total Employee</th>
               <th>Subscription</th>
               <th>Status</th>
               <th>Created At</th>
@@ -160,17 +161,16 @@ const CompanyTable: React.FC = () => {
 
                   <td>{company.name}</td>
                   <td>{company.email}</td>
-                  <td>{company.companyType || "-"}</td>
+                  <td>{company.type || "-"}</td>
                   <td>{company.phone || "-"}</td>
-                  {/* <td>{company.totalEmployee || "-"}</td> */}
+                  <td>{company.totalEmployee || "-"}</td>
 
                   <td>
                     <span
-                      className={`badge ${
-                        company.subScribeStatus === "Active"
-                          ? "badge-success"
-                          : "badge-warning"
-                      }`}
+                      className={`badge ${company.subScribeStatus?.toLowerCase() === "inactive"
+                        ? "app-status-badge-inactive"
+                        : "app-status-badge"
+                        }`}
                     >
                       {company.subScribeStatus}
                     </span>
@@ -178,11 +178,10 @@ const CompanyTable: React.FC = () => {
 
                   <td>
                     <span
-                      className={`badge ${
-                        company.status === "active"
-                          ? "badge-primary"
-                          : "badge-error"
-                      }`}
+                      className={`badge ${company.status?.toLowerCase() === "inactive"
+                        ? "app-status-badge-inactive"
+                        : "app-status-badge"
+                        }`}
                     >
                       {company.status}
                     </span>

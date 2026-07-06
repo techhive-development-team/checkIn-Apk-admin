@@ -68,6 +68,52 @@ const resetPassword = async (id: string) => {
   return response;
 }
 
+const deactivateAccount = async (id: string) => {
+  const response = await client.exec(
+    `${API_URLS.COMPANY}/${id}/deactivate`,
+    { method: "PATCH" },
+  );
+  return response;
+};
+
+const reactivateAccount = async (id: string) => {
+  const response = await client.exec(
+    `${API_URLS.COMPANY}/${id}/reactivate`,
+    { method: "PATCH" },
+  );
+  return response;
+};
+
+const deleteOwnAccount = async (id: string, confirmationName: string) => {
+  const response = await client.exec(
+    `${API_URLS.COMPANY}/${id}/account`,
+    {
+      method: "DELETE",
+      body: JSON.stringify({ confirmationName }),
+    },
+  );
+  return response;
+};
+
+const sendRecoveryEmailVerification = async (id: string) => {
+  const response = await client.exec(
+    `${API_URLS.COMPANY}/${id}/recovery-email/send-verification`,
+    { method: "POST" },
+  );
+  return response;
+};
+
+const verifyRecoveryEmailToken = async (token: string) => {
+  const response = await client.exec(API_URLS.RECOVERY_EMAIL_VERIFY, {
+    method: "POST",
+    body: JSON.stringify({ token }),
+    headers: {
+      Authorization: "",
+    },
+  });
+  return response;
+};
+
 export const companyRepository = {
   getAll,
   createCompany,
@@ -75,4 +121,9 @@ export const companyRepository = {
   updateCompany,
   deleteCompany,
   resetPassword,
+  deactivateAccount,
+  reactivateAccount,
+  deleteOwnAccount,
+  sendRecoveryEmailVerification,
+  verifyRecoveryEmailToken,
 };

@@ -122,9 +122,9 @@ const UserTable = () => {
 
                                     <td>
                                         <span
-                                            className={`badge ${user.status === "active"
-                                                ? "badge-primary"
-                                                : "badge-error"
+                                            className={`badge ${user.status?.toLowerCase() === "inactive"
+                                                ? "app-status-badge-inactive"
+                                                : "app-status-badge"
                                                 }`}
                                         >
                                             {user.status}

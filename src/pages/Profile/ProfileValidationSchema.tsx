@@ -28,10 +28,21 @@ export const AdminProfileSchema = z.object({
 });
 
 export const ClientProfileSchema = AdminProfileSchema.extend({
-  companyType: z.string().optional(),
+  recoveryEmail: z
+    .string()
+    .email("Valid recovery email is required")
+    .optional()
+    .or(z.literal("")),
+  type: z.enum(["Company", "Academic"]).optional(),
+  subType: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
-  totalEmployee: z.string().optional(),
+}).refine((data) => !data.recoveryEmail || data.recoveryEmail !== data.email, {
+  message: "Recovery email must be different from login email",
+  path: ["recoveryEmail"],
+}).refine((data) => data.type !== "Company" || !!data.subType?.trim(), {
+  message: "Company Type is required when Type is Company",
+  path: ["subType"],
 });
 
 export const UserProfileSchema = z.object({
@@ -41,8 +52,8 @@ export const UserProfileSchema = z.object({
   position: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
-  totalEmployee: z.string().optional(),
-  logo: z
+
+  profilePic: z
     .any()
     .optional()
     .refine((file) => !file || file instanceof File || typeof file === "string", {

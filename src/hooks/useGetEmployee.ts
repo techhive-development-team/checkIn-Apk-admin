@@ -38,7 +38,7 @@ import useSWR from "swr";
 import { API_URLS } from "../enum/urls";
 import { employeeRepository } from "../repositories/employeeRepository";
 
-export const useGetEmployee = (params?: { companyId?: string; limit?: number; offset?: number }) => {
+export const useGetEmployee = (params?: { companyId?: string; memberType?: "EMPLOYEE" | "STUDENT"; limit?: number; offset?: number }) => {
   const key = [`${API_URLS.EMPLOYEE}`, params]; 
 
   const { data, error, isLoading, mutate } = useSWR(

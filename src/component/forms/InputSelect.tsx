@@ -24,8 +24,8 @@ const InputSelect: React.FC<InputSelectProps> = ({
 
   return (
     <div className="form-control w-full">
-      <label className="label">
-        <span className="label-text">
+      <label className="label pb-2">
+        <span className="label-text text-sm text-base-content font-semibold">
           {label}
           {required ? " *" : ""}
         </span>
@@ -39,14 +39,18 @@ const InputSelect: React.FC<InputSelectProps> = ({
           <>
             <select
               {...field}
-              className="select select-bordered w-full"
-              defaultValue=""
+              value={field.value ?? ""}
+              className="select select-bordered w-full border-base-300 bg-base-100 text-base-content"
             >
               <option value="" disabled>
                 {placeholder || `Select ${label}`}
               </option>
               {options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option
+                  key={opt.value}
+                  value={opt.value}
+                  className="text-base-content bg-base-100"
+                >
                   {opt.label}
                 </option>
               ))}

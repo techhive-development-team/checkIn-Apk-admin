@@ -9,6 +9,9 @@ import { Link } from "react-router-dom";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 
 const EmployeeEdit = () => {
+  const listPath = "/employee";
+  const title = "Edit Employee";
+
   const {
     onSubmit,
     loading,
@@ -17,7 +20,7 @@ const EmployeeEdit = () => {
     show,
     profilePreview,
     ...methods
-  } = useEmployeeEditForm();
+  } = useEmployeeEditForm("EMPLOYEE");
 
   return (
     <Layout>
@@ -26,11 +29,11 @@ const EmployeeEdit = () => {
           <Breadcrumb
             items={[
               { label: "Home", path: "/" },
-              { label: "Employee", path: `/employee` },
-              { label: "Edit Employee" },
+              { label: "Employee", path: listPath },
+              { label: title },
             ]}
           />
-          <h2 className="text-2xl font-bold mb-4">Edit Employee</h2>
+          <h2 className="text-2xl font-bold mb-4">{title}</h2>
 
           <FormProvider {...methods}>
             <form
@@ -65,11 +68,11 @@ const EmployeeEdit = () => {
               />
 
               <div className="pt-4 card-actions flex justify-between">
-                <Link to="/employee" className="btn btn-soft">
+                <Link to={listPath} className="btn btn-soft">
                   Back to Employee
                 </Link>
                 <button className="btn btn-primary" disabled={loading}>
-                  {loading ? "Loading..." : "Edit Employee"}
+                  {loading ? "Loading..." : title}
                 </button>
               </div>
             </form>

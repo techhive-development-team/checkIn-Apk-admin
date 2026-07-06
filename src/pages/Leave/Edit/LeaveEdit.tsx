@@ -7,6 +7,8 @@ import InputFile from "../../../component/forms/InputFile";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 import { useLeaveEditForm } from "./useLeaveEditForm";
 import InputSelect from "../../../component/forms/InputSelect";
+import { jwtDecode } from "jwt-decode";
+import { useGetEmployee } from "../../../hooks/useGetEmployee";
 
 const LeaveEdit = () => {
   const {
@@ -18,6 +20,25 @@ const LeaveEdit = () => {
     filePreview,
     ...methods
   } = useLeaveEditForm();
+  const token = localStorage.getItem("token");
+  const decodedToken = token
+    ? jwtDecode<{ user: { role: string; companyId?: string } }>(token)
+    : null;
+  const role = decodedToken?.user?.role;
+  const companyId = decodedToken?.user?.companyId;
+  const showEmployeeSelect = role === "ADMIN" || role === "CLIENT";
+
+  const { data: employees } = useGetEmployee({
+    companyId: role === "CLIENT" ? companyId : undefined,
+    memberType: "EMPLOYEE",
+    limit: 1000,
+    offset: 0,
+  });
+
+  const employeeOptions = (employees ?? []).map((employee: any) => ({
+    label: `${employee.firstName} ${employee.lastName}`,
+    value: employee.employeeId,
+  }));
 
   const leaveOptions = [
     { label: "Annual", value: "ANNUAL" },
@@ -44,6 +65,15 @@ const LeaveEdit = () => {
             <FormProvider {...methods}>
               <form className="space-y-4" onSubmit={methods.handleSubmit(onSubmit)}>
                 {show && <Alert success={success} message={message} />}
+                {showEmployeeSelect && (
+                  <InputSelect
+                    label="Employee"
+                    name="employeeId"
+                    options={employeeOptions}
+                    placeholder="Select Employee"
+                    required
+                  />
+                )}
 
                 <InputSelect
                   label="Leave Type"

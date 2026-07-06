@@ -1,8 +1,13 @@
 import { API_URLS } from "../enum/urls";
 import { client } from "./client";
  
-const getAll = async (params?: { companyId?: string; limit?: number; offset?: number }) => {
-  const query = new URLSearchParams(params as any).toString();
+const getAll = async (params?: { companyId?: string; memberType?: "EMPLOYEE" | "STUDENT"; limit?: number; offset?: number }) => {
+  const sanitizedParams = Object.fromEntries(
+    Object.entries(params ?? {}).filter(
+      ([, value]) => value !== undefined && value !== null && value !== "",
+    ),
+  );
+  const query = new URLSearchParams(sanitizedParams as any).toString();
   const response = await client.exec(
     `${API_URLS.EMPLOYEE}?${query}`,
     { method: "get" }

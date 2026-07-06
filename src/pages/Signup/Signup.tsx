@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import useSignupForm from "./useSignupForm";
 import InputText from "../../component/forms/InputText";
 import InputFile from "../../component/forms/InputFile";
+import InputSelect from "../../component/forms/InputSelect";
+import RadioInput from "../../component/forms/RadioInput";
 import Alert from "../../component/forms/Alert";
 import Button from "../../component/forms/Button";
 import { API_URLS, baseUrl } from "../../enum/urls";
@@ -13,6 +15,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const { onSubmit, loading, success, message, show, ...methods } =
     useSignupForm();
+  const selectedType = methods.watch("type");
 
   if (success) {
     const msg = Array.isArray(message) ? message.join(", ") : message;
@@ -20,7 +23,10 @@ const Signup = () => {
   }
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-slate-50 overflow-hidden">
+    <div
+      data-theme="light"
+      className="relative flex flex-col min-h-screen bg-slate-50 overflow-hidden"
+    >
       <MeshBackground />
 
       <div className="flex items-center justify-center grow relative z-10 px-4 py-10 sm:py-12 md:py-16">
@@ -52,6 +58,37 @@ const Signup = () => {
 
                 <InputText label="Company Name" name="name" required />
                 <InputText label="Email" name="email" type="email" required />
+                <InputText
+                  label="Recovery Email"
+                  name="recoveryEmail"
+                  type="email"
+                  required
+                />
+                <p className="-mt-2 mb-3 text-xs text-base-content/70">
+                  Used for account recovery if you lose access to primary email.
+                </p>
+                <RadioInput
+                  label="Type"
+                  name="type"
+                  required
+                  options={[
+                    { label: "Company", value: "Company" },
+                    { label: "Academic", value: "Academic" },
+                  ]}
+                />
+                {selectedType === "Company" && (
+                  <InputSelect
+                    label="Company Type"
+                    name="subType"
+                    required
+                    options={[
+                      { label: "Private", value: "Private" },
+                      { label: "Public", value: "Public" },
+                      { label: "NGO", value: "NGO" },
+                      { label: "Startup", value: "Startup" },
+                    ]}
+                  />
+                )}
                 <InputFile label="Logo" name="logo" />
 
                 <Button

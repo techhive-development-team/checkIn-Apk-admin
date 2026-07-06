@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
 import { employeeRepository } from "../../repositories/employeeRepository";
@@ -6,12 +6,22 @@ import { baseUrl } from "../../enum/urls";
 import { useAuthStore } from "../../stores/authStore";
 
 const PAGE_SIZE = 10;
+type MemberType = "EMPLOYEE" | "STUDENT";
 
 export type Employee = {
   employeeId: string;
+  memberType?: "EMPLOYEE" | "STUDENT";
   profilePic?: string;
   firstName: string;
   lastName: string;
+  studentClass?: string;
+  classTime?: string;
+  classTimeFrom?: string;
+  classTimeTo?: string;
+  duration?: string;
+  durationFrom?: string;
+  durationTo?: string;
+  classDays?: string[];
   position?: string;
   email: string;
   phone?: string;
@@ -23,8 +33,18 @@ export type Employee = {
   }
 };
 
-const EmployeeTable: React.FC = () => {
-  const companyId = useAuthStore((state) => state.user?.companyId ?? "");
+interface EmployeeTableProps {
+  memberType?: MemberType;
+  editBasePath?: "/employee" | "/student";
+}
+
+const EmployeeTable: React.FC<EmployeeTableProps> = ({
+  memberType,
+  editBasePath = "/employee",
+}) => {
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
+  const companyId = decodedToken?.user?.companyId;
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
@@ -35,6 +55,7 @@ const EmployeeTable: React.FC = () => {
     mutate,
   } = useGetEmployee({
     companyId,
+    memberType,
     limit: PAGE_SIZE,
     offset,
   });
@@ -44,33 +65,97 @@ const EmployeeTable: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null,
   );
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  useEffect(() => {
+    setSelectedEmployeeIds([]);
+  }, [page, employees]);
+
   const handleDelete = (employee: Employee) => {
+    setIsBulkDelete(false);
     setSelectedEmployee(employee);
     setDeleteError(null);
     (document.getElementById("delete_modal") as HTMLDialogElement).showModal();
   };
 
+  const toggleEmployeeSelection = (employeeId: string) => {
+    setSelectedEmployeeIds((prev) =>
+      prev.includes(employeeId)
+        ? prev.filter((id) => id !== employeeId)
+        : [...prev, employeeId],
+    );
+  };
+
+  const toggleSelectAllEmployees = () => {
+    if (!employees || employees.length === 0) return;
+    const currentPageEmployeeIds = employees.map(
+      (employee: Employee) => employee.employeeId,
+    );
+    const areAllSelected = currentPageEmployeeIds.every((id: string) =>
+      selectedEmployeeIds.includes(id),
+    );
+
+    setSelectedEmployeeIds((prev) => {
+      if (areAllSelected) {
+        return prev.filter((id) => !currentPageEmployeeIds.includes(id));
+      }
+      return [...new Set([...prev, ...currentPageEmployeeIds])];
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedEmployeeIds.length === 0) return;
+    setIsBulkDelete(true);
+    setSelectedEmployee(null);
+    setDeleteError(null);
+    (document.getElementById("delete_modal") as HTMLDialogElement).showModal();
+  };
+
   const closeModal = () => {
+    setIsBulkDelete(false);
     setSelectedEmployee(null);
     setDeleteError(null);
     (document.getElementById("delete_modal") as HTMLDialogElement).close();
   };
 
   const confirmDelete = async () => {
-    if (!selectedEmployee || !companyId) return;
+    if (!companyId) return;
 
     try {
-      const response = await employeeRepository.deleteEmployee(
-        companyId,
-        selectedEmployee.employeeId,
-      );
+      if (isBulkDelete) {
+        if (selectedEmployeeIds.length === 0) return;
+        const results = await Promise.allSettled(
+          selectedEmployeeIds.map((employeeId) =>
+            employeeRepository.deleteEmployee(companyId, employeeId),
+          ),
+        );
 
-      if (response?.statusCode === 200) {
-        await mutate();
-        closeModal();
+        const failed = results.filter((result) => result.status === "rejected");
+        if (failed.length > 0) {
+          setDeleteError(
+            `${failed.length} of ${selectedEmployeeIds.length} selected employees could not be deleted.`,
+          );
+          return;
+        }
+
+        setSelectedEmployeeIds([]);
+      } else {
+        if (!selectedEmployee) return;
+        const response = await employeeRepository.deleteEmployee(
+          companyId,
+          selectedEmployee.employeeId,
+        );
+
+        if (response?.statusCode !== 200) return;
+        setSelectedEmployeeIds((prev) =>
+          prev.filter((id) => id !== selectedEmployee.employeeId),
+        );
       }
+
+      await mutate();
+      closeModal();
     } catch (err: any) {
       if (Array.isArray(err?.data)) {
         setDeleteError(err.data.map((d: any) => d.message).join("\n"));
@@ -129,15 +214,46 @@ const EmployeeTable: React.FC = () => {
 
   return (
     <div>
+      <div className="mb-4 flex items-center gap-2">
+        <button
+          type="button"
+          className="btn btn-error btn-sm"
+          disabled={selectedEmployeeIds.length === 0}
+          onClick={handleBulkDelete}
+        >
+          Delete Selected ({selectedEmployeeIds.length})
+        </button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="table table-zebra w-full">
           <thead>
             <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={
+                    !!employees &&
+                    employees.length > 0 &&
+                    employees.every((employee: Employee) =>
+                      selectedEmployeeIds.includes(employee.employeeId),
+                    )
+                  }
+                  onChange={toggleSelectAllEmployees}
+                />
+              </th>
               <th>No</th>
               <th>Photo</th>
               <th>Name</th>
+              {memberType === "STUDENT" && <th>Class</th>}
+              {memberType === "STUDENT" && <th>Days</th>}
+              {memberType === "STUDENT" && <th>Class Start Time</th>}
+              {memberType === "STUDENT" && <th>Class End Time</th>}
+              {memberType === "STUDENT" && <th>Start Date</th>}
+              {memberType === "STUDENT" && <th>End Date</th>}
               <th>Company Name</th>
-              <th>Position</th>
+              {memberType !== "STUDENT" && <th>Position</th>}
               <th>Email</th>
               <th>Phone</th>
               <th>Status</th>
@@ -150,6 +266,14 @@ const EmployeeTable: React.FC = () => {
             {employees && employees.length > 0 ? (
               employees.map((employee: Employee, index: number) => (
                 <tr key={employee.employeeId}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-sm"
+                      checked={selectedEmployeeIds.includes(employee.employeeId)}
+                      onChange={() => toggleEmployeeSelection(employee.employeeId)}
+                    />
+                  </td>
                   <td>{offset + index + 1}</td>
 
                   <td>
@@ -169,16 +293,32 @@ const EmployeeTable: React.FC = () => {
                   <td>
                     {employee.firstName} {employee.lastName}
                   </td>
+                  {memberType === "STUDENT" && <td>{employee.studentClass || "-"}</td>}
+                  {memberType === "STUDENT" && (
+                    <td>
+                      {employee.classDays && employee.classDays.length > 0
+                        ? employee.classDays.join(", ")
+                        : "-"}
+                    </td>
+                  )}
+                  {memberType === "STUDENT" && (
+                    <td>{employee.classTimeFrom || employee.classTime || "-"}</td>
+                  )}
+                  {memberType === "STUDENT" && (
+                    <td>{employee.classTimeTo || "-"}</td>
+                  )}
+                  {memberType === "STUDENT" && <td>{employee.durationFrom || "-"}</td>}
+                  {memberType === "STUDENT" && <td>{employee.durationTo || "-"}</td>}
                   <td>{employee.company.name}</td>
-                  <td>{employee.position || "-"}</td>
+                  {memberType !== "STUDENT" && <td>{employee.position || "-"}</td>}
                   <td>{employee.email}</td>
                   <td>{employee.phone || "-"}</td>
 
                   <td>
                     <span
-                      className={`badge ${employee.status === "active"
-                        ? "badge-success"
-                        : "badge-error"
+                      className={`badge ${employee.status?.toLowerCase() === "inactive"
+                        ? "app-status-badge-inactive"
+                        : "app-status-badge"
                         }`}
                     >
                       {employee.status}
@@ -189,7 +329,7 @@ const EmployeeTable: React.FC = () => {
 
                   <td className="flex gap-2">
                     <Link
-                      to={`/employee/${employee.employeeId}/edit`}
+                      to={`${editBasePath}/${employee.employeeId}/edit`}
                       className="btn btn-sm"
                     >
                       Edit
@@ -213,7 +353,7 @@ const EmployeeTable: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={9} className="text-center py-4">
+                <td colSpan={memberType === "STUDENT" ? 16 : 11} className="text-center py-4">
                   No employees found
                 </td>
               </tr>
@@ -244,11 +384,21 @@ const EmployeeTable: React.FC = () => {
           <h3 className="font-bold text-lg">Confirm Delete</h3>
 
           <p className="py-4">
-            Are you sure you want to delete{" "}
-            <span className="font-semibold">
-              {selectedEmployee?.firstName} {selectedEmployee?.lastName}
-            </span>
-            ?
+            {isBulkDelete ? (
+              <>
+                Are you sure you want to delete{" "}
+                <span className="font-semibold">{selectedEmployeeIds.length}</span>{" "}
+                selected employees?
+              </>
+            ) : (
+              <>
+                Are you sure you want to delete{" "}
+                <span className="font-semibold">
+                  {selectedEmployee?.firstName} {selectedEmployee?.lastName}
+                </span>
+                ?
+              </>
+            )}
           </p>
 
           {deleteError && (

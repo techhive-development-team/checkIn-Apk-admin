@@ -6,6 +6,7 @@ import {
   RouterProvider,
   Navigate,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 import { client } from "../repositories/client";
 import Loading from "../component/layouts/common/Loading.tsx";
@@ -23,11 +24,18 @@ const CompanyPage = lazy(() => import("../pages/Company/Company.tsx"));
 const CompanyEdit = lazy(() => import("../pages/Company/Edit/CompanyEdit.tsx"));
 
 const EmployeePage = lazy(() => import("../pages/Employee/Employee.tsx"));
+const StudentPage = lazy(() => import("../pages/Student/Student.tsx"));
 const EmployeeCreate = lazy(
   () => import("../pages/Employee/Create/EmployeeCreate.tsx"),
 );
 const EmployeeUpdate = lazy(
   () => import("../pages/Employee/Edit/EmployeeEdit.tsx"),
+);
+const StudentCreate = lazy(
+  () => import("../pages/Student/Create/StudentCreate.tsx"),
+);
+const StudentUpdate = lazy(
+  () => import("../pages/Student/Edit/StudentEdit.tsx"),
 );
 
 const AttendancePage = lazy(() => import("../pages/Attendance/Attendance.tsx"));
@@ -51,6 +59,7 @@ const Signup = lazy(() => import("../pages/Signup/Signup.tsx"));
 const ForgotPwd = lazy(() => import("../pages/ForgetPwd/ForgotPassword.tsx"));
 const PasswordReset = lazy(() => import("../pages/ForgetPwd/resetPwd/PasswordReset.tsx")) //forgetpwd
 const Google = lazy(() => import("../pages/Google.tsx"));
+const RecoveryEmailVerify = lazy(() => import("../pages/RecoveryEmailVerify.tsx"));
 const AccessDenied = lazy(() => import("../pages/AccessDenied.tsx"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 const Unauthorized = lazy(() => import("../pages/Unauthorized.tsx"));
@@ -61,7 +70,10 @@ const LeaveCreate = lazy(() => import("../pages/Leave/Create/LeaveCreate.tsx"));
 
 const ProtectedRoute: React.FC = () => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
-  const token = useAuthStore((state) => state.token);
+  const [requiresRecoveryVerification, setRequiresRecoveryVerification] =
+    useState(false);
+  const [blockStudentRoutes, setBlockStudentRoutes] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -71,17 +83,35 @@ const ProtectedRoute: React.FC = () => {
         const res = await client.exec("/auth/verify-token", { method: "GET" });
         
         setIsAuth(res?.success ?? false);
+        setRequiresRecoveryVerification(
+          !!res?.data?.requiresRecoveryEmailVerification,
+        );
+        setBlockStudentRoutes(
+          res?.data?.role === "CLIENT" && res?.data?.company?.type === "Company",
+        );
       } catch {
         setIsAuth(false);
       }
     };
 
     checkAuth();
-  }, [token]);
+  }, [location.pathname]);
 
   if (isAuth === null) return <Loading />;
 
-  return isAuth ? <Outlet /> : <Navigate to="/login" replace />;
+  if (!isAuth) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiresRecoveryVerification && location.pathname !== "/profile/edit") {
+    return <Navigate to="/profile/edit" replace />;
+  }
+
+  if (blockStudentRoutes && location.pathname.startsWith("/student")) {
+    return <Navigate to="/employee" replace />;
+  }
+
+  return <Outlet />;
 };
 
 interface AppRoute {
@@ -104,6 +134,9 @@ const routes: AppRoute[] = [
   { path: "/employee", element: EmployeePage, protected: true },
   { path: "/employee/create", element: EmployeeCreate, protected: true },
   { path: "/employee/:id/edit", element: EmployeeUpdate, protected: true },
+  { path: "/student", element: StudentPage, protected: true },
+  { path: "/student/create", element: StudentCreate, protected: true },
+  { path: "/student/:id/edit", element: StudentUpdate, protected: true },
 
   { path: "/attendance", element: AttendancePage, protected: true },
   { path: "/attendance/:id", element: AttendanceDetail, protected: true },
@@ -123,6 +156,7 @@ const routes: AppRoute[] = [
   { path: "/login", element: Login },
   { path: "/signup", element: Signup },
   { path: "/google", element: Google },
+  { path: "/recovery-email-verify", element: RecoveryEmailVerify },
   { path: "/401", element: AccessDenied },
   { path: "/403", element: Unauthorized },
   { path: "*", element: NotFound },

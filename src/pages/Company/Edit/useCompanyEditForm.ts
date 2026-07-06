@@ -14,17 +14,20 @@ import { baseUrl } from "../../../enum/urls";
 
 export const useCompanyEditForm = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: companyData } = useGetCompanyById(id ?? "");
+  const { data: companyData, mutate: mutateCompanyData } = useGetCompanyById(id ?? "");
 
   const methods: UseFormReturn<CompanyUpdateForm> = useForm<CompanyUpdateForm>({
     resolver: zodResolver(CompanyEditSchema),
     defaultValues: {
       name: "",
       email: "",
+      recoveryEmail: "",
+      type: undefined,
+      subType: "",
       logo: "",
-      companyType: "",
       address: "",
       phone: "",
+      totalEmployee: "",
       subScribeStatus: "Inactive",
       status: "active",
     },
@@ -35,14 +38,17 @@ export const useCompanyEditForm = () => {
 
   useEffect(() => {
     if (companyData) {
-
       reset({
         name: companyData.name || "",
         email: companyData.email || "",
+        recoveryEmail: companyData.recoveryEmail || "",
+        type: (companyData.type as "Company" | "Academic" | undefined) || undefined,
+        subType: companyData.subType || "",
         logo: companyData.logo || undefined,
-        companyType: companyData.companyType || "",
         address: companyData.address || "",
         phone: companyData.phone || "",
+        totalEmployee: companyData.totalEmployee || "",
+
         subScribeStatus: companyData.subScribeStatus || "Inactive",
         status: companyData.status || "active",
       });
@@ -56,9 +62,18 @@ export const useCompanyEditForm = () => {
 
   const { loading, success, message, show, handleSubmit } =
     useFormState<CompanyCreateForm>();
+  const [verifyingRecovery, setVerifyingRecovery] = useState(false);
+  const [recoveryVerifySuccess, setRecoveryVerifySuccess] = useState(false);
+  const [recoveryVerifyMessage, setRecoveryVerifyMessage] = useState("");
+  const [showRecoveryVerifyMessage, setShowRecoveryVerifyMessage] =
+    useState(false);
 
   const onSubmit = async (data: CompanyUpdateForm) => {
-    const payload: any = { ...data };
+    const payload: any = {
+      ...data,
+      recoveryEmail: data.recoveryEmail || undefined,
+      subType: data.type === "Company" ? data.subType : undefined,
+    };
 
     if (!(data.logo instanceof File)) {
       delete payload.logo;
@@ -75,13 +90,47 @@ export const useCompanyEditForm = () => {
     );
   };
 
+  const sendRecoveryVerification = async () => {
+    if (!id) return;
+    setVerifyingRecovery(true);
+    setShowRecoveryVerifyMessage(false);
+    setRecoveryVerifyMessage("");
+    setRecoveryVerifySuccess(false);
+    try {
+      const response = await companyRepository.sendRecoveryEmailVerification(id);
+      setRecoveryVerifySuccess(true);
+      setRecoveryVerifyMessage(
+        response?.message || "Verification email sent successfully.",
+      );
+    } catch (error: any) {
+      setRecoveryVerifySuccess(false);
+      setRecoveryVerifyMessage(
+        error?.message || "Failed to send verification email.",
+      );
+    } finally {
+      setShowRecoveryVerifyMessage(true);
+      setVerifyingRecovery(false);
+    }
+  };
+
+  const refreshVerificationStatus = async () => {
+    await mutateCompanyData();
+  };
+
   return {
     ...methods,
+    companyData,
     onSubmit,
     loading,
     success,
     message,
     show,
     logoPreview,
+    verifyingRecovery,
+    recoveryVerifySuccess,
+    recoveryVerifyMessage,
+    showRecoveryVerifyMessage,
+    sendRecoveryVerification,
+    refreshVerificationStatus,
   };
 };

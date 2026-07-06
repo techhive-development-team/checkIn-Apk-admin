@@ -5,7 +5,8 @@ export const API_URLS = {
     GOOGLE: "/google",
     ATTENDANCE: "/attendance",
     USER: "/user",
-    LEAVE: "/leave-request"
+    LEAVE: "/leave-request",
+    RECOVERY_EMAIL_VERIFY: "/company/recovery-email/verify-token",
 }
 
 export const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;

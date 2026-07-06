@@ -14,7 +14,7 @@ const Employee = () => {
           <Breadcrumb
             items={[
               { label: "Home", path: "/" },
-              { label: "Employee" },
+              { label: "Employee Management" },
             ]}
           />
         </div>
@@ -33,7 +33,7 @@ const Employee = () => {
               </Link>
             )}
           </div>
-          <EmployeeTable />
+          <EmployeeTable memberType="EMPLOYEE" editBasePath="/employee" />
         </div>
       </div>
     </Layout>
