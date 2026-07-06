@@ -7,21 +7,18 @@ import InputText from "../../../component/forms/InputText";
 import InputFile from "../../../component/forms/InputFile";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 import InputSelect from "../../../component/forms/InputSelect";
-import { jwtDecode } from "jwt-decode";
 import { useGetEmployee } from "../../../hooks/useGetEmployee";
+import { useAuthStore } from "../../../stores/authStore";
 import { useEffect, useState } from "react";
 import { useGetUserById } from "../../../hooks/useGetUser";
 
 const LeaveCreate = () => {
   const { onSubmit, loading, success, message, show, ...methods } =
     useLeaveCreateForm();
-  const token = localStorage.getItem("token");
-  const decodedToken = token
-    ? jwtDecode<{ user: { role: string; companyId?: string; userId?: string } }>(token)
-    : null;
-  const role = decodedToken?.user?.role;
-  const companyId = decodedToken?.user?.companyId;
-  const userId = decodedToken?.user?.userId;
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role;
+  const companyId = user?.companyId;
+  const userId = user?.userId;
   const { data: userData } = useGetUserById(userId || "");
   const hideStudentForClient =
     role === "CLIENT" && userData?.company?.type === "Company";

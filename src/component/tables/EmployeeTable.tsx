@@ -42,9 +42,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({
   memberType,
   editBasePath = "/employee",
 }) => {
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as { user: { companyId: string } };
-  const companyId = decodedToken?.user?.companyId;
+  const companyId = useAuthStore((state) => state.user?.companyId);
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;

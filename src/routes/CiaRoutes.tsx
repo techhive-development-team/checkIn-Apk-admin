@@ -69,6 +69,7 @@ const LeaveEdit = lazy(() => import("../pages/Leave/Edit/LeaveEdit.tsx"));
 const LeaveCreate = lazy(() => import("../pages/Leave/Create/LeaveCreate.tsx"));
 
 const ProtectedRoute: React.FC = () => {
+  const token = useAuthStore((state) => state.token);
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const [requiresRecoveryVerification, setRequiresRecoveryVerification] =
     useState(false);
@@ -95,7 +96,7 @@ const ProtectedRoute: React.FC = () => {
     };
 
     checkAuth();
-  }, [location.pathname]);
+  }, [location.pathname, token]);
 
   if (isAuth === null) return <Loading />;
 

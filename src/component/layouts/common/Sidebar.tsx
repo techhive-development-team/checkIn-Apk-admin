@@ -1,20 +1,16 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { employeeSidebarRoutes, type SidebarRoute, sidebarRoutes, userSidebarRoutes } from "./sidebarRoutes.tsx";
 import { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
 import { useGetUserById } from "../../../hooks/useGetUser";
+import { useAuthStore } from "../../../stores/authStore";
 
 const Sidebar = () => {
   const location = useLocation();
   const role = useAuthStore((state) => state.user?.role);
+  const userId = useAuthStore((state) => state.user?.userId);
+  const token = useAuthStore((state) => state.token);
 
   const [sideBar, setSideBar] = useState<SidebarRoute[]>([]);
-  const token = localStorage.getItem("token");
-  const decodedToken = token
-    ? jwtDecode<{ user: { role: string; userId: string } }>(token)
-    : null;
-  const role = decodedToken?.user?.role;
-  const userId = decodedToken?.user?.userId;
   const { data: userData } = useGetUserById(userId || "");
 
   useEffect(() => {

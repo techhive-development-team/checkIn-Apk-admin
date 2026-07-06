@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useGetAttendance } from "../../hooks/useGetAttendance";
 import { attendanceRepository } from "../../repositories/attendanceRepository";
 import { baseUrl } from "../../enum/urls";
-import { useAuthStore } from "../../stores/authStore";
 
 const PAGE_SIZE = 10;
 const SINGLE_DAY_LIMIT = 1000;

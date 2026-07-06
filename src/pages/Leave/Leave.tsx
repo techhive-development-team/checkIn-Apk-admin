@@ -2,10 +2,10 @@ import Layout from "../../component/layouts/layout";
 import Breadcrumb from "../../component/layouts/common/Breadcrumb";
 import LeaveRequestTable from "../../component/tables/LeaveRequestTable";
 import { useEffect, useMemo, useState } from "react";
-import { jwtDecode } from "jwt-decode";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
 import { useGetUserById } from "../../hooks/useGetUser";
 import { Link } from "react-router-dom";
+import { useAuthStore } from "../../stores/authStore";
 
 type PersonOption = {
   employeeId: string;
@@ -32,13 +32,10 @@ const toMonthRange = (month: string) => {
 };
 
 const Leave = () => {
-  const token = localStorage.getItem("token");
-  const decodedToken = token
-    ? jwtDecode<{ user: { role: string; companyId?: string; userId?: string } }>(token)
-    : null;
-  const role = decodedToken?.user?.role;
-  const companyId = decodedToken?.user?.companyId;
-  const userId = decodedToken?.user?.userId;
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role;
+  const companyId = user?.companyId;
+  const userId = user?.userId;
   const { data: userData } = useGetUserById(userId || "");
   const hideStudentForClient =
     role === "CLIENT" && userData?.company?.type === "Company";

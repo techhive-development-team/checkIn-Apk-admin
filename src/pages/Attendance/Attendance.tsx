@@ -4,7 +4,7 @@ import { attendanceRepository } from "../../repositories/attendanceRepository";
 import AttendanceTable from "../../component/tables/AttendanceTable";
 import { useMemo, useState } from "react";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../stores/authStore";
 import { useGetUserById } from "../../hooks/useGetUser";
 
 type PersonOption = {
@@ -22,13 +22,10 @@ const getTodayDateKey = () => {
 
 const Attendance = () => {
   const today = getTodayDateKey();
-  const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token!) as {
-    user: { companyId: string; role: string; userId?: string };
-  };
-  const companyId = decodedToken?.user?.companyId;
-  const role = decodedToken?.user?.role;
-  const userId = decodedToken?.user?.userId;
+  const user = useAuthStore((state) => state.user);
+  const companyId = user?.companyId;
+  const role = user?.role;
+  const userId = user?.userId;
   const canUseSearch = role === "ADMIN" || role === "CLIENT";
   const { data: userData } = useGetUserById(userId || "");
   const hideStudentForClient =

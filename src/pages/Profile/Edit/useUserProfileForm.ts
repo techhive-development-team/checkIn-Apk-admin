@@ -12,11 +12,8 @@ import { useGetUserById } from "../../../hooks/useGetUser";
 import { useAuthStore } from "../../../stores/authStore";
 
 export const useUserProfileForm = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  const decodedToken = jwtDecode<{ user: { userId: string } }>(token);
-  const userId = decodedToken.user.userId;
+  const userId = useAuthStore((state) => state.user?.userId ?? "");
+  if (!userId) return;
 
   const { data: userData } = useGetUserById(userId);
 

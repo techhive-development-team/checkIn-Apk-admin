@@ -1,20 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import { useGetUserById } from "../../hooks/useGetUser";
 import { companyRepository } from "../../repositories/companyRepository";
-
-const clearSession = () => {
-  localStorage.removeItem("token");
-};
+import { useAuthStore } from "../../stores/authStore";
 
 const ClientAccountDangerZone = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-
-  const decodedToken = jwtDecode<{ user: { userId: string } }>(token);
-  const userId = decodedToken.user.userId;
+  const userId = useAuthStore((state) => state.user?.userId);
+  const logout = useAuthStore((state) => state.logout);
+  if (!userId) return null;
   const { data: userData, mutate } = useGetUserById(userId);
 
   const companyId = userData?.company?.companyId;
@@ -82,7 +76,7 @@ const ClientAccountDangerZone = () => {
         deleteConfirmation,
       );
       if (response?.statusCode === 200) {
-        clearSession();
+        logout();
         navigate("/login", {
           replace: true,
           state: { message: "Your company account has been deleted." },

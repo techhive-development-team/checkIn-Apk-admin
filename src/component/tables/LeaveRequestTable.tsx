@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { leaveRequestRepository } from "../../repositories/leaveRepository";
 import { useGetLeave } from "../../hooks/useGetLeave";
-import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../../stores/authStore";
 
 const PAGE_SIZE = 10;
 
@@ -38,11 +38,7 @@ const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
   employeeId,
   memberType,
 }) => {
-  const token = localStorage.getItem("token");
-  const decodedToken = token
-    ? jwtDecode<{ user: { role: string } }>(token)
-    : null;
-  const role = decodedToken?.user?.role;
+  const role = useAuthStore((state) => state.user?.role);
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
 

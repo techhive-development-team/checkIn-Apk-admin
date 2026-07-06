@@ -30,6 +30,7 @@ const Navbar = () => {
     window.location.href = "/login";
   };
 
+  const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   
   const displayName = user?.name || "User";
