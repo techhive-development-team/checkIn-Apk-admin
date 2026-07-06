@@ -7,32 +7,47 @@ import { baseUrl } from "../../enum/urls";
 const PAGE_SIZE = 10;
 const SINGLE_DAY_LIMIT = 1000;
 
-const getTodayDateKey = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+const getDateKeyInTimezone = (value: Date | string, timezone: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
 };
 
-const parseDateKey = (value?: string | null): string => {
-  if (!value) return "";
-  const trimmed = String(value).trim();
-  const isoPrefix = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
-  if (isoPrefix) return isoPrefix[1];
-  return "";
+const getRowDateSource = (row: {
+  checkInTime?: string;
+  date?: string;
+}): string | undefined => row.checkInTime || row.date;
+
+const formatAttendanceDate = (value: string | undefined, timezone: string) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat(undefined, {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
 };
 
-const formatDateKey = (key: string) => {
-  const [year, month, day] = key.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(undefined, {
-    timeZone: "UTC",
-  });
-};
-
-const formatAttendanceDate = (value?: string) => {
-  const key = parseDateKey(value);
-  return key ? formatDateKey(key) : "-";
+const formatAttendanceDateTime = (value: string | undefined, timezone: string) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat(undefined, {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
 };
 
 export type Attendance = {
@@ -68,6 +83,7 @@ interface AttendanceTableProps {
   workEndTime?: string;
   graceMinutes?: number;
   memberType?: "EMPLOYEE" | "STUDENT";
+  timezone?: string;
 }
 
 const mapAttendanceRow = (row: Attendance): Attendance => {
@@ -90,6 +106,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   workEndTime = "",
   graceMinutes = 0,
   memberType,
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Yangon",
 }) => {
   const effectiveToDate = toDate || fromDate;
   const isSingleDayFilter =
@@ -111,6 +128,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     toDate: effectiveToDate || undefined,
     employeeId: employeeId || undefined,
     memberType,
+    timezone,
   });
 
   const [selectedAttendance, setSelectedAttendance] =
@@ -304,7 +322,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       ? Math.ceil(total / PAGE_SIZE)
       : 1;
   const rowOffset = isSingleDayFilter ? 0 : offset;
-  const todayKey = getTodayDateKey();
+  const todayKey = getDateKeyInTimezone(new Date(), timezone);
 
   return (
     <div>
@@ -327,6 +345,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 <input
                   type="checkbox"
                   className="checkbox checkbox-sm"
+                  aria-label="Select all attendance rows"
+                  title="Select all attendance rows"
                   checked={
                     displayRows.length > 0 &&
                     displayRows.every((attendance: Attendance) =>
@@ -357,6 +377,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     <input
                       type="checkbox"
                       className="checkbox checkbox-sm"
+                      aria-label="Select attendance row"
+                      title="Select attendance row"
                       checked={selectedAttendanceIds.includes(attendance.id)}
                       onChange={() => toggleAttendanceSelection(attendance.id)}
                     />
@@ -382,14 +404,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   </td>
                   <td>{attendance.employee?.company.name}</td>
                   <td>
-                    {formatAttendanceDate(attendance.date)}
-                    {parseDateKey(attendance.date) === todayKey && (
+                    {formatAttendanceDate(getRowDateSource(attendance), timezone)}
+                    {getDateKeyInTimezone(getRowDateSource(attendance) || "", timezone) === todayKey && (
                       <span className="ml-2 badge badge-sm badge-primary">Today</span>
                     )}
                   </td>
                   <td>
                     {attendance.checkInTime
-                      ? new Date(attendance.checkInTime).toLocaleString()
+                      ? formatAttendanceDateTime(attendance.checkInTime, timezone)
                       : attendance.rowStatus === "LEAVE"
                         ? `${attendance.leaveType || "Leave"} Leave`
                         : attendance.rowStatus === "ABSENT"
@@ -398,7 +420,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   </td>
                   <td>
                     {attendance.checkOutTime
-                      ? new Date(attendance.checkOutTime).toLocaleString()
+                      ? formatAttendanceDateTime(attendance.checkOutTime, timezone)
                       : attendance.rowStatus === "LEAVE"
                         ? "Leave Day"
                         : attendance.rowStatus === "ABSENT"
@@ -416,33 +438,35 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     {attendance.rowStatus === "ABSENT" && "Absent"}
                     {attendance.rowStatus === "PRESENT" && "Present"}
                   </td>
-                  <td className="flex gap-2">
-                    {attendance.rowStatus === "PRESENT" && attendance.checkInTime ? (
-                      <>
-                        <Link
-                          to={`/attendance/${attendance.id}/edit`}
-                          className="btn btn-sm"
-                        >
-                          Edit
-                        </Link>
+                  <td>
+                    <div className="flex flex-wrap gap-2">
+                      {attendance.rowStatus === "PRESENT" && attendance.checkInTime ? (
+                        <>
+                          <Link
+                            to={`/attendance/${attendance.id}/edit`}
+                            className="btn btn-sm"
+                          >
+                            Edit
+                          </Link>
 
-                        <button
-                          onClick={() => handleDelete(attendance)}
-                          className="btn btn-sm btn-error"
+                          <button
+                            onClick={() => handleDelete(attendance)}
+                            className="btn btn-sm btn-error"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      ) : attendance.rowStatus === "LEAVE" && attendance.leaveId ? (
+                        <Link
+                          to={`/leave/${attendance.leaveId}/edit`}
+                          className="btn btn-sm btn-warning"
                         >
-                          Delete
-                        </button>
-                      </>
-                    ) : attendance.rowStatus === "LEAVE" && attendance.leaveId ? (
-                      <Link
-                        to={`/leave/${attendance.leaveId}/edit`}
-                        className="btn btn-sm btn-warning"
-                      >
-                        View Leave
-                      </Link>
-                    ) : (
-                      <span className="text-xs opacity-70">Auto</span>
-                    )}
+                          View Leave
+                        </Link>
+                      ) : (
+                        <span className="text-xs opacity-70">Auto</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
