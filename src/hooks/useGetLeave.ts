@@ -9,6 +9,7 @@ export const useGetLeave = (params?: {
   toDate?: string;
   employeeId?: string;
   status?: "PENDING" | "APPROVED" | "DENIED";
+  memberType?: "EMPLOYEE" | "STUDENT";
 }) => {
     const key = params
     ? [`${API_URLS.LEAVE}`, params]

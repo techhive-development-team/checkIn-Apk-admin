@@ -28,6 +28,7 @@ type LeaveRequestTableProps = {
   toDate?: string;
   status?: "PENDING" | "APPROVED" | "DENIED";
   employeeId?: string;
+  memberType?: "EMPLOYEE" | "STUDENT";
 };
 
 const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
@@ -35,6 +36,7 @@ const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
   toDate,
   status,
   employeeId,
+  memberType,
 }) => {
   const token = localStorage.getItem("token");
   const decodedToken = token
@@ -51,6 +53,7 @@ const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
     toDate,
     status,
     employeeId,
+    memberType,
   });
 
   const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
@@ -65,7 +68,7 @@ const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
 
   useEffect(() => {
     setPage(1);
-  }, [fromDate, toDate, status, employeeId]);
+  }, [fromDate, toDate, status, employeeId, memberType]);
 
   const handleDelete = (leave: LeaveRequest) => {
     setSelectedLeave(leave);

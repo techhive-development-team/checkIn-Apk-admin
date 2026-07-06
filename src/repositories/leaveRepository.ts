@@ -8,6 +8,7 @@ const getAll = async (params?: {
   toDate?: string;
   employeeId?: string;
   status?: "PENDING" | "APPROVED" | "DENIED";
+  memberType?: "EMPLOYEE" | "STUDENT";
 }) => {
   const sanitizedParams = Object.fromEntries(
     Object.entries(params ?? {}).filter(

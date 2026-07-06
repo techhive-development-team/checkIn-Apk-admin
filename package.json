@@ -9,12 +9,13 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:home-icon": "node scripts/build-animated-icon.mjs src/assets/icons/home-animated.gif src/assets/icons/home-animated-transparent.gif",
+    "build:company-icon": "node scripts/build-animated-icon.mjs src/assets/icons/company-animated.gif src/assets/icons/company-animated-transparent.gif",
     "build:employee-icon": "node scripts/build-animated-icon.mjs src/assets/icons/employee-animated.gif src/assets/icons/employee-animated-transparent.gif",
     "build:attendance-icon": "node scripts/build-animated-icon.mjs src/assets/icons/attendance-animated.gif src/assets/icons/attendance-animated-transparent.gif",
     "build:student-icon": "node scripts/build-animated-icon.mjs src/assets/icons/student-animated.gif src/assets/icons/student-animated-transparent.gif",
     "build:leave-icon": "node scripts/build-animated-icon.mjs src/assets/icons/leave-animated.gif src/assets/icons/leave-animated-transparent.gif",
     "build:user-icon": "node scripts/build-animated-icon.mjs src/assets/icons/user-animated.gif src/assets/icons/user-animated-transparent.gif",
-    "build:icons": "npm run build:home-icon && npm run build:employee-icon && npm run build:attendance-icon && npm run build:student-icon && npm run build:leave-icon && npm run build:user-icon"
+    "build:icons": "npm run build:home-icon && npm run build:company-icon && npm run build:employee-icon && npm run build:attendance-icon && npm run build:student-icon && npm run build:leave-icon && npm run build:user-icon"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

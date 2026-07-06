@@ -314,6 +314,7 @@ const Leave = () => {
             toDate={canUseSearch ? searchToDate : undefined}
             status={canUseSearch ? searchStatus || undefined : undefined}
             employeeId={canUseSearch ? searchEmployeeId || undefined : undefined}
+            memberType={hideStudentForClient ? "EMPLOYEE" : searchMemberType}
           />
         </div>
       </div>

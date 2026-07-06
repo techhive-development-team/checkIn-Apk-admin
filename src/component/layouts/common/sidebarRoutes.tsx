@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { Briefcase } from "lucide-react";
-import EmployeeAnimatedIcon from "../../icons/EmployeeAnimatedIcon";
 import AttendanceAnimatedIcon from "../../icons/AttendanceAnimatedIcon";
+import CompanyAnimatedIcon from "../../icons/CompanyAnimatedIcon";
+import EmployeeAnimatedIcon from "../../icons/EmployeeAnimatedIcon";
 import HomeAnimatedIcon from "../../icons/HomeAnimatedIcon";
 import LeaveAnimatedIcon from "../../icons/LeaveAnimatedIcon";
 import StudentAnimatedIcon from "../../icons/StudentAnimatedIcon";
@@ -14,6 +14,7 @@ export interface SidebarRoute {
 }
 
 const dashboardIcon = <HomeAnimatedIcon size={50} />;
+const companyIcon = <CompanyAnimatedIcon size={50} />;
 const employeeIcon = <EmployeeAnimatedIcon size={50} />;
 const attendanceIcon = <AttendanceAnimatedIcon size={50} />;
 const studentIcon = <StudentAnimatedIcon size={50} />;
@@ -22,7 +23,7 @@ const userManagementIcon = <UserAnimatedIcon size={50} />;
 
 export const sidebarRoutes: SidebarRoute[] = [
   { path: "/", name: "Dashboard", icon: dashboardIcon },
-  { path: "/company", name: "Company Management", icon: <Briefcase size={18} /> },
+  { path: "/company", name: "Company Management", icon: companyIcon },
   { path: "/employee", name: "Employee Management", icon: employeeIcon },
   { path: "/student", name: "Student Management", icon: studentIcon },
   { path: "/attendance", name: "Attendance Management", icon: attendanceIcon },

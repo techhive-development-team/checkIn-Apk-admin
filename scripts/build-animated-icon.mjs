@@ -106,13 +106,63 @@ const findTransparentIndex = (palette) => {
   return 0;
 };
 
+const ensureWhiteInPalette = (palette, transparentIndex) => {
+  for (let i = 0; i < palette.length; i += 1) {
+    if (i === transparentIndex) {
+      continue;
+    }
+
+    const color = palette[i];
+    if (color[0] >= 250 && color[1] >= 250 && color[2] >= 250 && color[3] > 0) {
+      return i;
+    }
+  }
+
+  for (let i = 0; i < palette.length; i += 1) {
+    if (i !== transparentIndex) {
+      palette[i] = [255, 255, 255, 255];
+      return i;
+    }
+  }
+
+  return -1;
+};
+
+const preserveWhitePixels = (rgba, indexed, palette, transparentIndex) => {
+  const whiteIndex = ensureWhiteInPalette(palette, transparentIndex);
+  if (whiteIndex < 0) {
+    return indexed;
+  }
+
+  for (let pixelIndex = 0; pixelIndex < rgba.length; pixelIndex += 4) {
+    if (rgba[pixelIndex + 3] === 0) {
+      continue;
+    }
+
+    const red = rgba[pixelIndex];
+    const green = rgba[pixelIndex + 1];
+    const blue = rgba[pixelIndex + 2];
+
+    if (red >= 245 && green >= 245 && blue >= 245) {
+      indexed[pixelIndex / 4] = whiteIndex;
+    }
+  }
+
+  return indexed;
+};
+
 const encodeGif = (frameRgbaList, delays, outputPath) => {
   const encoder = GIFEncoder();
 
   frameRgbaList.forEach((rgba, index) => {
     const palette = quantize(rgba, 256);
     const transparentIndex = findTransparentIndex(palette);
-    const indexed = applyPalette(rgba, palette);
+    const indexed = preserveWhitePixels(
+      rgba,
+      applyPalette(rgba, palette),
+      palette,
+      transparentIndex,
+    );
 
     encoder.writeFrame(indexed, width, height, {
       palette,

@@ -55,8 +55,8 @@ const Attendance = () => {
     limit: 1000,
     offset: 0,
   });
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState(today);
+  const [toDate, setToDate] = useState(today);
   const [employeeId, setEmployeeId] = useState("");
   const [employeeSearchText, setEmployeeSearchText] = useState("");
   const [showEmployeeSuggestions, setShowEmployeeSuggestions] = useState(false);
@@ -64,8 +64,8 @@ const Attendance = () => {
   const [workEndTime, setWorkEndTime] = useState("");
   const [graceMinutes, setGraceMinutes] = useState("0");
 
-  const [searchFromDate, setSearchFromDate] = useState("");
-  const [searchToDate, setSearchToDate] = useState("");
+  const [searchFromDate, setSearchFromDate] = useState(today);
+  const [searchToDate, setSearchToDate] = useState(today);
   const [searchEmployeeId, setSearchEmployeeId] = useState("");
   const [searchWorkStartTime, setSearchWorkStartTime] = useState("");
   const [searchWorkEndTime, setSearchWorkEndTime] = useState("");
