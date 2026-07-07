@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import profile from "../../../assets/profile.jpg";
 import { baseUrl } from "../../../enum/urls";
 import { useAuthStore } from "../../../stores/authStore";
+import { useGetUserById } from "../../../hooks/useGetUser";
+import NotificationBell from "./NotificationBell";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -32,11 +34,15 @@ const Navbar = () => {
 
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
-  
+  const { data: userDetail } = useGetUserById(user?.userId || "");
+
   const displayName = user?.name || "User";
   const displayImage = user?.logo
     ? `${baseUrl.replace(/\/$/, "")}${user?.logo}`
     : profile;
+
+  const planKey = userDetail?.company?.plan as string | undefined;
+  const isPaidPlan = !!planKey && planKey !== "FREE";
 
   return (
     <>
@@ -70,6 +76,8 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
+          <NotificationBell />
+
           <label
             className="toggle text-base-content app-theme-toggle"
             aria-label="Toggle theme"
@@ -124,12 +132,21 @@ const Navbar = () => {
             role="button"
             className="btn btn-ghost flex items-center gap-3 px-3 app-profile-trigger"
           >
-            <div className="w-10 h-10 overflow-hidden border border-base-300 rounded-full">
-              <img
-                src={displayImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
+            <div className="relative h-10 w-10">
+              {isPaidPlan && (
+                <div className="story-ring absolute inset-0 rounded-full" />
+              )}
+              <div
+                className={`absolute overflow-hidden rounded-full bg-base-100 ${
+                  isPaidPlan ? "inset-[2px]" : "inset-0 border border-base-300"
+                }`}
+              >
+                <img
+                  src={displayImage}
+                  alt="Profile"
+                  className="h-full w-full rounded-full object-cover"
+                />
+              </div>
             </div>
             <span className="text-base-content/80 app-profile-text">
               {displayName}

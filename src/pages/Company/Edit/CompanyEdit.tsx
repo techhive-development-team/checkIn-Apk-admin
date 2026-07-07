@@ -7,9 +7,14 @@ import InputText from "../../../component/forms/InputText";
 import InputFile from "../../../component/forms/InputFile";
 import InputSelect from "../../../component/forms/InputSelect";
 import { useCompanyEditForm } from "./useCompanyEditForm";
+import DowngradeMembersModal from "./DowngradeMembersModal";
 import RadioInput from "../../../component/forms/RadioInput";
+import { useAuthStore } from "../../../stores/authStore";
+import { SUBSCRIPTION_PLANS, getPlan } from "../../../config/plans";
 
 const CompanyEdit = () => {
+  const role = useAuthStore((state) => state.user?.role);
+  const isAdmin = role === "ADMIN";
   const {
     onSubmit,
     loading,
@@ -24,10 +29,16 @@ const CompanyEdit = () => {
     showRecoveryVerifyMessage,
     sendRecoveryVerification,
     refreshVerificationStatus,
+    downgrade,
+    downgradeLoading,
+    confirmDowngrade,
+    downloadRemovedMembers,
+    closeDowngrade,
     ...methods
   } =
     useCompanyEditForm();
   const selectedType = methods.watch("type");
+  const subscriptionActive = methods.watch("subScribeStatus") === "Active";
   const isRecoveryVerified = !!companyData?.recoveryEmailVerifiedAt;
   const needsRecoveryVerification =
     !companyData?.recoveryEmail || !isRecoveryVerified;
@@ -161,6 +172,52 @@ const CompanyEdit = () => {
                   ]}
                 />
 
+                {isAdmin ? (
+                  subscriptionActive ? (
+                    <div>
+                      <InputSelect
+                        label="Subscription Plan"
+                        name="plan"
+                        options={SUBSCRIPTION_PLANS.map((plan) => ({
+                          label: `${plan.name} (${plan.employeeRange})`,
+                          value: plan.key,
+                        }))}
+                      />
+                      <p className="mt-1 text-xs text-base-content/70">
+                        Member limit:{" "}
+                        {getPlan(methods.watch("plan")).maxEmployees === null
+                          ? "Unlimited"
+                          : getPlan(methods.watch("plan")).maxEmployees}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-base-300 bg-base-200/40 p-3">
+                      <p className="text-sm">
+                        Subscription is inactive — this company is on the{" "}
+                        <span className="font-semibold">Free</span> plan (up to
+                        10 members). Set the subscription to{" "}
+                        <span className="font-semibold">Active</span> to choose a
+                        paid plan.
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  <div className="rounded-md border border-base-300 bg-base-200/40 p-3">
+                    <p className="text-sm">
+                      Current plan:{" "}
+                      <span className="font-semibold">
+                        {getPlan(companyData?.plan).name}
+                      </span>{" "}
+                      <span className="text-base-content/70">
+                        ({getPlan(companyData?.plan).employeeRange})
+                      </span>
+                    </p>
+                    <Link to="/pricing" className="link link-primary text-sm">
+                      View plans & contact us to upgrade
+                    </Link>
+                  </div>
+                )}
+
                 <RadioInput
                   label="Status"
                   name="status"
@@ -183,6 +240,17 @@ const CompanyEdit = () => {
           </div>
         </div>
       </div>
+
+      <DowngradeMembersModal
+        open={downgrade.open}
+        targetPlanKey={downgrade.targetPlanKey}
+        cap={downgrade.cap}
+        members={downgrade.members}
+        loading={downgradeLoading}
+        onDownload={downloadRemovedMembers}
+        onConfirm={confirmDowngrade}
+        onClose={closeDowngrade}
+      />
     </Layout>
   );
 };

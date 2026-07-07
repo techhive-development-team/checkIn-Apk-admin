@@ -6,6 +6,9 @@ import { useMemo, useState } from "react";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
 import { useAuthStore } from "../../stores/authStore";
 import { useGetUserById } from "../../hooks/useGetUser";
+import WorkingDaysFilter from "../../component/forms/WorkingDaysFilter";
+
+const DEFAULT_WORK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
 type PersonOption = {
   employeeId: string;
@@ -75,6 +78,7 @@ const Attendance = () => {
   const [workEndTime, setWorkEndTime] = useState("");
   const [graceMinutes, setGraceMinutes] = useState("0");
   const [timezone, setTimezone] = useState(DEFAULT_TIMEZONE);
+  const [workDays, setWorkDays] = useState<string[]>(DEFAULT_WORK_DAYS);
 
   const [searchFromDate, setSearchFromDate] = useState(today);
   const [searchToDate, setSearchToDate] = useState(today);
@@ -83,6 +87,7 @@ const Attendance = () => {
   const [searchWorkEndTime, setSearchWorkEndTime] = useState("");
   const [searchGraceMinutes, setSearchGraceMinutes] = useState("0");
   const [searchTimezone, setSearchTimezone] = useState(DEFAULT_TIMEZONE);
+  const [searchWorkDays, setSearchWorkDays] = useState<string[]>(DEFAULT_WORK_DAYS);
 
   const filteredPeople = useMemo(() => {
     const keyword = employeeSearchText.trim().toLowerCase();
@@ -106,6 +111,7 @@ const Attendance = () => {
     setSearchWorkEndTime(workEndTime);
     setSearchGraceMinutes(graceMinutes);
     setSearchTimezone(timezone);
+    setSearchWorkDays(workDays);
   };
 
   const handleToday = () => {
@@ -118,6 +124,7 @@ const Attendance = () => {
     setSearchWorkEndTime(workEndTime);
     setSearchGraceMinutes(graceMinutes);
     setSearchTimezone(timezone);
+    setSearchWorkDays(workDays);
   };
 
   const handleReset = () => {
@@ -130,6 +137,7 @@ const Attendance = () => {
     setWorkEndTime("");
     setGraceMinutes("0");
     setTimezone(DEFAULT_TIMEZONE);
+    setWorkDays(DEFAULT_WORK_DAYS);
     setSearchEmployeeId("");
     setSearchFromDate("");
     setSearchToDate("");
@@ -137,6 +145,7 @@ const Attendance = () => {
     setSearchWorkEndTime("");
     setSearchGraceMinutes("0");
     setSearchTimezone(DEFAULT_TIMEZONE);
+    setSearchWorkDays(DEFAULT_WORK_DAYS);
   };
   return (
     <Layout>
@@ -277,6 +286,15 @@ const Attendance = () => {
                       onChange={(e) => setToDate(e.target.value)}
                     />
                   </div>
+                  <div>
+                    <p className="mb-1 text-xs font-medium text-base-content/80">
+                      {isStudentSearch ? "Class Off Days" : "Off Days"}
+                    </p>
+                    <WorkingDaysFilter value={workDays} onChange={setWorkDays} label="" />
+                    <p className="mt-1 text-xs text-base-content/60">
+                      Off days (shown in red) are not counted as Absent.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-3 rounded-lg border border-base-300 p-4">
@@ -400,6 +418,7 @@ const Attendance = () => {
             graceMinutes={Number(searchGraceMinutes || "0")}
             memberType={showPersonTypeSelector ? searchMemberType : undefined}
             timezone={searchTimezone}
+            workDays={searchWorkDays}
           />
         </div>
       </div>

@@ -12,10 +12,16 @@ const getAll = async (params?: {
   employeeId?: string;
   memberType?: "EMPLOYEE" | "STUDENT";
   timezone?: string;
+  workDays?: string[];
 }) => {
     const timezone = params?.timezone || getBrowserTimezone();
+    const { workDays, ...rest } = params ?? {};
+    const merged: Record<string, unknown> = { ...rest, timezone };
+    if (workDays && workDays.length > 0) {
+      merged.workDays = workDays.join(",");
+    }
     const sanitizedParams = Object.fromEntries(
-      Object.entries({ ...(params ?? {}), timezone }).filter(
+      Object.entries(merged).filter(
         ([, value]) => value !== undefined && value !== null && value !== "",
       ),
     );

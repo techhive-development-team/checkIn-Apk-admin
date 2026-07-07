@@ -11,6 +11,26 @@ import {
   type CompanyUpdateForm,
 } from "../CompanyValidationSchema";
 import { baseUrl } from "../../../enum/urls";
+import { getPlan } from "../../../config/plans";
+
+export type CompanyMember = {
+  employeeId: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  memberType?: string;
+  position?: string;
+  studentClass?: string;
+  createdAt?: string;
+};
+
+type DowngradeState = {
+  open: boolean;
+  targetPlanKey: string;
+  targetSubStatus: string;
+  cap: number;
+  members: CompanyMember[];
+};
 
 export const useCompanyEditForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,12 +49,30 @@ export const useCompanyEditForm = () => {
       phone: "",
       totalEmployee: "",
       subScribeStatus: "Inactive",
+      plan: "FREE",
       status: "active",
     },
   });
 
-  const { reset } = methods;
+  const { reset, setValue, watch } = methods;
   const [logoPreview, setLogoPreview] = useState<string | undefined>(undefined);
+
+  const subStatus = watch("subScribeStatus");
+  useEffect(() => {
+    if (subStatus !== "Active" && watch("plan") !== "FREE") {
+      setValue("plan", "FREE", { shouldDirty: true });
+    }
+  }, [subStatus, setValue, watch]);
+
+  const [downgrade, setDowngrade] = useState<DowngradeState>({
+    open: false,
+    targetPlanKey: "FREE",
+    targetSubStatus: "Inactive",
+    cap: 10,
+    members: [],
+  });
+  const [pendingPayload, setPendingPayload] = useState<any>(null);
+  const [downgradeLoading, setDowngradeLoading] = useState(false);
 
   useEffect(() => {
     if (companyData) {
@@ -50,6 +88,7 @@ export const useCompanyEditForm = () => {
         totalEmployee: companyData.totalEmployee || "",
 
         subScribeStatus: companyData.subScribeStatus || "Inactive",
+        plan: (companyData.plan as "FREE" | "BASIC" | "MEDIUM" | "ENTERPRISE") || "FREE",
         status: companyData.status || "active",
       });
 
@@ -68,7 +107,7 @@ export const useCompanyEditForm = () => {
   const [showRecoveryVerifyMessage, setShowRecoveryVerifyMessage] =
     useState(false);
 
-  const onSubmit = async (data: CompanyUpdateForm) => {
+  const buildPayload = async (data: CompanyUpdateForm) => {
     const payload: any = {
       ...data,
       recoveryEmail: data.recoveryEmail || undefined,
@@ -84,10 +123,71 @@ export const useCompanyEditForm = () => {
         reader.onloadend = () => resolve(reader.result as string);
       });
     }
+    return payload;
+  };
+
+  const onSubmit = async (data: CompanyUpdateForm) => {
+    const payload = await buildPayload(data);
+
+    // The effective plan falls back to Free when the subscription is inactive.
+    const targetSubStatus = data.subScribeStatus || "Inactive";
+    const targetPlanKey = targetSubStatus === "Active" ? data.plan || "FREE" : "FREE";
+    payload.plan = targetPlanKey;
+
+    const cap = getPlan(targetPlanKey).maxEmployees;
+    const members: CompanyMember[] = companyData?.employees ?? [];
+
+    // Downgrade that can't fit the current members → require the guided flow.
+    if (cap !== null && members.length > cap) {
+      setPendingPayload(payload);
+      setDowngrade({
+        open: true,
+        targetPlanKey,
+        targetSubStatus,
+        cap,
+        members,
+      });
+      return;
+    }
 
     await handleSubmit(() =>
       companyRepository.updateCompany(id || "", payload),
     );
+  };
+
+  const downloadRemovedMembers = async (removeEmployeeIds: string[]) => {
+    if (!id || removeEmployeeIds.length === 0) return;
+    await companyRepository.exportMembers(id, removeEmployeeIds);
+  };
+
+  const confirmDowngrade = async (removeEmployeeIds: string[]) => {
+    if (!id) return;
+    setDowngradeLoading(true);
+    try {
+      await handleSubmit(async () => {
+        await companyRepository.downgradePlan(id, {
+          plan: downgrade.targetPlanKey,
+          subScribeStatus: downgrade.targetSubStatus,
+          removeEmployeeIds,
+        });
+        // Members now fit the new plan; persist the remaining field edits.
+        return companyRepository.updateCompany(id, {
+          ...pendingPayload,
+          plan: downgrade.targetPlanKey,
+          subScribeStatus: downgrade.targetSubStatus,
+        });
+      });
+      await mutateCompanyData();
+      setDowngrade((prev) => ({ ...prev, open: false }));
+      setPendingPayload(null);
+    } finally {
+      setDowngradeLoading(false);
+    }
+  };
+
+  const closeDowngrade = () => {
+    setDowngrade((prev) => ({ ...prev, open: false }));
+    setPendingPayload(null);
   };
 
   const sendRecoveryVerification = async () => {
@@ -132,5 +232,10 @@ export const useCompanyEditForm = () => {
     showRecoveryVerifyMessage,
     sendRecoveryVerification,
     refreshVerificationStatus,
+    downgrade,
+    downgradeLoading,
+    confirmDowngrade,
+    downloadRemovedMembers,
+    closeDowngrade,
   };
 };

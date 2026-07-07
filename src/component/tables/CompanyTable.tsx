@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useGetCompany } from "../../hooks/useGetCompany";
 import { companyRepository } from "../../repositories/companyRepository";
 import { baseUrl } from "../../enum/urls";
+import { getPlan } from "../../config/plans";
 
 const PAGE_SIZE = 10;
 
@@ -18,6 +19,7 @@ export type Company = {
   totalEmployee?: string;
   status: string;
   subScribeStatus: string;
+  plan?: string;
   createdAt: string;
 };
 
@@ -132,6 +134,7 @@ const CompanyTable: React.FC = () => {
               <th>Type</th>
               <th>Phone</th>
               <th>Total Employee</th>
+              <th>Plan</th>
               <th>Subscription</th>
               <th>Status</th>
               <th>Created At</th>
@@ -164,6 +167,18 @@ const CompanyTable: React.FC = () => {
                   <td>{company.type || "-"}</td>
                   <td>{company.phone || "-"}</td>
                   <td>{company.totalEmployee || "-"}</td>
+
+                  <td>
+                    <span
+                      className={`badge whitespace-nowrap ${
+                        (company.plan || "FREE") === "FREE"
+                          ? "badge-ghost"
+                          : "badge-primary"
+                      }`}
+                    >
+                      {getPlan(company.plan).shortName}
+                    </span>
+                  </td>
 
                   <td>
                     <span
@@ -214,7 +229,7 @@ const CompanyTable: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={11} className="text-center py-4">
+                <td colSpan={12} className="text-center py-4">
                   No companies found
                 </td>
               </tr>

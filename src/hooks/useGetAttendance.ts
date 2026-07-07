@@ -10,6 +10,7 @@ export const useGetAttendance = (params?: {
   employeeId?: string;
   memberType?: "EMPLOYEE" | "STUDENT";
   timezone?: string;
+  workDays?: string[];
 }) => {
   const key = params
     ? [`${API_URLS.ATTENDANCE}`, params]

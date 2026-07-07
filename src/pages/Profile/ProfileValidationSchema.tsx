@@ -37,6 +37,7 @@ export const ClientProfileSchema = AdminProfileSchema.extend({
   subType: z.string().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
+  totalEmployee: z.string().optional(),
 }).refine((data) => !data.recoveryEmail || data.recoveryEmail !== data.email, {
   message: "Recovery email must be different from login email",
   path: ["recoveryEmail"],

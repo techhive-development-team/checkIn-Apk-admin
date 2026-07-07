@@ -84,6 +84,7 @@ interface AttendanceTableProps {
   graceMinutes?: number;
   memberType?: "EMPLOYEE" | "STUDENT";
   timezone?: string;
+  workDays?: string[];
 }
 
 const mapAttendanceRow = (row: Attendance): Attendance => {
@@ -107,6 +108,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   graceMinutes = 0,
   memberType,
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Yangon",
+  workDays,
 }) => {
   const effectiveToDate = toDate || fromDate;
   const isSingleDayFilter =
@@ -129,6 +131,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     employeeId: employeeId || undefined,
     memberType,
     timezone,
+    workDays: workDays && workDays.length > 0 ? workDays : undefined,
   });
 
   const [selectedAttendance, setSelectedAttendance] =
@@ -145,7 +148,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
   useEffect(() => {
     setPage(1);
-  }, [fromDate, toDate, employeeId, memberType]);
+  }, [fromDate, toDate, employeeId, memberType, workDays]);
 
   const handleDelete = (attendance: Attendance) => {
     setIsBulkDelete(false);

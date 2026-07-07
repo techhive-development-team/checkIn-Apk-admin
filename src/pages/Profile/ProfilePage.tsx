@@ -1,9 +1,10 @@
 import profileImg from "../../assets/profile.jpg";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../component/layouts/layout";
 import { useGetUserById } from "../../hooks/useGetUser";
 import { baseUrl } from "../../enum/urls";
 import { useAuthStore } from "../../stores/authStore";
+import { getPlan } from "../../config/plans";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -36,21 +37,54 @@ const ProfilePage = () => {
     ? `${baseUrl.replace(/\/$/, "")}${user.logo}`
     : profileImg;
 
+  const planKey = user?.company?.plan as string | undefined;
+  const plan = getPlan(planKey);
+  const isPaid = !!planKey && planKey !== "FREE";
+  const hasPlan = !!user?.company;
+
   return (
     <Layout>
       <div className="flex justify-start">
         <div className="card card-bordered w-full max-w-md bg-base-100">
           <div className="card-body flex flex-col items-center">
-            <div className="w-28 h-28 rounded-full overflow-hidden border mb-4">
-              <img
-                src={image}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
+            <div className="relative mb-4 h-28 w-28">
+              {isPaid && (
+                <div className="story-ring absolute inset-0 rounded-full" />
+              )}
+              <div
+                className={`absolute overflow-hidden rounded-full bg-base-100 ${
+                  isPaid ? "inset-[4px]" : "inset-0 border"
+                }`}
+              >
+                <img
+                  src={image}
+                  alt="Profile"
+                  className="h-full w-full rounded-full object-cover"
+                />
+              </div>
             </div>
 
             <h2 className="text-xl font-semibold text-center">{name}</h2>
             <p className="text-center text-gray-500 mt-1">{email}</p>
+
+            {hasPlan && (
+              <div className="mt-3 flex flex-col items-center gap-1">
+                <span
+                  className={`badge ${
+                    isPaid ? "badge-primary" : "badge-ghost"
+                  } gap-1`}
+                >
+                  {isPaid && <span aria-hidden="true">★</span>}
+                  {plan.name} Plan
+                </span>
+                <Link
+                  to="/pricing"
+                  className="link link-hover text-xs text-base-content/60"
+                >
+                  {isPaid ? "Manage plan" : "Upgrade plan"}
+                </Link>
+              </div>
+            )}
 
             <div className="mt-6 w-full space-y-3">
               <button

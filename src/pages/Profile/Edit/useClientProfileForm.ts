@@ -30,6 +30,10 @@ export const useClientProfileEditForm = () => {
       subType: userData?.company?.subType || "",
       phone: userData?.company?.phone || "",
       address: userData?.company?.address || "",
+      totalEmployee:
+        userData?.company?.totalEmployee != null
+          ? String(userData.company.totalEmployee)
+          : "",
     },
   });
 
@@ -51,6 +55,10 @@ export const useClientProfileEditForm = () => {
         subType: userData.company?.subType || "",
         phone: userData.company?.phone || "",
         address: userData.company?.address || "",
+        totalEmployee:
+          userData.company?.totalEmployee != null
+            ? String(userData.company.totalEmployee)
+            : "",
       });
 
       if (userData.logo) {
@@ -74,6 +82,9 @@ export const useClientProfileEditForm = () => {
       recoveryEmail: data.recoveryEmail || undefined,
       subType: data.type === "Company" ? data.subType : undefined,
     };
+
+    // totalEmployee is a derived count shown read-only; don't persist it back.
+    delete payload.totalEmployee;
 
     if (!(data.logo instanceof File)) {
       delete payload.logo;

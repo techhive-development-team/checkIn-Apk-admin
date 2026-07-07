@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { leaveRequestRepository } from "../../repositories/leaveRepository";
 import { useGetLeave } from "../../hooks/useGetLeave";
+import { refreshLeaveNotifications } from "../../hooks/useLeaveNotifications";
 import { useAuthStore } from "../../stores/authStore";
 
 const PAGE_SIZE = 10;
@@ -89,6 +90,7 @@ const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
 
       if (response?.statusCode === 200) {
         await mutate();
+        await refreshLeaveNotifications();
         closeModal();
       }
     } catch (err: any) {
@@ -115,6 +117,7 @@ const LeaveRequestTable: React.FC<LeaveRequestTableProps> = ({
         ...(status === "DENIED" ? { rejectedReason } : {}),
       });
       await mutate();
+      await refreshLeaveNotifications();
     } catch (err) {
       throw err;
     } finally {

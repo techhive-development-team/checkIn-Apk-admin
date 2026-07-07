@@ -204,6 +204,12 @@ const ProfileEdit = () => {
                   )}
                   <InputText label="Phone" name="phone" />
                   <InputText label="Address" name="address" />
+                  <InputText
+                    label="Total Employees"
+                    name="totalEmployee"
+                    type="number"
+                    readonly
+                  />
                   <InputFile
                     label="Logo"
                     name="logo"

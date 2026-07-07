@@ -4,7 +4,7 @@ import LeaveRequestTable from "../../component/tables/LeaveRequestTable";
 import { useEffect, useMemo, useState } from "react";
 import { useGetEmployee } from "../../hooks/useGetEmployee";
 import { useGetUserById } from "../../hooks/useGetUser";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 
 type PersonOption = {
@@ -40,6 +40,7 @@ const Leave = () => {
   const hideStudentForClient =
     role === "CLIENT" && userData?.company?.type === "Company";
   const canUseSearch = role === "ADMIN" || role === "CLIENT";
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchMemberType, setSearchMemberType] = useState<
     "EMPLOYEE" | "STUDENT"
   >("EMPLOYEE");
@@ -87,6 +88,20 @@ const Leave = () => {
       setSearchEmployeeId("");
     }
   }, [hideStudentForClient, searchMemberType]);
+
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    if (
+      statusParam === "PENDING" ||
+      statusParam === "APPROVED" ||
+      statusParam === "DENIED"
+    ) {
+      setStatus(statusParam);
+      setSearchStatus(statusParam);
+      searchParams.delete("status");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleSearch = () => {
     const { fromDate, toDate } = toMonthRange(month);

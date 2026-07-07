@@ -219,3 +219,29 @@
   color: #111827 !important;
 }
 
+/* Animated gradient ring for paid-subscription avatars (Instagram-story style) */
+.story-ring {
+  background: conic-gradient(
+    from 0deg,
+    #2563eb,
+    #0ea5e9,
+    #22d3ee,
+    #6366f1,
+    #a855f7,
+    #2563eb
+  );
+  animation: story-ring-spin 4s linear infinite;
+}
+
+@keyframes story-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-ring {
+    animation: none;
+  }
+}
+

@@ -60,6 +60,37 @@ const deleteCompany = async (id: string) => {
   return response;
 };
 
+const downgradePlan = async (
+  id: string,
+  data: { plan: string; subScribeStatus?: string; removeEmployeeIds: string[] },
+) => {
+  const response = await client.exec(`${API_URLS.COMPANY}/${id}/downgrade`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+  return response;
+};
+
+const exportMembers = async (id: string, employeeIds: string[]) => {
+  const blob = await client.exec(`${API_URLS.COMPANY}/${id}/members/export`, {
+    method: "POST",
+    body: JSON.stringify({ employeeIds }),
+  });
+
+  if (!(blob instanceof Blob)) {
+    throw new Error("Response was not a file");
+  }
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "removed-members.xlsx";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
 const resetPassword = async (id: string) => {
   const response = await client.exec(
     `${API_URLS.COMPANY}/${id}/password-reset`,
@@ -120,6 +151,8 @@ export const companyRepository = {
   getCompanyById,
   updateCompany,
   deleteCompany,
+  downgradePlan,
+  exportMembers,
   resetPassword,
   deactivateAccount,
   reactivateAccount,

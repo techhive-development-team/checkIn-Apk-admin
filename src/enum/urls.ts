@@ -6,6 +6,7 @@ export const API_URLS = {
     ATTENDANCE: "/attendance",
     USER: "/user",
     LEAVE: "/leave-request",
+    ANALYTICS: "/analytics",
     RECOVERY_EMAIL_VERIFY: "/company/recovery-email/verify-token",
 }
 

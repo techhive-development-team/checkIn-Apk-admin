@@ -6,6 +6,7 @@ import HomeAnimatedIcon from "../../icons/HomeAnimatedIcon";
 import LeaveAnimatedIcon from "../../icons/LeaveAnimatedIcon";
 import StudentAnimatedIcon from "../../icons/StudentAnimatedIcon";
 import UserAnimatedIcon from "../../icons/UserAnimatedIcon";
+import PriceAnimatedIcon from "../../icons/PriceAnimatedIcon";
 
 export interface SidebarRoute {
   path: string;
@@ -20,6 +21,7 @@ const attendanceIcon = <AttendanceAnimatedIcon size={50} />;
 const studentIcon = <StudentAnimatedIcon size={50} />;
 const leaveIcon = <LeaveAnimatedIcon size={50} />;
 const userManagementIcon = <UserAnimatedIcon size={50} />;
+const pricingIcon = <PriceAnimatedIcon size={50} />;
 
 export const sidebarRoutes: SidebarRoute[] = [
   { path: "/", name: "Dashboard", icon: dashboardIcon },
@@ -28,6 +30,7 @@ export const sidebarRoutes: SidebarRoute[] = [
   { path: "/student", name: "Student Management", icon: studentIcon },
   { path: "/attendance", name: "Attendance Management", icon: attendanceIcon },
   { path: "/leave", name: "Leave Management", icon: leaveIcon },
+  { path: "/pricing", name: "Plans & Pricing", icon: pricingIcon },
   { path: "/user", name: "User Management", icon: userManagementIcon },
 ];
 
@@ -36,7 +39,8 @@ export const userSidebarRoutes: SidebarRoute[] = [
   { path: "/employee", name: "Employee Management", icon: employeeIcon },
   { path: "/student", name: "Student Management", icon: studentIcon },
   { path: "/attendance", name: "Attendance Management", icon: attendanceIcon },
-  { path: "/leave", name: "Leave Management", icon: leaveIcon }
+  { path: "/leave", name: "Leave Management", icon: leaveIcon },
+  { path: "/pricing", name: "Plans & Pricing", icon: pricingIcon }
 ]
 
 export const employeeSidebarRoutes: SidebarRoute[] = [

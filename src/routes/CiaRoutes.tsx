@@ -68,6 +68,8 @@ const LeaveList = lazy(() => import("../pages/Leave/Leave.tsx"));
 const LeaveEdit = lazy(() => import("../pages/Leave/Edit/LeaveEdit.tsx"));
 const LeaveCreate = lazy(() => import("../pages/Leave/Create/LeaveCreate.tsx"));
 
+const Pricing = lazy(() => import("../pages/Pricing/Pricing.tsx"));
+
 const ProtectedRoute: React.FC = () => {
   const token = useAuthStore((state) => state.token);
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
@@ -152,6 +154,8 @@ const routes: AppRoute[] = [
   { path: "/leave", element: LeaveList, protected: true },
   { path: "/leave/create", element: LeaveCreate, protected: true },
   { path: "/leave/:id/edit", element: LeaveEdit, protected: true },
+
+  { path: "/pricing", element: Pricing, protected: true },
 
 
   { path: "/login", element: Login },

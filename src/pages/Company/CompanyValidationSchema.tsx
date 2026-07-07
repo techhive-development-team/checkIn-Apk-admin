@@ -95,6 +95,7 @@ export const CompanyEditSchema = z.object({
   phone: z.string().optional(),
   totalEmployee: z.string().optional(),
   subScribeStatus: z.string().optional(), 
+  plan: z.enum(["FREE", "BASIC", "MEDIUM", "ENTERPRISE"]).optional(),
   status: z.string().optional(), 
 })
   .refine((data) => !data.recoveryEmail || data.recoveryEmail !== data.email, {
