@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../../component/layouts/layout";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 import { FormProvider } from "react-hook-form";
@@ -9,10 +9,12 @@ import InputSelect from "../../../component/forms/InputSelect";
 import { useCompanyEditForm } from "./useCompanyEditForm";
 import DowngradeMembersModal from "./DowngradeMembersModal";
 import RadioInput from "../../../component/forms/RadioInput";
+import { useEffect } from "react";
 import { useAuthStore } from "../../../stores/authStore";
 import { SUBSCRIPTION_PLANS, getPlan } from "../../../config/plans";
 
 const CompanyEdit = () => {
+  const navigate = useNavigate();
   const role = useAuthStore((state) => state.user?.role);
   const isAdmin = role === "ADMIN";
   const {
@@ -42,6 +44,12 @@ const CompanyEdit = () => {
   const isRecoveryVerified = !!companyData?.recoveryEmailVerifiedAt;
   const needsRecoveryVerification =
     !companyData?.recoveryEmail || !isRecoveryVerified;
+
+  useEffect(() => {
+    if (success) {
+      navigate("/company");
+    }
+  }, [success, navigate]);
 
   return (
     <Layout>

@@ -43,6 +43,8 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({
   editBasePath = "/employee",
 }) => {
   const companyId = useAuthStore((state) => state.user?.companyId);
+  const role = useAuthStore((state) => state.user?.role);
+  const disableEditForAdmin = role === "ADMIN" && memberType === "EMPLOYEE";
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
@@ -326,12 +328,18 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   <td>{new Date(employee.createdAt).toLocaleString()}</td>
 
                   <td className="flex gap-2">
-                    <Link
-                      to={`${editBasePath}/${employee.employeeId}/edit`}
-                      className="btn btn-sm"
-                    >
-                      Edit
-                    </Link>
+                    {disableEditForAdmin ? (
+                      <button type="button" className="btn btn-sm" disabled>
+                        Edit
+                      </button>
+                    ) : (
+                      <Link
+                        to={`${editBasePath}/${employee.employeeId}/edit`}
+                        className="btn btn-sm"
+                      >
+                        Edit
+                      </Link>
+                    )}
 
                     <button
                       onClick={() => handleDelete(employee)}

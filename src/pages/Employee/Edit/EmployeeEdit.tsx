@@ -5,10 +5,12 @@ import InputText from "../../../component/forms/InputText";
 import InputFile from "../../../component/forms/InputFile";
 import { useEmployeeEditForm } from "./useEmployeeEditForm";
 import RadioInput from "../../../component/forms/RadioInput";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
+import { useEffect } from "react";
 
 const EmployeeEdit = () => {
+  const navigate = useNavigate();
   const listPath = "/employee";
   const title = "Edit Employee";
 
@@ -21,6 +23,12 @@ const EmployeeEdit = () => {
     profilePreview,
     ...methods
   } = useEmployeeEditForm("EMPLOYEE");
+
+  useEffect(() => {
+    if (success) {
+      navigate(listPath);
+    }
+  }, [success, navigate, listPath]);
 
   return (
     <Layout>
