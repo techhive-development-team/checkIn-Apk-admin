@@ -160,6 +160,13 @@ export const useCompanyEditForm = () => {
     await companyRepository.exportMembers(id, removeEmployeeIds);
   };
 
+  const downloadRemovedMembersAttendance = async (
+    removeEmployeeIds: string[],
+  ) => {
+    if (!id || removeEmployeeIds.length === 0) return;
+    await companyRepository.exportMemberAttendance(id, removeEmployeeIds);
+  };
+
   const confirmDowngrade = async (removeEmployeeIds: string[]) => {
     if (!id) return;
     setDowngradeLoading(true);
@@ -236,6 +243,7 @@ export const useCompanyEditForm = () => {
     downgradeLoading,
     confirmDowngrade,
     downloadRemovedMembers,
+    downloadRemovedMembersAttendance,
     closeDowngrade,
   };
 };

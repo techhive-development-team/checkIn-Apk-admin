@@ -35,6 +35,7 @@ const CompanyEdit = () => {
     downgradeLoading,
     confirmDowngrade,
     downloadRemovedMembers,
+    downloadRemovedMembersAttendance,
     closeDowngrade,
     ...methods
   } =
@@ -256,6 +257,7 @@ const CompanyEdit = () => {
         members={downgrade.members}
         loading={downgradeLoading}
         onDownload={downloadRemovedMembers}
+        onDownloadAttendance={downloadRemovedMembersAttendance}
         onConfirm={confirmDowngrade}
         onClose={closeDowngrade}
       />

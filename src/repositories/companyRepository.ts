@@ -71,6 +71,17 @@ const downgradePlan = async (
   return response;
 };
 
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
 const exportMembers = async (id: string, employeeIds: string[]) => {
   const blob = await client.exec(`${API_URLS.COMPANY}/${id}/members/export`, {
     method: "POST",
@@ -81,14 +92,23 @@ const exportMembers = async (id: string, employeeIds: string[]) => {
     throw new Error("Response was not a file");
   }
 
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "removed-members.xlsx";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
+  downloadBlob(blob, "removed-members.xlsx");
+};
+
+const exportMemberAttendance = async (id: string, employeeIds: string[]) => {
+  const blob = await client.exec(
+    `${API_URLS.COMPANY}/${id}/members/attendance/export`,
+    {
+      method: "POST",
+      body: JSON.stringify({ employeeIds }),
+    },
+  );
+
+  if (!(blob instanceof Blob)) {
+    throw new Error("Response was not a file");
+  }
+
+  downloadBlob(blob, "removed-members-attendance.xlsx");
 };
 
 const resetPassword = async (id: string) => {
@@ -153,6 +173,7 @@ export const companyRepository = {
   deleteCompany,
   downgradePlan,
   exportMembers,
+  exportMemberAttendance,
   resetPassword,
   deactivateAccount,
   reactivateAccount,

@@ -9,6 +9,7 @@ interface Props {
   members: CompanyMember[];
   loading: boolean;
   onDownload: (removeEmployeeIds: string[]) => Promise<void> | void;
+  onDownloadAttendance: (removeEmployeeIds: string[]) => Promise<void> | void;
   onConfirm: (removeEmployeeIds: string[]) => Promise<void> | void;
   onClose: () => void;
 }
@@ -27,6 +28,7 @@ const DowngradeMembersModal = ({
   members,
   loading,
   onDownload,
+  onDownloadAttendance,
   onConfirm,
   onClose,
 }: Props) => {
@@ -36,7 +38,9 @@ const DowngradeMembersModal = ({
     () => new Set(ordered.slice(0, cap).map((m) => m.employeeId)),
   );
   const [downloading, setDownloading] = useState(false);
+  const [downloadingAttendance, setDownloadingAttendance] = useState(false);
   const [hasDownloaded, setHasDownloaded] = useState(false);
+  const [hasDownloadedAttendance, setHasDownloadedAttendance] = useState(false);
 
   if (!open) return null;
 
@@ -58,6 +62,7 @@ const DowngradeMembersModal = ({
       return next;
     });
     setHasDownloaded(false);
+    setHasDownloadedAttendance(false);
   };
 
   const handleDownload = async () => {
@@ -70,8 +75,22 @@ const DowngradeMembersModal = ({
     }
   };
 
+  const handleDownloadAttendance = async () => {
+    setDownloadingAttendance(true);
+    try {
+      await onDownloadAttendance(removeIds);
+      setHasDownloadedAttendance(true);
+    } finally {
+      setDownloadingAttendance(false);
+    }
+  };
+
   const canConfirm =
-    !overCap && removeIds.length > 0 && hasDownloaded && !loading;
+    !overCap &&
+    removeIds.length > 0 &&
+    hasDownloaded &&
+    hasDownloadedAttendance &&
+    !loading;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -82,10 +101,10 @@ const DowngradeMembersModal = ({
             The {plan.name} plan allows up to{" "}
             <span className="font-semibold">{cap}</span> members, but this
             company currently has{" "}
-            <span className="font-semibold">{members.length}</span>. Choose who
-            to keep. Download the removed members' data first — they will be
-            deactivated (kept on file so they can be restored if you upgrade
-            again).
+            <span className="font-semibold">{members.length}</span>.             Choose who
+            to keep. Download the removed members' profile and attendance data
+            first — they will be deactivated (kept on file so they can be
+            restored if you upgrade again).
           </p>
         </div>
 
@@ -149,7 +168,7 @@ const DowngradeMembersModal = ({
           >
             Cancel
           </button>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <button
               type="button"
               className="btn btn-outline btn-sm"
@@ -159,8 +178,22 @@ const DowngradeMembersModal = ({
               {downloading
                 ? "Preparing..."
                 : hasDownloaded
-                  ? "Downloaded ✓ (download again)"
-                  : "Download removed members (.xlsx)"}
+                  ? "Members downloaded ✓"
+                  : "Download members (.xlsx)"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={handleDownloadAttendance}
+              disabled={
+                removeIds.length === 0 || downloadingAttendance || loading
+              }
+            >
+              {downloadingAttendance
+                ? "Preparing..."
+                : hasDownloadedAttendance
+                  ? "Attendance downloaded ✓"
+                  : "Download attendance (.xlsx)"}
             </button>
             <button
               type="button"
