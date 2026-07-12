@@ -47,7 +47,40 @@ const getAdminUsageAnalytics = async () => {
   return response;
 };
 
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+const exportAdminEmployeeDirectory = async (params?: {
+  companyId?: string;
+  search?: string;
+}) => {
+  const query = new URLSearchParams();
+  if (params?.companyId) query.set("companyId", params.companyId);
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const blob = await client.exec(
+    `${API_URLS.ANALYTICS}/admin-employees/export${suffix}`,
+    { method: "get" },
+  );
+
+  if (!(blob instanceof Blob)) {
+    throw new Error("Response was not a file");
+  }
+
+  downloadBlob(blob, "employee-directory.xlsx");
+};
+
 export const analyticsRepository = {
   getCompanyAnalytics,
   getAdminUsageAnalytics,
+  exportAdminEmployeeDirectory,
 };

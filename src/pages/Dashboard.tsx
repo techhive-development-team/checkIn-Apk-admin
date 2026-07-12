@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Layout from "../component/layouts/layout";
 import Breadcrumb from "../component/layouts/common/Breadcrumb";
 import { useAuthStore } from "../stores/authStore";
@@ -10,6 +10,7 @@ import {
   type LeaderEntry,
 } from "../hooks/useCompanyAnalytics";
 import type { AnalyticsPeriod } from "../repositories/analyticsRepository";
+import { analyticsRepository } from "../repositories/analyticsRepository";
 import WorkingDaysFilter from "../component/forms/WorkingDaysFilter";
 import {
   ResponsiveContainer,
@@ -325,6 +326,162 @@ const AdminBreakdownPie = ({
   </ChartCard>
 );
 
+const AdminEmployeeDirectory = ({
+  companies = [],
+  employees = [],
+}: {
+  companies?: AdminUsageAnalytics["companyDirectory"];
+  employees?: AdminUsageAnalytics["employeeDirectory"];
+}) => {
+  const [companyId, setCompanyId] = useState("");
+  const [search, setSearch] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const companyList = companies ?? [];
+  const employeeList = employees ?? [];
+
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return employeeList.filter((employee) => {
+      if (companyId && employee.companyId !== companyId) return false;
+      if (!query) return true;
+      return (
+        employee.name.toLowerCase().includes(query) ||
+        employee.companyName.toLowerCase().includes(query) ||
+        (employee.position?.toLowerCase().includes(query) ?? false)
+      );
+    });
+  }, [companyId, employeeList, search]);
+
+  const selectedCompany = companyList.find((company) => company.companyId === companyId);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await analyticsRepository.exportAdminEmployeeDirectory({
+        companyId: companyId || undefined,
+        search: search || undefined,
+      });
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Failed to export employee directory.";
+      setExportError(message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  return (
+    <ChartCard title="Employee directory">
+      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <label className="form-control w-full max-w-xs">
+          <span className="label-text text-xs text-base-content/60">Company</span>
+          <select
+            className="select select-bordered select-sm"
+            value={companyId}
+            onChange={(e) => setCompanyId(e.target.value)}
+            aria-label="Filter by company"
+          >
+            <option value="">All companies ({employeeList.length} members)</option>
+            {companyList.map((company) => (
+              <option key={company.companyId} value={company.companyId}>
+                {company.name} ({company.members})
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="form-control w-full max-w-sm">
+          <span className="label-text text-xs text-base-content/60">Search name</span>
+          <input
+            type="search"
+            className="input input-bordered input-sm"
+            placeholder="Employee or company name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search employees"
+          />
+        </label>
+
+        <p className="text-xs text-base-content/60">
+          Showing {filtered.length}
+          {selectedCompany ? ` in ${selectedCompany.name}` : " across all companies"}
+        </p>
+
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={handleExport}
+          disabled={exporting || companyList.length === 0}
+        >
+          {exporting ? (
+            <>
+              <span className="loading loading-spinner loading-xs" />
+              Exporting...
+            </>
+          ) : (
+            "Export .xlsx"
+          )}
+        </button>
+      </div>
+
+      {exportError && (
+        <div className="alert alert-error mb-4 py-2 text-xs">
+          <span>{exportError}</span>
+        </div>
+      )}
+
+      {companyList.length === 0 ? (
+        <p className="py-6 text-center text-sm text-base-content/50">
+          Employee directory is loading or unavailable. Restart the backend if this persists.
+        </p>
+      ) : filtered.length === 0 ? (
+        <p className="py-6 text-center text-sm text-base-content/50">
+          No employees match this filter
+        </p>
+      ) : (
+        <div className="overflow-x-auto max-h-96">
+          <table className="table table-sm table-pin-rows">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Type</th>
+                <th>Position / Class</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((employee, index) => (
+                <tr key={employee.employeeId}>
+                  <td>{index + 1}</td>
+                  <td className="font-medium">{employee.name}</td>
+                  <td>{employee.companyName}</td>
+                  <td>{employee.memberType}</td>
+                  <td>{employee.position || "—"}</td>
+                  <td>
+                    <span
+                      className={`badge badge-sm ${
+                        employee.status === "active" ? "badge-success" : "badge-ghost"
+                      }`}
+                    >
+                      {employee.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </ChartCard>
+  );
+};
+
 const AdminUsageDashboard = () => {
   const { data, isLoading, error } = useAdminUsageAnalytics(true);
   const analytics = data as AdminUsageAnalytics | undefined;
@@ -477,6 +634,11 @@ const AdminUsageDashboard = () => {
               </div>
             )}
           </ChartCard>
+
+          <AdminEmployeeDirectory
+            companies={analytics.companyDirectory ?? analytics.topCompanies}
+            employees={analytics.employeeDirectory ?? []}
+          />
         </>
       )}
     </div>

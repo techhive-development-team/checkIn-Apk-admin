@@ -102,6 +102,22 @@ export interface AdminUsageAnalytics {
     members: number;
     activeThisMonth: boolean;
   }[];
+  companyDirectory?: {
+    companyId: string;
+    name: string;
+    plan: string;
+    members: number;
+    activeThisMonth: boolean;
+  }[];
+  employeeDirectory?: {
+    employeeId: string;
+    name: string;
+    companyId: string;
+    companyName: string;
+    memberType: string;
+    position: string | null;
+    status: string;
+  }[];
 }
 
 export const useCompanyAnalytics = (params: CompanyAnalyticsParams | null) => {
