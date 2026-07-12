@@ -3,13 +3,9 @@ import Layout from "../component/layouts/layout";
 import Breadcrumb from "../component/layouts/common/Breadcrumb";
 import { useAuthStore } from "../stores/authStore";
 import {
-<<<<<<< Updated upstream
-  useCompanyAnalytics,
-=======
   useAdminUsageAnalytics,
   useCompanyAnalytics,
   type AdminUsageAnalytics,
->>>>>>> Stashed changes
   type CompanyAnalytics,
   type LeaderEntry,
 } from "../hooks/useCompanyAnalytics";
@@ -29,10 +25,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-<<<<<<< Updated upstream
-=======
   ReferenceArea,
->>>>>>> Stashed changes
 } from "recharts";
 
 const COLORS = {
@@ -42,11 +35,6 @@ const COLORS = {
   late: "#f97316",
   onTime: "#22c55e",
   bar: "#2563eb",
-<<<<<<< Updated upstream
-};
-const STATUS_COLORS = [COLORS.present, COLORS.leave, COLORS.absent];
-const PUNCTUALITY_COLORS = [COLORS.onTime, COLORS.late];
-=======
   users: "#8b5cf6",
   members: "#06b6d4",
   companies: "#0ea5e9",
@@ -156,7 +144,6 @@ const TrendTooltip = ({
     </div>
   );
 };
->>>>>>> Stashed changes
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "weekly", label: "Weekly" },
@@ -164,8 +151,6 @@ const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "yearly", label: "Yearly" },
 ];
 
-<<<<<<< Updated upstream
-=======
 const dateKey = (date = new Date()) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -214,7 +199,6 @@ const weekInputToMonday = (value: string) => {
   return dateKey(monday);
 };
 
->>>>>>> Stashed changes
 const KpiCard = ({
   label,
   value,
@@ -296,10 +280,6 @@ const Leaderboard = ({
   </ChartCard>
 );
 
-<<<<<<< Updated upstream
-const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
-  const [period, setPeriod] = useState<AnalyticsPeriod>("monthly");
-=======
 const AdminBreakdownPie = ({
   title,
   data,
@@ -509,7 +489,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
   const [selectedWeek, setSelectedWeek] = useState(weekInputValue(today));
   const [selectedMonth, setSelectedMonth] = useState(today.slice(0, 7));
   const [selectedYear, setSelectedYear] = useState(today.slice(0, 4));
->>>>>>> Stashed changes
   const [workStart, setWorkStart] = useState("09:00");
   const [workEnd, setWorkEnd] = useState("17:00");
   const [workDays, setWorkDays] = useState<string[]>([
@@ -519,8 +498,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     "Thu",
     "Fri",
   ]);
-<<<<<<< Updated upstream
-=======
   const safeSelectedMonth = selectedMonth || today.slice(0, 7);
   const safeSelectedYear = selectedYear || today.slice(0, 4);
   const anchorDate =
@@ -529,15 +506,11 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
       : period === "monthly"
         ? `${safeSelectedMonth}-01`
         : `${safeSelectedYear}-01-01`;
->>>>>>> Stashed changes
 
   const { data, isLoading, error } = useCompanyAnalytics({
     period,
     companyId,
-<<<<<<< Updated upstream
-=======
     anchorDate,
->>>>>>> Stashed changes
     workStart,
     workEnd,
     workDays,
@@ -549,21 +522,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-<<<<<<< Updated upstream
-        <div className="join">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              className={`btn join-item btn-sm ${
-                period === p.key ? "btn-primary" : "btn-ghost"
-              }`}
-              onClick={() => setPeriod(p.key)}
-            >
-              {p.label}
-            </button>
-          ))}
-=======
         <div className="flex flex-wrap items-center gap-2">
           <div className="join">
             {PERIODS.map((p) => (
@@ -613,7 +571,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
               onChange={(e) => setSelectedYear(e.target.value)}
             />
           )}
->>>>>>> Stashed changes
         </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-base-content/60">Work hours</span>
@@ -658,11 +615,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
       {analytics && !isLoading && (
         <>
           <p className="text-xs text-base-content/50">
-<<<<<<< Updated upstream
-            {analytics.from} → {analytics.to} · {analytics.timezone} · grace{" "}
-            {analytics.graceMinutes}m · late counted after each member's start
-            time (default {analytics.workStart}–{analytics.workEnd})
-=======
             {analytics.from} → {analytics.to}
             {analytics.trendTo && analytics.trendTo !== analytics.to
               ? ` (trend through ${analytics.trendTo})`
@@ -670,7 +622,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
             · {analytics.timezone} · grace {analytics.graceMinutes}m · late
             counted after each member's start time (default {analytics.workStart}–
             {analytics.workEnd})
->>>>>>> Stashed changes
           </p>
 
           {/* KPI cards */}
@@ -697,18 +648,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
           {/* Trend + pies */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <ChartCard title="Attendance trend" className="lg:col-span-2">
-<<<<<<< Updated upstream
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={analytics.trend} margin={{ left: -18, right: 8, top: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
-                  <XAxis dataKey="label" fontSize={11} tickMargin={6} />
-                  <YAxis allowDecimals={false} fontSize={11} />
-                  <Tooltip />
-                  <Legend />
-                  <Area type="monotone" dataKey="present" name="Present" stackId="1" stroke={COLORS.present} fill={COLORS.present} fillOpacity={0.5} />
-                  <Area type="monotone" dataKey="leave" name="Leave" stackId="1" stroke={COLORS.leave} fill={COLORS.leave} fillOpacity={0.5} />
-                  <Area type="monotone" dataKey="absent" name="Absent" stackId="1" stroke={COLORS.absent} fill={COLORS.absent} fillOpacity={0.5} />
-=======
               <div className="mb-2 flex flex-wrap gap-3 text-xs text-base-content/60">
                 <span>
                   <span
@@ -779,7 +718,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
                     fillOpacity={0.5}
                     connectNulls={false}
                   />
->>>>>>> Stashed changes
                 </AreaChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -856,12 +794,7 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
 
 const Dashboard: React.FC = () => {
   const role = useAuthStore((state) => state.user?.role);
-<<<<<<< Updated upstream
-  const companyId = useAuthStore((state) => state.user?.companyId);
-  const isCompanyView = role === "CLIENT" || role === "ADMIN";
-=======
   const isCompanyView = role === "CLIENT";
->>>>>>> Stashed changes
 
   return (
     <Layout>
@@ -870,15 +803,10 @@ const Dashboard: React.FC = () => {
           <div className="card-body">
             <Breadcrumb items={[{ label: "Home", path: "/" }]} />
             <h3 className="text-2xl font-bold my-4">Dashboard</h3>
-<<<<<<< Updated upstream
-            {isCompanyView ? (
-              <CompanyDashboard companyId={role === "ADMIN" ? companyId : undefined} />
-=======
             {role === "ADMIN" ? (
               <AdminUsageDashboard />
             ) : isCompanyView ? (
               <CompanyDashboard />
->>>>>>> Stashed changes
             ) : (
               <p className="text-base-content/60">
                 Welcome back! Use the sidebar to check in and manage your attendance and leave.

@@ -7,10 +7,7 @@ export const API_URLS = {
     USER: "/user",
     LEAVE: "/leave-request",
     ANALYTICS: "/analytics",
-<<<<<<< Updated upstream
-=======
     CHAT: "/chat",
->>>>>>> Stashed changes
     RECOVERY_EMAIL_VERIFY: "/company/recovery-email/verify-token",
 }
 
