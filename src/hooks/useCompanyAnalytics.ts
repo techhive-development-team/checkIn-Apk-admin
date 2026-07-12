@@ -17,10 +17,7 @@ export interface CompanyAnalytics {
   period: string;
   from: string;
   to: string;
-<<<<<<< Updated upstream
-=======
   trendTo?: string;
->>>>>>> Stashed changes
   timezone: string;
   workStart: string;
   workEnd: string;
@@ -43,11 +40,8 @@ export interface CompanyAnalytics {
   trend: {
     key: string;
     label: string;
-<<<<<<< Updated upstream
-=======
     weekday?: string;
     isWorkingDay?: boolean;
->>>>>>> Stashed changes
     present: number;
     absent: number;
     leave: number;
@@ -69,8 +63,6 @@ export interface CompanyAnalytics {
   };
 }
 
-<<<<<<< Updated upstream
-=======
 export interface AdminUsageAnalytics {
   timezone: string;
   from: string;
@@ -110,9 +102,24 @@ export interface AdminUsageAnalytics {
     members: number;
     activeThisMonth: boolean;
   }[];
+  companyDirectory?: {
+    companyId: string;
+    name: string;
+    plan: string;
+    members: number;
+    activeThisMonth: boolean;
+  }[];
+  employeeDirectory?: {
+    employeeId: string;
+    name: string;
+    companyId: string;
+    companyName: string;
+    memberType: string;
+    position: string | null;
+    status: string;
+  }[];
 }
 
->>>>>>> Stashed changes
 export const useCompanyAnalytics = (params: CompanyAnalyticsParams | null) => {
   const { data, error, isLoading, mutate } = useSWR(
     params ? [`${API_URLS.ANALYTICS}/company`, params] : null,
@@ -127,8 +134,6 @@ export const useCompanyAnalytics = (params: CompanyAnalyticsParams | null) => {
     mutate,
   };
 };
-<<<<<<< Updated upstream
-=======
 
 export const useAdminUsageAnalytics = (enabled: boolean) => {
   const { data, error, isLoading, mutate } = useSWR(
@@ -144,4 +149,3 @@ export const useAdminUsageAnalytics = (enabled: boolean) => {
     mutate,
   };
 };
->>>>>>> Stashed changes

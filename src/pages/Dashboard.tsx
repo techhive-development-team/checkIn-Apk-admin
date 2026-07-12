@@ -1,19 +1,16 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Layout from "../component/layouts/layout";
 import Breadcrumb from "../component/layouts/common/Breadcrumb";
 import { useAuthStore } from "../stores/authStore";
 import {
-<<<<<<< Updated upstream
-  useCompanyAnalytics,
-=======
   useAdminUsageAnalytics,
   useCompanyAnalytics,
   type AdminUsageAnalytics,
->>>>>>> Stashed changes
   type CompanyAnalytics,
   type LeaderEntry,
 } from "../hooks/useCompanyAnalytics";
 import type { AnalyticsPeriod } from "../repositories/analyticsRepository";
+import { analyticsRepository } from "../repositories/analyticsRepository";
 import WorkingDaysFilter from "../component/forms/WorkingDaysFilter";
 import {
   ResponsiveContainer,
@@ -29,10 +26,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-<<<<<<< Updated upstream
-=======
   ReferenceArea,
->>>>>>> Stashed changes
 } from "recharts";
 
 const COLORS = {
@@ -42,11 +36,6 @@ const COLORS = {
   late: "#f97316",
   onTime: "#22c55e",
   bar: "#2563eb",
-<<<<<<< Updated upstream
-};
-const STATUS_COLORS = [COLORS.present, COLORS.leave, COLORS.absent];
-const PUNCTUALITY_COLORS = [COLORS.onTime, COLORS.late];
-=======
   users: "#8b5cf6",
   members: "#06b6d4",
   companies: "#0ea5e9",
@@ -156,7 +145,6 @@ const TrendTooltip = ({
     </div>
   );
 };
->>>>>>> Stashed changes
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "weekly", label: "Weekly" },
@@ -164,8 +152,6 @@ const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "yearly", label: "Yearly" },
 ];
 
-<<<<<<< Updated upstream
-=======
 const dateKey = (date = new Date()) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -214,7 +200,6 @@ const weekInputToMonday = (value: string) => {
   return dateKey(monday);
 };
 
->>>>>>> Stashed changes
 const KpiCard = ({
   label,
   value,
@@ -296,10 +281,6 @@ const Leaderboard = ({
   </ChartCard>
 );
 
-<<<<<<< Updated upstream
-const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
-  const [period, setPeriod] = useState<AnalyticsPeriod>("monthly");
-=======
 const AdminBreakdownPie = ({
   title,
   data,
@@ -344,6 +325,162 @@ const AdminBreakdownPie = ({
     )}
   </ChartCard>
 );
+
+const AdminEmployeeDirectory = ({
+  companies = [],
+  employees = [],
+}: {
+  companies?: AdminUsageAnalytics["companyDirectory"];
+  employees?: AdminUsageAnalytics["employeeDirectory"];
+}) => {
+  const [companyId, setCompanyId] = useState("");
+  const [search, setSearch] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const companyList = companies ?? [];
+  const employeeList = employees ?? [];
+
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return employeeList.filter((employee) => {
+      if (companyId && employee.companyId !== companyId) return false;
+      if (!query) return true;
+      return (
+        employee.name.toLowerCase().includes(query) ||
+        employee.companyName.toLowerCase().includes(query) ||
+        (employee.position?.toLowerCase().includes(query) ?? false)
+      );
+    });
+  }, [companyId, employeeList, search]);
+
+  const selectedCompany = companyList.find((company) => company.companyId === companyId);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await analyticsRepository.exportAdminEmployeeDirectory({
+        companyId: companyId || undefined,
+        search: search || undefined,
+      });
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Failed to export employee directory.";
+      setExportError(message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  return (
+    <ChartCard title="Employee directory">
+      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <label className="form-control w-full max-w-xs">
+          <span className="label-text text-xs text-base-content/60">Company</span>
+          <select
+            className="select select-bordered select-sm"
+            value={companyId}
+            onChange={(e) => setCompanyId(e.target.value)}
+            aria-label="Filter by company"
+          >
+            <option value="">All companies ({employeeList.length} members)</option>
+            {companyList.map((company) => (
+              <option key={company.companyId} value={company.companyId}>
+                {company.name} ({company.members})
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="form-control w-full max-w-sm">
+          <span className="label-text text-xs text-base-content/60">Search name</span>
+          <input
+            type="search"
+            className="input input-bordered input-sm"
+            placeholder="Employee or company name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search employees"
+          />
+        </label>
+
+        <p className="text-xs text-base-content/60">
+          Showing {filtered.length}
+          {selectedCompany ? ` in ${selectedCompany.name}` : " across all companies"}
+        </p>
+
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={handleExport}
+          disabled={exporting || companyList.length === 0}
+        >
+          {exporting ? (
+            <>
+              <span className="loading loading-spinner loading-xs" />
+              Exporting...
+            </>
+          ) : (
+            "Export .xlsx"
+          )}
+        </button>
+      </div>
+
+      {exportError && (
+        <div className="alert alert-error mb-4 py-2 text-xs">
+          <span>{exportError}</span>
+        </div>
+      )}
+
+      {companyList.length === 0 ? (
+        <p className="py-6 text-center text-sm text-base-content/50">
+          Employee directory is loading or unavailable. Restart the backend if this persists.
+        </p>
+      ) : filtered.length === 0 ? (
+        <p className="py-6 text-center text-sm text-base-content/50">
+          No employees match this filter
+        </p>
+      ) : (
+        <div className="overflow-x-auto max-h-96">
+          <table className="table table-sm table-pin-rows">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Type</th>
+                <th>Position / Class</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((employee, index) => (
+                <tr key={employee.employeeId}>
+                  <td>{index + 1}</td>
+                  <td className="font-medium">{employee.name}</td>
+                  <td>{employee.companyName}</td>
+                  <td>{employee.memberType}</td>
+                  <td>{employee.position || "—"}</td>
+                  <td>
+                    <span
+                      className={`badge badge-sm ${
+                        employee.status === "active" ? "badge-success" : "badge-ghost"
+                      }`}
+                    >
+                      {employee.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </ChartCard>
+  );
+};
 
 const AdminUsageDashboard = () => {
   const { data, isLoading, error } = useAdminUsageAnalytics(true);
@@ -497,6 +634,11 @@ const AdminUsageDashboard = () => {
               </div>
             )}
           </ChartCard>
+
+          <AdminEmployeeDirectory
+            companies={analytics.companyDirectory ?? analytics.topCompanies}
+            employees={analytics.employeeDirectory ?? []}
+          />
         </>
       )}
     </div>
@@ -509,7 +651,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
   const [selectedWeek, setSelectedWeek] = useState(weekInputValue(today));
   const [selectedMonth, setSelectedMonth] = useState(today.slice(0, 7));
   const [selectedYear, setSelectedYear] = useState(today.slice(0, 4));
->>>>>>> Stashed changes
   const [workStart, setWorkStart] = useState("09:00");
   const [workEnd, setWorkEnd] = useState("17:00");
   const [workDays, setWorkDays] = useState<string[]>([
@@ -519,8 +660,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     "Thu",
     "Fri",
   ]);
-<<<<<<< Updated upstream
-=======
   const safeSelectedMonth = selectedMonth || today.slice(0, 7);
   const safeSelectedYear = selectedYear || today.slice(0, 4);
   const anchorDate =
@@ -529,15 +668,11 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
       : period === "monthly"
         ? `${safeSelectedMonth}-01`
         : `${safeSelectedYear}-01-01`;
->>>>>>> Stashed changes
 
   const { data, isLoading, error } = useCompanyAnalytics({
     period,
     companyId,
-<<<<<<< Updated upstream
-=======
     anchorDate,
->>>>>>> Stashed changes
     workStart,
     workEnd,
     workDays,
@@ -549,21 +684,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-<<<<<<< Updated upstream
-        <div className="join">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              className={`btn join-item btn-sm ${
-                period === p.key ? "btn-primary" : "btn-ghost"
-              }`}
-              onClick={() => setPeriod(p.key)}
-            >
-              {p.label}
-            </button>
-          ))}
-=======
         <div className="flex flex-wrap items-center gap-2">
           <div className="join">
             {PERIODS.map((p) => (
@@ -613,7 +733,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
               onChange={(e) => setSelectedYear(e.target.value)}
             />
           )}
->>>>>>> Stashed changes
         </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-base-content/60">Work hours</span>
@@ -658,11 +777,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
       {analytics && !isLoading && (
         <>
           <p className="text-xs text-base-content/50">
-<<<<<<< Updated upstream
-            {analytics.from} → {analytics.to} · {analytics.timezone} · grace{" "}
-            {analytics.graceMinutes}m · late counted after each member's start
-            time (default {analytics.workStart}–{analytics.workEnd})
-=======
             {analytics.from} → {analytics.to}
             {analytics.trendTo && analytics.trendTo !== analytics.to
               ? ` (trend through ${analytics.trendTo})`
@@ -670,7 +784,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
             · {analytics.timezone} · grace {analytics.graceMinutes}m · late
             counted after each member's start time (default {analytics.workStart}–
             {analytics.workEnd})
->>>>>>> Stashed changes
           </p>
 
           {/* KPI cards */}
@@ -697,18 +810,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
           {/* Trend + pies */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <ChartCard title="Attendance trend" className="lg:col-span-2">
-<<<<<<< Updated upstream
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={analytics.trend} margin={{ left: -18, right: 8, top: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
-                  <XAxis dataKey="label" fontSize={11} tickMargin={6} />
-                  <YAxis allowDecimals={false} fontSize={11} />
-                  <Tooltip />
-                  <Legend />
-                  <Area type="monotone" dataKey="present" name="Present" stackId="1" stroke={COLORS.present} fill={COLORS.present} fillOpacity={0.5} />
-                  <Area type="monotone" dataKey="leave" name="Leave" stackId="1" stroke={COLORS.leave} fill={COLORS.leave} fillOpacity={0.5} />
-                  <Area type="monotone" dataKey="absent" name="Absent" stackId="1" stroke={COLORS.absent} fill={COLORS.absent} fillOpacity={0.5} />
-=======
               <div className="mb-2 flex flex-wrap gap-3 text-xs text-base-content/60">
                 <span>
                   <span
@@ -779,7 +880,6 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
                     fillOpacity={0.5}
                     connectNulls={false}
                   />
->>>>>>> Stashed changes
                 </AreaChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -856,12 +956,7 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
 
 const Dashboard: React.FC = () => {
   const role = useAuthStore((state) => state.user?.role);
-<<<<<<< Updated upstream
-  const companyId = useAuthStore((state) => state.user?.companyId);
-  const isCompanyView = role === "CLIENT" || role === "ADMIN";
-=======
   const isCompanyView = role === "CLIENT";
->>>>>>> Stashed changes
 
   return (
     <Layout>
@@ -870,15 +965,10 @@ const Dashboard: React.FC = () => {
           <div className="card-body">
             <Breadcrumb items={[{ label: "Home", path: "/" }]} />
             <h3 className="text-2xl font-bold my-4">Dashboard</h3>
-<<<<<<< Updated upstream
-            {isCompanyView ? (
-              <CompanyDashboard companyId={role === "ADMIN" ? companyId : undefined} />
-=======
             {role === "ADMIN" ? (
               <AdminUsageDashboard />
             ) : isCompanyView ? (
               <CompanyDashboard />
->>>>>>> Stashed changes
             ) : (
               <p className="text-base-content/60">
                 Welcome back! Use the sidebar to check in and manage your attendance and leave.

@@ -10,10 +10,7 @@ export interface CompanyAnalyticsParams {
   period: AnalyticsPeriod;
   timezone?: string;
   companyId?: string;
-<<<<<<< Updated upstream
-=======
   anchorDate?: string;
->>>>>>> Stashed changes
   workStart?: string;
   workEnd?: string;
   workDays?: string[];
@@ -25,10 +22,7 @@ const getCompanyAnalytics = async (params: CompanyAnalyticsParams) => {
   query.set("period", params.period);
   query.set("timezone", params.timezone || getBrowserTimezone());
   if (params.companyId) query.set("companyId", params.companyId);
-<<<<<<< Updated upstream
-=======
   if (params.anchorDate) query.set("anchorDate", params.anchorDate);
->>>>>>> Stashed changes
   if (params.workStart) query.set("workStart", params.workStart);
   if (params.workEnd) query.set("workEnd", params.workEnd);
   if (params.workDays && params.workDays.length > 0)
@@ -42,10 +36,6 @@ const getCompanyAnalytics = async (params: CompanyAnalyticsParams) => {
   return response;
 };
 
-<<<<<<< Updated upstream
-export const analyticsRepository = {
-  getCompanyAnalytics,
-=======
 const getAdminUsageAnalytics = async () => {
   const query = new URLSearchParams();
   query.set("timezone", getBrowserTimezone());
@@ -57,8 +47,40 @@ const getAdminUsageAnalytics = async () => {
   return response;
 };
 
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+const exportAdminEmployeeDirectory = async (params?: {
+  companyId?: string;
+  search?: string;
+}) => {
+  const query = new URLSearchParams();
+  if (params?.companyId) query.set("companyId", params.companyId);
+  if (params?.search?.trim()) query.set("search", params.search.trim());
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const blob = await client.exec(
+    `${API_URLS.ANALYTICS}/admin-employees/export${suffix}`,
+    { method: "get" },
+  );
+
+  if (!(blob instanceof Blob)) {
+    throw new Error("Response was not a file");
+  }
+
+  downloadBlob(blob, "employee-directory.xlsx");
+};
+
 export const analyticsRepository = {
   getCompanyAnalytics,
   getAdminUsageAnalytics,
->>>>>>> Stashed changes
+  exportAdminEmployeeDirectory,
 };
