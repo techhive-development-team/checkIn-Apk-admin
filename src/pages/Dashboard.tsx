@@ -3,7 +3,13 @@ import Layout from "../component/layouts/layout";
 import Breadcrumb from "../component/layouts/common/Breadcrumb";
 import { useAuthStore } from "../stores/authStore";
 import {
+<<<<<<< Updated upstream
   useCompanyAnalytics,
+=======
+  useAdminUsageAnalytics,
+  useCompanyAnalytics,
+  type AdminUsageAnalytics,
+>>>>>>> Stashed changes
   type CompanyAnalytics,
   type LeaderEntry,
 } from "../hooks/useCompanyAnalytics";
@@ -23,6 +29,10 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+<<<<<<< Updated upstream
+=======
+  ReferenceArea,
+>>>>>>> Stashed changes
 } from "recharts";
 
 const COLORS = {
@@ -32,9 +42,121 @@ const COLORS = {
   late: "#f97316",
   onTime: "#22c55e",
   bar: "#2563eb",
+<<<<<<< Updated upstream
 };
 const STATUS_COLORS = [COLORS.present, COLORS.leave, COLORS.absent];
 const PUNCTUALITY_COLORS = [COLORS.onTime, COLORS.late];
+=======
+  users: "#8b5cf6",
+  members: "#06b6d4",
+  companies: "#0ea5e9",
+};
+const STATUS_COLORS = [COLORS.present, COLORS.leave, COLORS.absent];
+const PUNCTUALITY_COLORS = [COLORS.onTime, COLORS.late];
+const BREAKDOWN_COLORS = [
+  "#00a8cc",
+  COLORS.companies,
+  COLORS.bar,
+  COLORS.members,
+  COLORS.users,
+  COLORS.leave,
+  COLORS.present,
+  COLORS.absent,
+];
+const FLOW_COLORS = [
+  "#00a8cc",
+  COLORS.companies,
+  COLORS.bar,
+  COLORS.members,
+  COLORS.users,
+  COLORS.present,
+];
+
+const OFF_DAY_COLOR = "#94a3b8";
+
+const offDayBands = (trend: CompanyAnalytics["trend"]) => {
+  const bands: { x1: string; x2: string }[] = [];
+  let runStart: string | null = null;
+  let runEnd: string | null = null;
+
+  for (const point of trend) {
+    if (point.isWorkingDay === false) {
+      if (!runStart) runStart = point.label;
+      runEnd = point.label;
+    } else if (runStart && runEnd) {
+      bands.push({ x1: runStart, x2: runEnd });
+      runStart = null;
+      runEnd = null;
+    }
+  }
+
+  if (runStart && runEnd) bands.push({ x1: runStart, x2: runEnd });
+  return bands;
+};
+
+const TrendTick = (props: {
+  x?: string | number;
+  y?: string | number;
+  payload?: { value: string };
+  trend: CompanyAnalytics["trend"];
+}) => {
+  const { x, y, payload, trend } = props;
+  const xNum = typeof x === "number" ? x : parseFloat(String(x ?? 0));
+  const yNum = typeof y === "number" ? y : parseFloat(String(y ?? 0));
+  const point = trend.find((t) => t.label === payload?.value);
+  const isOff = point?.isWorkingDay === false;
+  return (
+    <text
+      x={xNum}
+      y={yNum + 12}
+      textAnchor="end"
+      fontSize={10}
+      fill={isOff ? OFF_DAY_COLOR : "#64748b"}
+      transform={`rotate(-45, ${xNum}, ${yNum + 12})`}
+    >
+      {payload?.value}
+    </text>
+  );
+};
+
+const TrendTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: {
+    name: string;
+    value: number;
+    color: string;
+    payload?: CompanyAnalytics["trend"][number];
+  }[];
+  label?: string;
+}) => {
+  if (!active || !payload?.length) return null;
+  const point = payload[0]?.payload;
+  const isOff = point?.isWorkingDay === false;
+  const hasTrendData = payload.some((entry) => entry.value > 0);
+
+  return (
+    <div className="rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-xs shadow-md">
+      <p className="font-semibold">{label}</p>
+      {isOff && <p className="mt-1 text-base-content/60">Off day</p>}
+      {hasTrendData ? (
+        <ul className="mt-1 space-y-0.5">
+          {payload.map((entry) => (
+            <li key={entry.name} style={{ color: entry.color }}>
+              {entry.name}: {entry.value}
+            </li>
+          ))}
+        </ul>
+      ) : isOff ? null : (
+        <p className="mt-1 text-base-content/60">No attendance</p>
+      )}
+    </div>
+  );
+};
+>>>>>>> Stashed changes
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "weekly", label: "Weekly" },
@@ -42,6 +164,57 @@ const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "yearly", label: "Yearly" },
 ];
 
+<<<<<<< Updated upstream
+=======
+const dateKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const addDays = (key: string, delta: number) => {
+  const date = new Date(`${key}T00:00:00`);
+  date.setDate(date.getDate() + delta);
+  return dateKey(date);
+};
+
+const mondayOfWeek = (key: string) => {
+  const date = new Date(`${key}T00:00:00`);
+  const day = date.getDay();
+  return addDays(key, day === 0 ? -6 : 1 - day);
+};
+
+const weekInputValue = (key: string) => {
+  const monday = new Date(`${mondayOfWeek(key)}T00:00:00`);
+  const thursday = new Date(monday);
+  thursday.setDate(monday.getDate() + 3);
+  const firstThursday = new Date(thursday.getFullYear(), 0, 4);
+  const week =
+    1 +
+    Math.round(
+      ((thursday.getTime() - firstThursday.getTime()) / 86400000 -
+        3 +
+        ((firstThursday.getDay() + 6) % 7)) /
+        7,
+    );
+
+  return `${thursday.getFullYear()}-W${String(week).padStart(2, "0")}`;
+};
+
+const weekInputToMonday = (value: string) => {
+  const match = value.match(/^(\d{4})-W(\d{2})$/);
+  if (!match) return mondayOfWeek(dateKey());
+  const year = Number(match[1]);
+  const week = Number(match[2]);
+  const janFourth = new Date(year, 0, 4);
+  const janFourthDay = janFourth.getDay() || 7;
+  const monday = new Date(janFourth);
+  monday.setDate(janFourth.getDate() - janFourthDay + 1 + (week - 1) * 7);
+  return dateKey(monday);
+};
+
+>>>>>>> Stashed changes
 const KpiCard = ({
   label,
   value,
@@ -123,8 +296,220 @@ const Leaderboard = ({
   </ChartCard>
 );
 
+<<<<<<< Updated upstream
 const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
   const [period, setPeriod] = useState<AnalyticsPeriod>("monthly");
+=======
+const AdminBreakdownPie = ({
+  title,
+  data,
+}: {
+  title: string;
+  data: { name: string; value: number }[];
+}) => (
+  <ChartCard title={title}>
+    {data.length === 0 ? (
+      <p className="py-6 text-center text-sm text-base-content/50">No data</p>
+    ) : (
+      <>
+        <ResponsiveContainer width="100%" height={190}>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={42}
+              outerRadius={68}
+              paddingAngle={2}
+            >
+              {data.map((_, i) => (
+                <Cell key={i} fill={BREAKDOWN_COLORS[i % BREAKDOWN_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-base-content/70">
+          {data.map((item, i) => (
+            <span key={item.name}>
+              <span
+                className="mr-1 inline-block h-2 w-2 rounded-full"
+                style={{ background: BREAKDOWN_COLORS[i % BREAKDOWN_COLORS.length] }}
+              />
+              {item.name}: {item.value}
+            </span>
+          ))}
+        </div>
+      </>
+    )}
+  </ChartCard>
+);
+
+const AdminUsageDashboard = () => {
+  const { data, isLoading, error } = useAdminUsageAnalytics(true);
+  const analytics = data as AdminUsageAnalytics | undefined;
+
+  return (
+    <div className="space-y-4">
+      {isLoading && (
+        <div className="flex h-64 items-center justify-center">
+          <span className="loading loading-spinner loading-lg text-primary" />
+        </div>
+      )}
+
+      {error && (
+        <div className="alert alert-error">
+          <span>Failed to load usage analytics. Please try again.</span>
+        </div>
+      )}
+
+      {analytics && !isLoading && (
+        <>
+          <p className="text-xs text-base-content/50">
+            Platform usage · {analytics.from} → {analytics.to} ·{" "}
+            {analytics.timezone}
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+            <KpiCard label="Companies" value={analytics.summary.totalCompanies} />
+            <KpiCard label="Active companies" value={analytics.summary.activeCompanies} />
+            <KpiCard label="Users" value={analytics.summary.totalUsers} accent={COLORS.users} />
+            <KpiCard label="Members" value={analytics.summary.totalMembers} accent={COLORS.members} />
+            <KpiCard
+              label="Active this month"
+              value={analytics.summary.activeMembersThisMonth}
+              accent={COLORS.present}
+            />
+            <KpiCard
+              label="Leave requests"
+              value={analytics.summary.leaveRequests}
+              accent={COLORS.leave}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <ChartCard title="User usage trend" className="xl:col-span-2">
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart
+                  data={analytics.trend}
+                  margin={{ left: -12, right: 12, top: 8, bottom: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
+                  <XAxis dataKey="label" fontSize={11} />
+                  <YAxis allowDecimals={false} fontSize={11} />
+                  <Tooltip />
+                  <Legend />
+                  <Area
+                    type="monotone"
+                    dataKey="users"
+                    name="New users"
+                    stroke={COLORS.users}
+                    fill={COLORS.users}
+                    fillOpacity={0.25}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="members"
+                    name="New members"
+                    stroke={COLORS.members}
+                    fill={COLORS.members}
+                    fillOpacity={0.25}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="attendance"
+                    name="Attendance records"
+                    stroke={COLORS.present}
+                    fill={COLORS.present}
+                    fillOpacity={0.18}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="User flow">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={analytics.userFlow}
+                  layout="vertical"
+                  margin={{ left: 20, right: 16 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} fontSize={11} />
+                  <YAxis type="category" dataKey="name" width={118} fontSize={11} />
+                  <Tooltip />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                    {analytics.userFlow.map((_, i) => (
+                      <Cell
+                        key={i}
+                        fill={FLOW_COLORS[i % FLOW_COLORS.length]}
+                        fillOpacity={0.6}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <AdminBreakdownPie title="Users by role" data={analytics.roleBreakdown} />
+            <AdminBreakdownPie title="Companies by plan" data={analytics.planBreakdown} />
+            <AdminBreakdownPie title="Members by type" data={analytics.memberTypeBreakdown} />
+            <AdminBreakdownPie title="Leave status this month" data={analytics.leaveStatusBreakdown} />
+          </div>
+
+          <ChartCard title="Top companies by members">
+            {analytics.topCompanies.length === 0 ? (
+              <p className="py-6 text-center text-sm text-base-content/50">
+                No companies yet
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Company</th>
+                      <th>Plan</th>
+                      <th className="text-right">Members</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analytics.topCompanies.map((company) => (
+                      <tr key={company.companyId}>
+                        <td className="font-medium">{company.name}</td>
+                        <td>{company.plan}</td>
+                        <td className="text-right">{company.members}</td>
+                        <td>
+                          <span
+                            className={`badge badge-sm ${
+                              company.activeThisMonth ? "badge-success" : "badge-ghost"
+                            }`}
+                          >
+                            {company.activeThisMonth ? "Active this month" : "No activity"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </ChartCard>
+        </>
+      )}
+    </div>
+  );
+};
+
+const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
+  const today = dateKey();
+  const [period, setPeriod] = useState<AnalyticsPeriod>("monthly");
+  const [selectedWeek, setSelectedWeek] = useState(weekInputValue(today));
+  const [selectedMonth, setSelectedMonth] = useState(today.slice(0, 7));
+  const [selectedYear, setSelectedYear] = useState(today.slice(0, 4));
+>>>>>>> Stashed changes
   const [workStart, setWorkStart] = useState("09:00");
   const [workEnd, setWorkEnd] = useState("17:00");
   const [workDays, setWorkDays] = useState<string[]>([
@@ -134,10 +519,25 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     "Thu",
     "Fri",
   ]);
+<<<<<<< Updated upstream
+=======
+  const safeSelectedMonth = selectedMonth || today.slice(0, 7);
+  const safeSelectedYear = selectedYear || today.slice(0, 4);
+  const anchorDate =
+    period === "weekly"
+      ? weekInputToMonday(selectedWeek)
+      : period === "monthly"
+        ? `${safeSelectedMonth}-01`
+        : `${safeSelectedYear}-01-01`;
+>>>>>>> Stashed changes
 
   const { data, isLoading, error } = useCompanyAnalytics({
     period,
     companyId,
+<<<<<<< Updated upstream
+=======
+    anchorDate,
+>>>>>>> Stashed changes
     workStart,
     workEnd,
     workDays,
@@ -149,6 +549,7 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3">
+<<<<<<< Updated upstream
         <div className="join">
           {PERIODS.map((p) => (
             <button
@@ -162,6 +563,57 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
               {p.label}
             </button>
           ))}
+=======
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="join">
+            {PERIODS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                className={`btn join-item btn-sm ${
+                  period === p.key ? "btn-primary" : "btn-ghost"
+                }`}
+                onClick={() => setPeriod(p.key)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {period === "weekly" && (
+            <input
+              type="week"
+              aria-label="Select week"
+              className="input input-bordered input-sm w-40"
+              value={selectedWeek}
+              max={weekInputValue(today)}
+              onChange={(e) => setSelectedWeek(e.target.value)}
+            />
+          )}
+
+          {period === "monthly" && (
+            <input
+              type="month"
+              aria-label="Select month"
+              className="input input-bordered input-sm w-40"
+              value={selectedMonth}
+              max={today.slice(0, 7)}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            />
+          )}
+
+          {period === "yearly" && (
+            <input
+              type="number"
+              aria-label="Select year"
+              className="input input-bordered input-sm w-28"
+              min="2000"
+              max={today.slice(0, 4)}
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+            />
+          )}
+>>>>>>> Stashed changes
         </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-base-content/60">Work hours</span>
@@ -206,9 +658,19 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
       {analytics && !isLoading && (
         <>
           <p className="text-xs text-base-content/50">
+<<<<<<< Updated upstream
             {analytics.from} → {analytics.to} · {analytics.timezone} · grace{" "}
             {analytics.graceMinutes}m · late counted after each member's start
             time (default {analytics.workStart}–{analytics.workEnd})
+=======
+            {analytics.from} → {analytics.to}
+            {analytics.trendTo && analytics.trendTo !== analytics.to
+              ? ` (trend through ${analytics.trendTo})`
+              : ""}{" "}
+            · {analytics.timezone} · grace {analytics.graceMinutes}m · late
+            counted after each member's start time (default {analytics.workStart}–
+            {analytics.workEnd})
+>>>>>>> Stashed changes
           </p>
 
           {/* KPI cards */}
@@ -235,6 +697,7 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
           {/* Trend + pies */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <ChartCard title="Attendance trend" className="lg:col-span-2">
+<<<<<<< Updated upstream
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={analytics.trend} margin={{ left: -18, right: 8, top: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
@@ -245,6 +708,78 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
                   <Area type="monotone" dataKey="present" name="Present" stackId="1" stroke={COLORS.present} fill={COLORS.present} fillOpacity={0.5} />
                   <Area type="monotone" dataKey="leave" name="Leave" stackId="1" stroke={COLORS.leave} fill={COLORS.leave} fillOpacity={0.5} />
                   <Area type="monotone" dataKey="absent" name="Absent" stackId="1" stroke={COLORS.absent} fill={COLORS.absent} fillOpacity={0.5} />
+=======
+              <div className="mb-2 flex flex-wrap gap-3 text-xs text-base-content/60">
+                <span>
+                  <span
+                    className="mr-1 inline-block h-2 w-2 rounded-sm"
+                    style={{ background: OFF_DAY_COLOR, opacity: 0.35 }}
+                  />
+                  Off day
+                </span>
+                <span>
+                  All dates in month shown · gray = off day · check-ins on off
+                  days still appear as Present
+                </span>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={analytics.trend} margin={{ left: -12, right: 8, top: 8, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
+                  {offDayBands(analytics.trend).map((band) => (
+                    <ReferenceArea
+                      key={`${band.x1}-${band.x2}`}
+                      x1={band.x1}
+                      x2={band.x2}
+                      strokeOpacity={0}
+                      fill={OFF_DAY_COLOR}
+                      fillOpacity={0.18}
+                      ifOverflow="extendDomain"
+                    />
+                  ))}
+                  <XAxis
+                    dataKey="label"
+                    fontSize={10}
+                    tickMargin={4}
+                    height={56}
+                    interval={0}
+                    tick={(props) => (
+                      <TrendTick {...props} trend={analytics.trend} />
+                    )}
+                  />
+                  <YAxis allowDecimals={false} fontSize={11} />
+                  <Tooltip content={<TrendTooltip />} />
+                  <Legend />
+                  <Area
+                    type="monotone"
+                    dataKey="present"
+                    name="Present"
+                    stackId="1"
+                    stroke={COLORS.present}
+                    fill={COLORS.present}
+                    fillOpacity={0.5}
+                    connectNulls={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="leave"
+                    name="Leave"
+                    stackId="1"
+                    stroke={COLORS.leave}
+                    fill={COLORS.leave}
+                    fillOpacity={0.5}
+                    connectNulls={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="absent"
+                    name="Absent"
+                    stackId="1"
+                    stroke={COLORS.absent}
+                    fill={COLORS.absent}
+                    fillOpacity={0.5}
+                    connectNulls={false}
+                  />
+>>>>>>> Stashed changes
                 </AreaChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -321,8 +856,12 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
 
 const Dashboard: React.FC = () => {
   const role = useAuthStore((state) => state.user?.role);
+<<<<<<< Updated upstream
   const companyId = useAuthStore((state) => state.user?.companyId);
   const isCompanyView = role === "CLIENT" || role === "ADMIN";
+=======
+  const isCompanyView = role === "CLIENT";
+>>>>>>> Stashed changes
 
   return (
     <Layout>
@@ -331,8 +870,15 @@ const Dashboard: React.FC = () => {
           <div className="card-body">
             <Breadcrumb items={[{ label: "Home", path: "/" }]} />
             <h3 className="text-2xl font-bold my-4">Dashboard</h3>
+<<<<<<< Updated upstream
             {isCompanyView ? (
               <CompanyDashboard companyId={role === "ADMIN" ? companyId : undefined} />
+=======
+            {role === "ADMIN" ? (
+              <AdminUsageDashboard />
+            ) : isCompanyView ? (
+              <CompanyDashboard />
+>>>>>>> Stashed changes
             ) : (
               <p className="text-base-content/60">
                 Welcome back! Use the sidebar to check in and manage your attendance and leave.

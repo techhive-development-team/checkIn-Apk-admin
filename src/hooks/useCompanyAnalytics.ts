@@ -17,6 +17,10 @@ export interface CompanyAnalytics {
   period: string;
   from: string;
   to: string;
+<<<<<<< Updated upstream
+=======
+  trendTo?: string;
+>>>>>>> Stashed changes
   timezone: string;
   workStart: string;
   workEnd: string;
@@ -39,6 +43,11 @@ export interface CompanyAnalytics {
   trend: {
     key: string;
     label: string;
+<<<<<<< Updated upstream
+=======
+    weekday?: string;
+    isWorkingDay?: boolean;
+>>>>>>> Stashed changes
     present: number;
     absent: number;
     leave: number;
@@ -60,6 +69,50 @@ export interface CompanyAnalytics {
   };
 }
 
+<<<<<<< Updated upstream
+=======
+export interface AdminUsageAnalytics {
+  timezone: string;
+  from: string;
+  to: string;
+  summary: {
+    totalCompanies: number;
+    activeCompanies: number;
+    totalUsers: number;
+    activeUsers: number;
+    clientUsers: number;
+    memberUsers: number;
+    totalMembers: number;
+    employeeMembers: number;
+    studentMembers: number;
+    activeMembersThisMonth: number;
+    attendanceRecords: number;
+    leaveRequests: number;
+  };
+  trend: {
+    key: string;
+    label: string;
+    companies: number;
+    users: number;
+    members: number;
+    attendance: number;
+    leaveRequests: number;
+  }[];
+  userFlow: { name: string; value: number }[];
+  roleBreakdown: { name: string; value: number }[];
+  planBreakdown: { name: string; value: number }[];
+  memberTypeBreakdown: { name: string; value: number }[];
+  leaveStatusBreakdown: { name: string; value: number }[];
+  topCompanies: {
+    companyId: string;
+    name: string;
+    plan: string;
+    members: number;
+    activeThisMonth: boolean;
+  }[];
+}
+
+>>>>>>> Stashed changes
 export const useCompanyAnalytics = (params: CompanyAnalyticsParams | null) => {
   const { data, error, isLoading, mutate } = useSWR(
     params ? [`${API_URLS.ANALYTICS}/company`, params] : null,
@@ -74,3 +127,21 @@ export const useCompanyAnalytics = (params: CompanyAnalyticsParams | null) => {
     mutate,
   };
 };
+<<<<<<< Updated upstream
+=======
+
+export const useAdminUsageAnalytics = (enabled: boolean) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    enabled ? `${API_URLS.ANALYTICS}/admin-usage` : null,
+    () => analyticsRepository.getAdminUsageAnalytics(),
+    { revalidateOnFocus: false },
+  );
+
+  return {
+    data: data?.data as AdminUsageAnalytics | undefined,
+    error,
+    isLoading,
+    mutate,
+  };
+};
+>>>>>>> Stashed changes

@@ -211,6 +211,10 @@
   display: block;
 }
 
+.price-icon {
+  filter: opacity(0.9);
+}
+
 .app-status-badge {
   background-color: var(--app-brand) !important;
   border-color: var(--app-brand) !important;

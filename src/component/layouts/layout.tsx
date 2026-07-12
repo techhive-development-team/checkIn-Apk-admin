@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "./common/Navbar";
 import Sidebar from "./common/Sidebar";
+import ChatWidget from "../chat/ChatWidget";
 
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -11,6 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <div className="drawer-content flex flex-col min-h-screen app-main-bg">
         <Navbar />
         <main className="flex-1 p-6">{children}</main>
+        <ChatWidget />
       </div>
 
       <div className="drawer-side">
