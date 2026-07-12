@@ -5,7 +5,6 @@ import { attendanceRepository } from "../../repositories/attendanceRepository";
 import { baseUrl } from "../../enum/urls";
 
 const PAGE_SIZE = 10;
-const SINGLE_DAY_LIMIT = 1000;
 
 const getDateKeyInTimezone = (value: Date | string, timezone: string) => {
   const date = new Date(value);
@@ -111,21 +110,17 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   workDays,
 }) => {
   const effectiveToDate = toDate || fromDate;
-  const isSingleDayFilter =
-    !!fromDate && effectiveToDate === fromDate;
 
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
-  const apiLimit = isSingleDayFilter ? SINGLE_DAY_LIMIT : PAGE_SIZE;
-  const apiOffset = isSingleDayFilter ? 0 : offset;
 
   const {
     data: attendances,
     total,
     mutate,
   } = useGetAttendance({
-    limit: apiLimit,
-    offset: apiOffset,
+    limit: PAGE_SIZE,
+    offset,
     fromDate: fromDate || undefined,
     toDate: effectiveToDate || undefined,
     employeeId: employeeId || undefined,
@@ -319,12 +314,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     return "";
   };
 
-  const totalPages = isSingleDayFilter
-    ? 1
-    : total
-      ? Math.ceil(total / PAGE_SIZE)
-      : 1;
-  const rowOffset = isSingleDayFilter ? 0 : offset;
+  const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
+  const rowOffset = offset;
   const todayKey = getDateKeyInTimezone(new Date(), timezone);
 
   return (
@@ -484,24 +475,22 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
         </table>
       </div>
 
-      {!isSingleDayFilter && (
-        <div className="join flex justify-end my-4">
-          {[...Array(totalPages)].map((_, idx) => {
-            const pageNumber = idx + 1;
-            return (
-              <input
-                key={pageNumber}
-                className="join-item btn btn-square"
-                type="radio"
-                name="attendance-pagination"
-                aria-label={String(pageNumber)}
-                checked={page === pageNumber}
-                onChange={() => setPage(pageNumber)}
-              />
-            );
-          })}
-        </div>
-      )}
+      <div className="join flex justify-end my-4">
+        {[...Array(totalPages)].map((_, idx) => {
+          const pageNumber = idx + 1;
+          return (
+            <input
+              key={pageNumber}
+              className="join-item btn btn-square"
+              type="radio"
+              name="attendance-pagination"
+              aria-label={String(pageNumber)}
+              checked={page === pageNumber}
+              onChange={() => setPage(pageNumber)}
+            />
+          );
+        })}
+      </div>
 
       <dialog id="delete_modal" className="modal">
         <div className="modal-box">
