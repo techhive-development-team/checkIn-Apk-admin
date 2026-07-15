@@ -70,6 +70,59 @@ const LeaveCreate = lazy(() => import("../pages/Leave/Create/LeaveCreate.tsx"));
 
 const Pricing = lazy(() => import("../pages/Pricing/Pricing.tsx"));
 
+const Landing = lazy(() => import("../pages/Landing/Landing.tsx"));
+const UserGuide = lazy(() => import("../pages/Guide/UserGuide.tsx"));
+
+/**
+ * Root gate: unauthenticated visitors see the marketing landing page,
+ * authenticated users get the dashboard. Keeps "/" meaning "home" so
+ * existing breadcrumbs and post-login redirects continue to work.
+ */
+const RootGate: React.FC = () => {
+  const token = useAuthStore((state) => state.token);
+  const [state, setState] = useState<
+    "loading" | "landing" | "dashboard" | "recovery"
+  >("loading");
+
+  useEffect(() => {
+    let active = true;
+
+    const resolve = async () => {
+      if (!token) {
+        if (active) setState("landing");
+        return;
+      }
+
+      try {
+        const res = await client.exec("/auth/verify-token", { method: "GET" });
+        if (!active) return;
+
+        if (res?.success) {
+          setState(
+            res?.data?.requiresRecoveryEmailVerification
+              ? "recovery"
+              : "dashboard",
+          );
+        } else {
+          setState("landing");
+        }
+      } catch {
+        if (active) setState("landing");
+      }
+    };
+
+    resolve();
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  if (state === "loading") return <Loading />;
+  if (state === "recovery") return <Navigate to="/profile/edit" replace />;
+  if (state === "dashboard") return <Dashboard />;
+  return <Landing />;
+};
+
 const ProtectedRoute: React.FC = () => {
   const token = useAuthStore((state) => state.token);
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
@@ -125,8 +178,6 @@ interface AppRoute {
 }
 
 const routes: AppRoute[] = [
-  { path: "/", element: Dashboard, index: true, protected: true },
-
   { path: "/user", element: UserPage, protected: true },
   { path: "/user/create", element: UserCreatePage, protected: true },
   { path: "/user/:id/edit", element: UserEditPage, protected: true },
@@ -159,6 +210,7 @@ const routes: AppRoute[] = [
 
 
   { path: "/login", element: Login },
+  { path: "/guide", element: UserGuide },
   { path: "/signup", element: Signup },
   { path: "/google", element: Google },
   { path: "/recovery-email-verify", element: RecoveryEmailVerify },
@@ -189,7 +241,12 @@ const generateRoutes = (routes: AppRoute[]) =>
 
 const CiaRoutes: React.FC = () => {
   const router = createBrowserRouter(
-    createRoutesFromElements(<>{generateRoutes(routes)}</>),
+    createRoutesFromElements(
+      <>
+        <Route path="/" element={<RootGate />} />
+        {generateRoutes(routes)}
+      </>,
+    ),
   );
 
   return (
