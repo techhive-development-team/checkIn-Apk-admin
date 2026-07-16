@@ -29,38 +29,38 @@ import {
   ReferenceArea,
 } from "recharts";
 
+// Landing page "Weekly attendance" bar gradient (Tailwind sky-400 → indigo-400)
+const LANDING_WEEKLY = {
+  sky: "#38bdf8",
+  indigo: "#818cf8",
+};
+
+// Palette aligned with the marketing landing page (sky → indigo → fuchsia,
+// plus its supporting accent tones) so the dashboard feels consistent.
 const COLORS = {
-  present: "#10b981",
-  leave: "#f59e0b",
-  absent: "#ef4444",
-  late: "#f97316",
-  onTime: "#22c55e",
-  bar: "#2563eb",
-  users: "#8b5cf6",
-  members: "#06b6d4",
-  companies: "#0ea5e9",
+  present: "#10b981", // emerald
+  leave: "#fbbf24", // amber
+  absent: "#f43f5e", // rose
+  late: "#fb923c", // orange
+  onTime: "#14b8a6", // teal
+  bar: "#6366f1", // indigo (primary)
+  users: "#8b5cf6", // violet
+  members: "#06b6d4", // cyan
+  companies: "#0ea5e9", // sky
+  brand: "#d946ef", // fuchsia
 };
 const STATUS_COLORS = [COLORS.present, COLORS.leave, COLORS.absent];
 const PUNCTUALITY_COLORS = [COLORS.onTime, COLORS.late];
 const BREAKDOWN_COLORS = [
-  "#00a8cc",
-  COLORS.companies,
-  COLORS.bar,
-  COLORS.members,
-  COLORS.users,
-  COLORS.leave,
-  COLORS.present,
-  COLORS.absent,
+  COLORS.companies, // sky
+  COLORS.bar, // indigo
+  COLORS.brand, // fuchsia
+  COLORS.members, // cyan
+  COLORS.users, // violet
+  "#ec4899", // pink
+  COLORS.present, // emerald
+  COLORS.leave, // amber
 ];
-const FLOW_COLORS = [
-  "#00a8cc",
-  COLORS.companies,
-  COLORS.bar,
-  COLORS.members,
-  COLORS.users,
-  COLORS.present,
-];
-
 const OFF_DAY_COLOR = "#94a3b8";
 
 const offDayBands = (trend: CompanyAnalytics["trend"]) => {
@@ -657,6 +657,20 @@ const AdminUsageDashboard = () => {
                   data={analytics.trend}
                   margin={{ left: -12, right: 12, top: 8, bottom: 8 }}
                 >
+                  <defs>
+                    <linearGradient id="usageUsers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={LANDING_WEEKLY.indigo} stopOpacity={0.45} />
+                      <stop offset="100%" stopColor={LANDING_WEEKLY.sky} stopOpacity={0.04} />
+                    </linearGradient>
+                    <linearGradient id="usageMembers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={LANDING_WEEKLY.sky} stopOpacity={0.4} />
+                      <stop offset="100%" stopColor={LANDING_WEEKLY.indigo} stopOpacity={0.04} />
+                    </linearGradient>
+                    <linearGradient id="usageAttendance" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={LANDING_WEEKLY.indigo} stopOpacity={0.35} />
+                      <stop offset="100%" stopColor={LANDING_WEEKLY.sky} stopOpacity={0.03} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
                   <XAxis dataKey="label" fontSize={11} />
                   <YAxis allowDecimals={false} fontSize={11} />
@@ -666,25 +680,28 @@ const AdminUsageDashboard = () => {
                     type="monotone"
                     dataKey="users"
                     name="New users"
-                    stroke={COLORS.users}
-                    fill={COLORS.users}
-                    fillOpacity={0.25}
+                    stroke={LANDING_WEEKLY.indigo}
+                    strokeWidth={2}
+                    fill="url(#usageUsers)"
+                    fillOpacity={1}
                   />
                   <Area
                     type="monotone"
                     dataKey="members"
                     name="New members"
-                    stroke={COLORS.members}
-                    fill={COLORS.members}
-                    fillOpacity={0.25}
+                    stroke={LANDING_WEEKLY.sky}
+                    strokeWidth={2}
+                    fill="url(#usageMembers)"
+                    fillOpacity={1}
                   />
                   <Area
                     type="monotone"
                     dataKey="attendance"
                     name="Attendance records"
-                    stroke={COLORS.present}
-                    fill={COLORS.present}
-                    fillOpacity={0.18}
+                    stroke={LANDING_WEEKLY.indigo}
+                    strokeWidth={2}
+                    fill="url(#usageAttendance)"
+                    fillOpacity={1}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -697,19 +714,18 @@ const AdminUsageDashboard = () => {
                   layout="vertical"
                   margin={{ left: 20, right: 16 }}
                 >
+                  <defs>
+                    {/* Landing Weekly attendance colors: sky-400 → indigo-400 */}
+                    <linearGradient id="flowGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor={LANDING_WEEKLY.sky} />
+                      <stop offset="100%" stopColor={LANDING_WEEKLY.indigo} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" horizontal={false} />
                   <XAxis type="number" allowDecimals={false} fontSize={11} />
                   <YAxis type="category" dataKey="name" width={118} fontSize={11} />
                   <Tooltip />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {analytics.userFlow.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={FLOW_COLORS[i % FLOW_COLORS.length]}
-                        fillOpacity={0.6}
-                      />
-                    ))}
-                  </Bar>
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} fill="url(#flowGradient)" />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -1136,11 +1152,17 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
                   layout="vertical"
                   margin={{ left: 20, right: 16 }}
                 >
+                  <defs>
+                    <linearGradient id="attendancePctGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#34d399" />
+                      <stop offset="100%" stopColor="#059669"  />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" horizontal={false} />
                   <XAxis type="number" domain={[0, 100]} fontSize={11} unit="%" />
                   <YAxis type="category" dataKey="name" width={120} fontSize={11} />
                   <Tooltip formatter={(v) => [`${v}%`, "Attendance"]} />
-                  <Bar dataKey="pct" fill={COLORS.bar} radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="pct" fill="url(#attendancePctGradient)" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
