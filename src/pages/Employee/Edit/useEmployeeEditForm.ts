@@ -27,6 +27,7 @@ export const useEmployeeEditForm = (
       resolver: zodResolver(EmployeeUpdateSchema),
       defaultValues: {
         memberType: fixedMemberType,
+        employmentType: "FULL_TIME",
         firstName: "",
         lastName: "",
         studentClass: "",
@@ -55,6 +56,7 @@ export const useEmployeeEditForm = (
         firstName: employeeData.firstName || "",
         lastName: employeeData.lastName || "",
         memberType: fixedMemberType,
+        employmentType: employeeData.employmentType || "FULL_TIME",
         studentClass: employeeData.studentClass || "",
         classTime: employeeData.classTime || "",
         classTimeFrom: employeeData.classTimeFrom || "",

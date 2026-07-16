@@ -8,6 +8,7 @@ import RadioInput from "../../../component/forms/RadioInput";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../component/layouts/common/Breadcrumb";
 import { useEffect } from "react";
+import EmploymentTypeFields from "../../../component/forms/EmploymentTypeFields";
 
 const EmployeeEdit = () => {
   const navigate = useNavigate();
@@ -63,6 +64,9 @@ const EmployeeEdit = () => {
 
               <InputText label="Email" name="email" type="email" required />
               <InputText label="Position" name="position" />
+
+              <EmploymentTypeFields />
+
               <InputText label="Phone" name="phone" />
               <InputText label="Address" name="address" />
 

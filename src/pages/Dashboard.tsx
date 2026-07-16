@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../component/layouts/layout";
 import Breadcrumb from "../component/layouts/common/Breadcrumb";
 import { useAuthStore } from "../stores/authStore";
@@ -9,7 +9,7 @@ import {
   type CompanyAnalytics,
   type LeaderEntry,
 } from "../hooks/useCompanyAnalytics";
-import type { AnalyticsPeriod } from "../repositories/analyticsRepository";
+import type { AnalyticsPeriod, EmploymentTypeFilter } from "../repositories/analyticsRepository";
 import { analyticsRepository } from "../repositories/analyticsRepository";
 import WorkingDaysFilter from "../component/forms/WorkingDaysFilter";
 import {
@@ -83,27 +83,144 @@ const offDayBands = (trend: CompanyAnalytics["trend"]) => {
   return bands;
 };
 
+const MONTHLY_POINT_MIN_WIDTH = 38;
+const TREND_CHART_DESKTOP_MIN = 768;
+
+const isDesktopChartWidth = (containerWidth: number) =>
+  containerWidth >= TREND_CHART_DESKTOP_MIN ||
+  (containerWidth === 0 &&
+    typeof window !== "undefined" &&
+    window.matchMedia(`(min-width: ${TREND_CHART_DESKTOP_MIN}px)`).matches);
+
+const formatMonthYearLabel = (monthKey: string) => {
+  const [year, month] = monthKey.split("-").map(Number);
+  if (!year || !month) return monthKey;
+  return new Date(year, month - 1, 1).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const formatTrendAxisLabel = (
+  point: CompanyAnalytics["trend"][number] | undefined,
+  compact: boolean,
+) => {
+  if (!point) return "";
+  const parts = point.label.split(" ");
+  // "Jul 15 Mon" -> compact: "Jul 15", full: "Jul 15 Mon"
+  if (parts.length >= 2) {
+    return compact ? `${parts[0]} ${parts[1]}` : point.label;
+  }
+  return point.label;
+};
+
+const trendChartLayout = (
+  period: AnalyticsPeriod,
+  pointCount: number,
+  containerWidth: number,
+) => {
+  if (period === "monthly") {
+    if (isDesktopChartWidth(containerWidth)) {
+      return {
+        minChartWidth: undefined,
+        tickInterval: 0,
+        chartHeight: 300,
+        margin: { left: -12, right: 8, top: 8, bottom: 8 },
+        xAxisHeight: 56,
+        compactLabels: false,
+        tickAngle: -45,
+        mobileMonthly: false,
+      };
+    }
+
+    const minChartWidth = pointCount * MONTHLY_POINT_MIN_WIDTH;
+    const needsScroll =
+      containerWidth > 0 && minChartWidth > containerWidth;
+
+    return {
+      minChartWidth: needsScroll ? minChartWidth : undefined,
+      tickInterval: needsScroll ? 0 : Math.max(0, Math.ceil(pointCount / 6) - 1),
+      chartHeight: needsScroll ? 268 : 300,
+      margin: {
+        left: -8,
+        right: 8,
+        top: 8,
+        bottom: needsScroll ? 4 : 20,
+      },
+      xAxisHeight: needsScroll ? 32 : 44,
+      compactLabels: true,
+      tickAngle: needsScroll ? 0 : -35,
+      mobileMonthly: true,
+    };
+  }
+
+  const dense = pointCount > 10;
+  return {
+    minChartWidth: undefined,
+    tickInterval: dense
+      ? Math.max(0, Math.ceil(pointCount / Math.max(6, Math.floor(containerWidth / 48))) - 1)
+      : 0,
+    chartHeight: 300,
+    margin: { left: -12, right: 8, top: 8, bottom: dense ? 16 : 8 },
+    xAxisHeight: dense ? 44 : 36,
+    compactLabels: false,
+    tickAngle: dense ? -35 : 0,
+    mobileMonthly: false,
+  };
+};
+
+const useElementWidth = <T extends HTMLElement>() => {
+  const ref = useRef<T>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const updateWidth = () => {
+      setWidth(element.getBoundingClientRect().width);
+    };
+
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, width };
+};
+
 const TrendTick = (props: {
   x?: string | number;
   y?: string | number;
   payload?: { value: string };
   trend: CompanyAnalytics["trend"];
+  compact?: boolean;
+  tickAngle?: number;
 }) => {
-  const { x, y, payload, trend } = props;
+  const { x, y, payload, trend, compact = false, tickAngle = -45 } = props;
   const xNum = typeof x === "number" ? x : parseFloat(String(x ?? 0));
   const yNum = typeof y === "number" ? y : parseFloat(String(y ?? 0));
   const point = trend.find((t) => t.label === payload?.value);
   const isOff = point?.isWorkingDay === false;
+  const label = formatTrendAxisLabel(point, compact);
+  const yOffset = tickAngle === 0 ? 14 : 12;
+  const anchor = tickAngle === 0 ? "middle" : "end";
+
   return (
     <text
       x={xNum}
-      y={yNum + 12}
-      textAnchor="end"
+      y={yNum + yOffset}
+      textAnchor={anchor}
       fontSize={10}
       fill={isOff ? OFF_DAY_COLOR : "#64748b"}
-      transform={`rotate(-45, ${xNum}, ${yNum + 12})`}
+      transform={
+        tickAngle !== 0
+          ? `rotate(${tickAngle}, ${xNum}, ${yNum + yOffset})`
+          : undefined
+      }
     >
-      {payload?.value}
+      {label}
     </text>
   );
 };
@@ -150,6 +267,15 @@ const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "weekly", label: "Weekly" },
   { key: "monthly", label: "Monthly" },
   { key: "yearly", label: "Yearly" },
+];
+
+const EMPLOYMENT_FILTERS: {
+  key: EmploymentTypeFilter | "ALL";
+  label: string;
+}[] = [
+  { key: "ALL", label: "All" },
+  { key: "FULL_TIME", label: "Full-time" },
+  { key: "PART_TIME", label: "Part-time" },
 ];
 
 const dateKey = (date = new Date()) => {
@@ -660,6 +786,9 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     "Thu",
     "Fri",
   ]);
+  const [employmentFilter, setEmploymentFilter] = useState<
+    EmploymentTypeFilter | "ALL"
+  >("ALL");
   const safeSelectedMonth = selectedMonth || today.slice(0, 7);
   const safeSelectedYear = selectedYear || today.slice(0, 4);
   const anchorDate =
@@ -676,9 +805,22 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
     workStart,
     workEnd,
     workDays,
+    employmentType:
+      employmentFilter === "ALL" ? undefined : employmentFilter,
   });
 
   const analytics = data as CompanyAnalytics | undefined;
+  const { ref: trendChartRef, width: trendChartWidth } =
+    useElementWidth<HTMLDivElement>();
+  const trendLayout = useMemo(
+    () =>
+      trendChartLayout(
+        period,
+        analytics?.trend.length ?? 0,
+        trendChartWidth,
+      ),
+    [period, analytics?.trend.length, trendChartWidth],
+  );
 
   return (
     <div className="space-y-4">
@@ -755,6 +897,30 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
       </div>
 
       <div className="rounded-lg border border-base-300 bg-base-100 p-3">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-base-content/60">
+          Employment type
+        </p>
+        <div className="join">
+          {EMPLOYMENT_FILTERS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              className={`btn join-item btn-sm ${
+                employmentFilter === option.key ? "btn-primary" : "btn-ghost"
+              }`}
+              onClick={() => setEmploymentFilter(option.key)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1 text-xs text-base-content/50">
+          Full-time and part-time filters show employees only. All includes
+          students too.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-base-300 bg-base-100 p-3">
         <WorkingDaysFilter value={workDays} onChange={setWorkDays} />
         <p className="mt-1 text-xs text-base-content/50">
           Off days are excluded from scheduled days, so attendance % and absent
@@ -809,7 +975,14 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
 
           {/* Trend + pies */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <ChartCard title="Attendance trend" className="lg:col-span-2">
+            <ChartCard
+              title={
+                period === "monthly"
+                  ? `Attendance trend — ${formatMonthYearLabel(safeSelectedMonth)}`
+                  : "Attendance trend"
+              }
+              className="lg:col-span-2"
+            >
               <div className="mb-2 flex flex-wrap gap-3 text-xs text-base-content/60">
                 <span>
                   <span
@@ -819,69 +992,102 @@ const CompanyDashboard: React.FC<{ companyId?: string }> = ({ companyId }) => {
                   Off day
                 </span>
                 <span>
-                  All dates in month shown · gray = off day · check-ins on off
-                  days still appear as Present
+                  {period === "monthly" ? (
+                    trendLayout.mobileMonthly ? (
+                      trendLayout.minChartWidth
+                        ? `${formatMonthYearLabel(safeSelectedMonth)} · swipe chart for all dates · labels like Jul 15`
+                        : `${formatMonthYearLabel(safeSelectedMonth)} · all dates shown · labels like Jul 15`
+                    ) : (
+                      "All dates in month shown · gray = off day"
+                    )
+                  ) : (
+                    "Gray = off day"
+                  )}{" "}
+                  · check-ins on off days still appear as Present
                 </span>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={analytics.trend} margin={{ left: -12, right: 8, top: 8, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
-                  {offDayBands(analytics.trend).map((band) => (
-                    <ReferenceArea
-                      key={`${band.x1}-${band.x2}`}
-                      x1={band.x1}
-                      x2={band.x2}
-                      strokeOpacity={0}
-                      fill={OFF_DAY_COLOR}
-                      fillOpacity={0.18}
-                      ifOverflow="extendDomain"
-                    />
-                  ))}
-                  <XAxis
-                    dataKey="label"
-                    fontSize={10}
-                    tickMargin={4}
-                    height={56}
-                    interval={0}
-                    tick={(props) => (
-                      <TrendTick {...props} trend={analytics.trend} />
-                    )}
-                  />
-                  <YAxis allowDecimals={false} fontSize={11} />
-                  <Tooltip content={<TrendTooltip />} />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="present"
-                    name="Present"
-                    stackId="1"
-                    stroke={COLORS.present}
-                    fill={COLORS.present}
-                    fillOpacity={0.5}
-                    connectNulls={false}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="leave"
-                    name="Leave"
-                    stackId="1"
-                    stroke={COLORS.leave}
-                    fill={COLORS.leave}
-                    fillOpacity={0.5}
-                    connectNulls={false}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="absent"
-                    name="Absent"
-                    stackId="1"
-                    stroke={COLORS.absent}
-                    fill={COLORS.absent}
-                    fillOpacity={0.5}
-                    connectNulls={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div
+                ref={trendChartRef}
+                className={`w-full ${trendLayout.minChartWidth ? "overflow-x-auto pb-1" : ""}`}
+              >
+                <div
+                  style={{
+                    width: trendLayout.minChartWidth ?? "100%",
+                    minWidth: "100%",
+                  }}
+                >
+                  <ResponsiveContainer
+                    width="100%"
+                    height={trendLayout.chartHeight}
+                  >
+                    <AreaChart
+                      data={analytics.trend}
+                      margin={trendLayout.margin}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#8884880f" />
+                      {offDayBands(analytics.trend).map((band) => (
+                        <ReferenceArea
+                          key={`${band.x1}-${band.x2}`}
+                          x1={band.x1}
+                          x2={band.x2}
+                          strokeOpacity={0}
+                          fill={OFF_DAY_COLOR}
+                          fillOpacity={0.18}
+                          ifOverflow="extendDomain"
+                        />
+                      ))}
+                      <XAxis
+                        dataKey="label"
+                        fontSize={10}
+                        tickMargin={4}
+                        height={trendLayout.xAxisHeight}
+                        interval={trendLayout.tickInterval}
+                        tick={(props) => (
+                          <TrendTick
+                            {...props}
+                            trend={analytics.trend}
+                            compact={trendLayout.compactLabels}
+                            tickAngle={trendLayout.tickAngle}
+                          />
+                        )}
+                      />
+                      <YAxis allowDecimals={false} fontSize={11} width={36} />
+                      <Tooltip content={<TrendTooltip />} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <Area
+                        type="monotone"
+                        dataKey="present"
+                        name="Present"
+                        stackId="1"
+                        stroke={COLORS.present}
+                        fill={COLORS.present}
+                        fillOpacity={0.5}
+                        connectNulls={false}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="leave"
+                        name="Leave"
+                        stackId="1"
+                        stroke={COLORS.leave}
+                        fill={COLORS.leave}
+                        fillOpacity={0.5}
+                        connectNulls={false}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="absent"
+                        name="Absent"
+                        stackId="1"
+                        stroke={COLORS.absent}
+                        fill={COLORS.absent}
+                        fillOpacity={0.5}
+                        connectNulls={false}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </ChartCard>
 
             <ChartCard title="Status & punctuality">

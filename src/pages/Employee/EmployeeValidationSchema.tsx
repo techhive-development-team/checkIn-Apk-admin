@@ -19,6 +19,7 @@ const checkFileType = () => ({
 export const EmployeeCreateSchema = z
   .object({
     memberType: z.enum(["EMPLOYEE", "STUDENT"]),
+    employmentType: z.enum(["FULL_TIME", "PART_TIME"]).optional(),
 
   firstName: z
     .string()
@@ -105,6 +106,32 @@ export const EmployeeCreateSchema = z
       .optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.memberType === "EMPLOYEE" && data.employmentType === "PART_TIME") {
+      if (!data.classDays?.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select at least one work day for part-time employees",
+          path: ["classDays"],
+        });
+      }
+
+      if (!data.classTimeFrom?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Work start time is required",
+          path: ["classTimeFrom"],
+        });
+      }
+
+      if (!data.classTimeTo?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Work end time is required",
+          path: ["classTimeTo"],
+        });
+      }
+    }
+
     if (data.memberType !== "STUDENT") return;
 
     if (!data.studentClass?.trim()) {

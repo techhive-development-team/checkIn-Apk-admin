@@ -8,6 +8,7 @@ import InputFile from "../../../component/forms/InputFile";
 import InputText from "../../../component/forms/InputText";
 import { useAuthStore } from "../../../stores/authStore";
 import { useEffect } from "react";
+import EmploymentTypeFields from "../../../component/forms/EmploymentTypeFields";
 
 const EmployeeCreate = () => {
   const navigate = useNavigate();
@@ -63,6 +64,8 @@ const EmployeeCreate = () => {
               </div>
 
               <InputText label="Position" name="position" />
+
+              <EmploymentTypeFields />
 
               <InputText label="Email" name="email" type="email" required />
               <InputText label="Phone" name="phone" />

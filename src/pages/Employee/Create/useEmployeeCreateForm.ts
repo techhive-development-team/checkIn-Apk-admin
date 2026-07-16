@@ -15,6 +15,7 @@ export const useEmployeeCreateForm = (
     resolver: zodResolver(EmployeeCreateSchema),
     defaultValues: {
       memberType: fixedMemberType,
+      employmentType: "FULL_TIME",
       profilePic: undefined,
       firstName: "",
       lastName: "",

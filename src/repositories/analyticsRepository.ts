@@ -6,6 +6,8 @@ const getBrowserTimezone = () =>
 
 export type AnalyticsPeriod = "weekly" | "monthly" | "yearly";
 
+export type EmploymentTypeFilter = "FULL_TIME" | "PART_TIME";
+
 export interface CompanyAnalyticsParams {
   period: AnalyticsPeriod;
   timezone?: string;
@@ -15,6 +17,7 @@ export interface CompanyAnalyticsParams {
   workEnd?: string;
   workDays?: string[];
   grace?: number;
+  employmentType?: EmploymentTypeFilter;
 }
 
 const getCompanyAnalytics = async (params: CompanyAnalyticsParams) => {
@@ -28,6 +31,7 @@ const getCompanyAnalytics = async (params: CompanyAnalyticsParams) => {
   if (params.workDays && params.workDays.length > 0)
     query.set("workDays", params.workDays.join(","));
   if (params.grace !== undefined) query.set("grace", String(params.grace));
+  if (params.employmentType) query.set("employmentType", params.employmentType);
 
   const response = await client.exec(
     `${API_URLS.ANALYTICS}/company?${query.toString()}`,

@@ -11,6 +11,7 @@ type MemberType = "EMPLOYEE" | "STUDENT";
 export type Employee = {
   employeeId: string;
   memberType?: "EMPLOYEE" | "STUDENT";
+  employmentType?: "FULL_TIME" | "PART_TIME";
   profilePic?: string;
   firstName: string;
   lastName: string;
@@ -253,6 +254,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({
               {memberType === "STUDENT" && <th>Start Date</th>}
               {memberType === "STUDENT" && <th>End Date</th>}
               <th>Company Name</th>
+              {memberType !== "STUDENT" && <th>Employment</th>}
               {memberType !== "STUDENT" && <th>Position</th>}
               <th>Email</th>
               <th>Phone</th>
@@ -310,6 +312,13 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   {memberType === "STUDENT" && <td>{employee.durationFrom || "-"}</td>}
                   {memberType === "STUDENT" && <td>{employee.durationTo || "-"}</td>}
                   <td>{employee.company.name}</td>
+                  {memberType !== "STUDENT" && (
+                    <td>
+                      {employee.employmentType === "PART_TIME"
+                        ? "Part-time"
+                        : "Full-time"}
+                    </td>
+                  )}
                   {memberType !== "STUDENT" && <td>{employee.position || "-"}</td>}
                   <td>{employee.email}</td>
                   <td>{employee.phone || "-"}</td>
