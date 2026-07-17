@@ -3,6 +3,7 @@ import { Send, X } from "lucide-react";
 import pikoAnimation from "../../assets/animation video .mp4";
 import pikoLogo from "../../assets/PiKo_logo.png";
 import { useAuthStore } from "../../stores/authStore";
+import { useGetUserById } from "../../hooks/useGetUser";
 import {
   chatRepository,
   type ChatMessage,
@@ -17,6 +18,19 @@ const STARTER_PROMPTS = [
 
 const CHAT_HISTORY_PREFIX = "pika-chat-history";
 const MAX_SAVED_MESSAGES = 40;
+
+const canUsePikaAi = (opts: {
+  role?: string | null;
+  plan?: string | null;
+  subScribeStatus?: string | null;
+}) => {
+  if (opts.role === "ADMIN") return true;
+  return (
+    opts.subScribeStatus === "Active" &&
+    !!opts.plan &&
+    opts.plan !== "FREE"
+  );
+};
 
 const welcomeMessage = (userName?: string): ChatMessage => ({
   role: "assistant",
@@ -139,9 +153,19 @@ const PiKaIcon = ({ className = "" }: { className?: string }) => {
 
 const ChatWidget = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const userName = useAuthStore((s) => s.user?.name);
-  const userId = useAuthStore((s) => s.user?.userId);
-  const userEmail = useAuthStore((s) => s.user?.email);
+  const user = useAuthStore((s) => s.user);
+  const userName = user?.name;
+  const userId = user?.userId;
+  const userEmail = user?.email;
+  const { data: userDetail, isLoading: isUserLoading } = useGetUserById(
+    userId || "",
+  );
+
+  const chatAllowed = canUsePikaAi({
+    role: user?.role || userDetail?.role,
+    plan: userDetail?.company?.plan,
+    subScribeStatus: userDetail?.company?.subScribeStatus,
+  });
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -170,7 +194,7 @@ const ChatWidget = () => {
 
   useEffect(() => {
     historyLoadedRef.current = false;
-    if (!isAuthenticated || !storageKey) return;
+    if (!isAuthenticated || !storageKey || !chatAllowed) return;
 
     const raw = localStorage.getItem(storageKey);
     if (!raw) {
@@ -190,17 +214,20 @@ const ChatWidget = () => {
       setMessages([welcomeMessage(userName)]);
     }
     historyLoadedRef.current = true;
-  }, [isAuthenticated, storageKey, userName]);
+  }, [isAuthenticated, storageKey, userName, chatAllowed]);
 
   useEffect(() => {
-    if (!isAuthenticated || !storageKey || !historyLoadedRef.current) return;
+    if (!isAuthenticated || !storageKey || !historyLoadedRef.current || !chatAllowed)
+      return;
     localStorage.setItem(
       storageKey,
       JSON.stringify(messages.slice(-MAX_SAVED_MESSAGES)),
     );
-  }, [isAuthenticated, messages, storageKey]);
+  }, [isAuthenticated, messages, storageKey, chatAllowed]);
 
   if (!isAuthenticated) return null;
+  if (user?.role !== "ADMIN" && isUserLoading) return null;
+  if (!chatAllowed) return null;
 
   const send = async (text: string) => {
     const trimmed = text.trim();
